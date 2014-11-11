@@ -1,4 +1,4 @@
-Mapo
+XVM
 ====
 
-A language virtual machine
+A game script virtual machine.
