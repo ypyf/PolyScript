@@ -4,6 +4,8 @@
 #include "bytecode.h"
 #include "mathlib.h"
 
+#include <vector>
+
 // ----Script Loading --------------------------------------------------------------------
 
 #define EXEC_FILE_EXT			    ".xse"	    // Executable file extension
@@ -51,8 +53,8 @@ struct RUNTIME_STACK		// A runtime stack
     value_t *Elmnts;			// The stack elements
     int Size;				// The number of elements in the stack
 
-    int SP;			// 栈顶指针
-    int FP;         // 当前帧指针
+    int TopIndex;			// 栈顶指针
+    int FrameIndex;         // 当前帧指针
 };
 
 // ----Functions -------------------------------------------------------------------------
@@ -61,7 +63,7 @@ struct FUNC							// A function
     int EntryPoint;							// The entry point
     int ParamCount;							// The parameter count
     int LocalDataSize;							// Total size of all local data
-    int iStackFrameSize;						// Total size of the stack frame
+    int StackFrameSize;						// Total size of the stack frame
     char Name[MAX_FUNC_NAME_SIZE+1];		// The function's name
 };
 
@@ -156,7 +158,7 @@ HOST_API_FUNC g_HostAPI[MAX_HOST_API_COUNT];    // The host API
 
 inline int ResolveStackIndex(int Index)
 {
-    return (Index < 0 ? Index += g_Scripts[g_CurrThread].Stack.FP : Index);
+    return (Index < 0 ? Index += g_Scripts[g_CurrThread].Stack.FrameIndex : Index);
 }
 
 /******************************************************************************************
@@ -466,7 +468,7 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
                 // Floating-point literal
 
             case OP_TYPE_FLOAT:
-                fread(&pOpList[iCurrOpIndex].FloatLiteral, sizeof(float), 1, pScriptFile);
+                fread(&pOpList[iCurrOpIndex].Realnum, sizeof(float), 1, pScriptFile);
                 break;
 
                 // String index
@@ -509,7 +511,7 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
                 // Host API call index
 
             case OP_TYPE_HOST_API_CALL_INDEX:
-                fread(&pOpList[iCurrOpIndex].HostAPICallIndex, sizeof(int), 1, pScriptFile);
+                fread(&pOpList[iCurrOpIndex].CFuncIndex, sizeof(int), 1, pScriptFile);
                 break;
 
                 // Register
@@ -663,7 +665,7 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
         g_Scripts[iThreadIndex].FuncTable.Funcs[i].EntryPoint = iEntryPoint;
         g_Scripts[iThreadIndex].FuncTable.Funcs[i].ParamCount = iParamCount;
         g_Scripts[iThreadIndex].FuncTable.Funcs[i].LocalDataSize = iLocalDataSize;
-        g_Scripts[iThreadIndex].FuncTable.Funcs[i].iStackFrameSize = iStackFrameSize;
+        g_Scripts[iThreadIndex].FuncTable.Funcs[i].StackFrameSize = iStackFrameSize;
     }
 
     // ----Read the host API call table
@@ -816,8 +818,8 @@ void XVM_ResetScript(int iThreadIndex)
     // 	}
 
     // Clear the stack
-    g_Scripts[iThreadIndex].Stack.SP = 0;
-    g_Scripts[iThreadIndex].Stack.FP = 0;
+    g_Scripts[iThreadIndex].Stack.TopIndex = 0;
+    g_Scripts[iThreadIndex].Stack.FrameIndex = 0;
 
     // Set the entire stack to null
 
@@ -999,7 +1001,7 @@ void XVM_RunScript(int iTimesliceDur)
                     if (Dest.Type == OP_TYPE_INT)
                         Dest.Fixnum += ResolveOpAsInt(1);
                     else
-                        Dest.FloatLiteral += ResolveOpAsFloat(1);
+                        Dest.Realnum += ResolveOpAsFloat(1);
 
                     break;
 
@@ -1008,7 +1010,7 @@ void XVM_RunScript(int iTimesliceDur)
                     if (Dest.Type == OP_TYPE_INT)
                         Dest.Fixnum -= ResolveOpAsInt(1);
                     else
-                        Dest.FloatLiteral -= ResolveOpAsFloat(1);
+                        Dest.Realnum -= ResolveOpAsFloat(1);
 
                     break;
 
@@ -1017,7 +1019,7 @@ void XVM_RunScript(int iTimesliceDur)
                     if (Dest.Type == OP_TYPE_INT)
                         Dest.Fixnum *= ResolveOpAsInt(1);
                     else
-                        Dest.FloatLiteral *= ResolveOpAsFloat(1);
+                        Dest.Realnum *= ResolveOpAsFloat(1);
 
                     break;
 
@@ -1026,7 +1028,7 @@ void XVM_RunScript(int iTimesliceDur)
                     if (Dest.Type == OP_TYPE_INT)
                         Dest.Fixnum /= ResolveOpAsInt(1);
                     else
-                        Dest.FloatLiteral /= ResolveOpAsFloat(1);
+                        Dest.Realnum /= ResolveOpAsFloat(1);
 
                     break;
 
@@ -1044,7 +1046,7 @@ void XVM_RunScript(int iTimesliceDur)
                     if (Dest.Type == OP_TYPE_INT)
                         Dest.Fixnum = math::IntPow(Dest.Fixnum, ResolveOpAsInt(1));
                     else
-                        Dest.FloatLiteral = (float)pow(Dest.FloatLiteral, ResolveOpAsFloat(1));
+                        Dest.Realnum = (float)pow(Dest.Realnum, ResolveOpAsFloat(1));
                     break;
 
                     // The bitwise instructions only work with integers. They do nothing
@@ -1119,7 +1121,7 @@ void XVM_RunScript(int iTimesliceDur)
 
                 case INSTR_SQRT:
                     // FIXME 类型检查
-                    Dest.FloatLiteral = sqrtf(Dest.FloatLiteral);
+                    Dest.Realnum = sqrtf(Dest.Realnum);
 
                     break;
 
@@ -1128,7 +1130,7 @@ void XVM_RunScript(int iTimesliceDur)
                     if (Dest.Type == OP_TYPE_INT)
                         Dest.Fixnum = -Dest.Fixnum;
                     else
-                        Dest.FloatLiteral = -Dest.FloatLiteral;
+                        Dest.Realnum = -Dest.Realnum;
 
                     break;
 
@@ -1144,7 +1146,7 @@ void XVM_RunScript(int iTimesliceDur)
                     if (Dest.Type == OP_TYPE_INT)
                         ++Dest.Fixnum;
                     else
-                        ++Dest.FloatLiteral;
+                        ++Dest.Realnum;
 
                     break;
 
@@ -1153,7 +1155,7 @@ void XVM_RunScript(int iTimesliceDur)
                     if (Dest.Type == OP_TYPE_INT)
                         --Dest.Fixnum;
                     else
-                        --Dest.FloatLiteral;
+                        --Dest.Realnum;
 
                     break;
                 }
@@ -1321,7 +1323,7 @@ void XVM_RunScript(int iTimesliceDur)
                             break;
 
                         case OP_TYPE_FLOAT:
-                            if (Op0.FloatLiteral == Op1.FloatLiteral)
+                            if (Op0.Realnum == Op1.Realnum)
                                 iJump = TRUE;
                             break;
 
@@ -1344,7 +1346,7 @@ void XVM_RunScript(int iTimesliceDur)
                             break;
 
                         case OP_TYPE_FLOAT:
-                            if (Op0.FloatLiteral != Op1.FloatLiteral)
+                            if (Op0.Realnum != Op1.Realnum)
                                 iJump = TRUE;
                             break;
 
@@ -1366,7 +1368,7 @@ void XVM_RunScript(int iTimesliceDur)
                     }
                     else
                     {
-                        if (Op0.FloatLiteral > Op1.FloatLiteral)
+                        if (Op0.Realnum > Op1.Realnum)
                             iJump = TRUE;
                     }
 
@@ -1382,7 +1384,7 @@ void XVM_RunScript(int iTimesliceDur)
                     }
                     else
                     {
-                        if (Op0.FloatLiteral < Op1.FloatLiteral)
+                        if (Op0.Realnum < Op1.Realnum)
                             iJump = TRUE;
                     }
 
@@ -1398,7 +1400,7 @@ void XVM_RunScript(int iTimesliceDur)
                     }
                     else
                     {
-                        if (Op0.FloatLiteral >= Op1.FloatLiteral)
+                        if (Op0.Realnum >= Op1.Realnum)
                             iJump = TRUE;
                     }
 
@@ -1414,7 +1416,7 @@ void XVM_RunScript(int iTimesliceDur)
                     }
                     else
                     {
-                        if (Op0.FloatLiteral <= Op1.FloatLiteral)
+                        if (Op0.Realnum <= Op1.Realnum)
                             iJump = TRUE;
                     }
 
@@ -1476,7 +1478,7 @@ void XVM_RunScript(int iTimesliceDur)
                     // host API function name
 
                     value_t HostAPICall = ResolveOpValue(0);
-                    int iHostAPICallIndex = HostAPICall.HostAPICallIndex;
+                    int iHostAPICallIndex = HostAPICall.CFuncIndex;
 
                     // Get the name of the host API function
 
@@ -1556,13 +1558,13 @@ void XVM_RunScript(int iTimesliceDur)
 
                 // Read the return address structure from the stack, which is stored one
                 // index below the local data
-                value_t ReturnAddr = GetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.SP - (CurrFunc.LocalDataSize + 1));
+                value_t ReturnAddr = GetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - (CurrFunc.LocalDataSize + 1));
 
                 // Pop the stack frame along with the return address
-                PopFrame(CurrFunc.iStackFrameSize);
+                PopFrame(CurrFunc.StackFrameSize);
 
                 // Restore the previous frame index
-                g_Scripts[g_CurrThread].Stack.FP = iFrameIndex;
+                g_Scripts[g_CurrThread].Stack.FrameIndex = iFrameIndex;
 
                 // Make the jump to the return address
                 g_Scripts[g_CurrThread].InstrStream.CurrInstr = ReturnAddr.InstrIndex;
@@ -1579,7 +1581,7 @@ void XVM_RunScript(int iTimesliceDur)
                     printf("%d\n", val.Fixnum);
                     break;
                 case OP_TYPE_FLOAT:
-                    printf("%.16g\n", val.FloatLiteral);
+                    printf("%.16g\n", val.Realnum);
                     break;
                 case OP_TYPE_STRING:
                     printf("%s\n", val.StringLiteral);
@@ -1761,7 +1763,7 @@ float XVM_GetReturnValueAsFloat(int iThreadIndex)
 
     // Return _RetVal's floating-point field
 
-    return g_Scripts[iThreadIndex]._RetVal.FloatLiteral;
+    return g_Scripts[iThreadIndex]._RetVal.Realnum;
 }
 
 /******************************************************************************************
@@ -1831,7 +1833,7 @@ int CoerceValueToInt(value_t Val)
         // It's a float, so cast it to an integer
 
     case OP_TYPE_FLOAT:
-        return(int) Val.FloatLiteral;
+        return(int) Val.Realnum;
 
         // It's a string, so convert it to an integer
 
@@ -1866,7 +1868,7 @@ float CoerceValueToFloat(value_t Val)
         // It's a float, so return it as-is
 
     case OP_TYPE_FLOAT:
-        return Val.FloatLiteral;
+        return Val.Realnum;
 
         // It's a string, so convert it to an float
 
@@ -1908,7 +1910,7 @@ char*CoerceValueToString(value_t Val)
         // for converting floats to strings
 
     case OP_TYPE_FLOAT:
-        sprintf(pstrCoercion, "%f", Val.FloatLiteral);
+        sprintf(pstrCoercion, "%f", Val.Realnum);
         return pstrCoercion;
 
         // It's a string, so return it as-is
@@ -2152,7 +2154,7 @@ inline char*ResolveOpAsHostAPICall(int iOpIndex)
 
     // Get the value's host API call index
 
-    int iHostAPICallIndex = OpValue.HostAPICallIndex;
+    int iHostAPICallIndex = OpValue.CFuncIndex;
 
     // Return the host API call
 
@@ -2237,7 +2239,7 @@ inline void Push(int iThreadIndex, value_t Val)
 {
     // Get the current top element
 
-    int iTopIndex = g_Scripts[iThreadIndex].Stack.SP;
+    int iTopIndex = g_Scripts[iThreadIndex].Stack.TopIndex;
 
     // Put the value into the current top index
 
@@ -2245,7 +2247,7 @@ inline void Push(int iThreadIndex, value_t Val)
 
     // Increment the top index
 
-    ++g_Scripts[iThreadIndex].Stack.SP;
+    ++g_Scripts[iThreadIndex].Stack.TopIndex;
 }
 
 /******************************************************************************************
@@ -2259,11 +2261,11 @@ inline value_t Pop(int iThreadIndex)
 {
     // Decrement the top index to clear the old element for overwriting
 
-    --g_Scripts[iThreadIndex].Stack.SP;
+    --g_Scripts[iThreadIndex].Stack.TopIndex;
 
     // Get the current top element
 
-    int iTopIndex = g_Scripts[iThreadIndex].Stack.SP;
+    int iTopIndex = g_Scripts[iThreadIndex].Stack.TopIndex;
 
     // Use this index to read the top element
 
@@ -2286,11 +2288,11 @@ inline void PushFrame(int iThreadIndex, int iSize)
 {
     // Increment the top index by the size of the frame
 
-    g_Scripts[iThreadIndex].Stack.SP += iSize;
+    g_Scripts[iThreadIndex].Stack.TopIndex += iSize;
 
     // Move the frame index to the new top of the stack
 
-    g_Scripts[iThreadIndex].Stack.FP = g_Scripts[iThreadIndex].Stack.SP;
+    g_Scripts[iThreadIndex].Stack.FrameIndex = g_Scripts[iThreadIndex].Stack.TopIndex;
 }
 
 /******************************************************************************************
@@ -2304,7 +2306,7 @@ inline void PopFrame(int iSize)
 {
     // Decrement the top index by the size of the frame
     // 相减后，堆栈指针指向返回地址
-    g_Scripts[g_CurrThread].Stack.SP -= iSize;
+    g_Scripts[g_CurrThread].Stack.TopIndex -= iSize;
 
     // 更新栈帧指针。修改之后，这个步骤可有可无
     // Move the frame index to the new top of the stack
@@ -2363,7 +2365,7 @@ void CallFunc(int iThreadIndex, int iIndex)
     FUNC DestFunc = GetFunc(iThreadIndex, iIndex);
 
     // Save the current stack frame index
-    int iFrameIndex = g_Scripts[iThreadIndex].Stack.FP;
+    int iFrameIndex = g_Scripts[iThreadIndex].Stack.FrameIndex;
 
     // 保存返回地址（即当前指令指针）
     value_t ReturnAddr;
@@ -2378,7 +2380,7 @@ void CallFunc(int iThreadIndex, int iIndex)
     value_t FuncIndex;
     FuncIndex.FuncIndex = iIndex;
     FuncIndex.OffsetIndex = iFrameIndex;
-    SetStackValue(iThreadIndex, g_Scripts[iThreadIndex].Stack.SP - 1, FuncIndex);
+    SetStackValue(iThreadIndex, g_Scripts[iThreadIndex].Stack.TopIndex - 1, FuncIndex);
 
     // Let the caller make the jump to the entry point
     g_Scripts[iThreadIndex].InstrStream.CurrInstr = DestFunc.EntryPoint;
@@ -2414,7 +2416,7 @@ void XVM_PassFloatParam(int iThreadIndex, float fFloat)
     // Create a Value structure to encapsulate the parameter
     value_t Param;
     Param.Type = OP_TYPE_FLOAT;
-    Param.FloatLiteral = fFloat;
+    Param.Realnum = fFloat;
 
     // Push the parameter onto the stack
     Push(iThreadIndex, Param);
@@ -2496,9 +2498,9 @@ void XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
     CallFunc(iThreadIndex, iFuncIndex);
 
     // Set the stack base
-    value_t StackBase = GetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.SP - 1);
+    value_t StackBase = GetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - 1);
     StackBase.Type = OP_TYPE_STACK_BASE_MARKER;
-    SetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.SP - 1, StackBase);
+    SetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - 1, StackBase);
 
     // Allow the script code to execute uninterrupted until the function returns
     XVM_RunScript(XVM_INFINITE_TIMESLICE);
@@ -2576,7 +2578,7 @@ int XVM_RegisterCFunction(int iThreadIndex, char *pstrName, HOST_FUNC_PTR fnFunc
 // 返回栈帧上指定的参数
 value_t XVM_GetParam(int iThreadIndex, int iParamIndex)
 {
-    int iTopIndex = g_Scripts[g_CurrThread].Stack.SP;
+    int iTopIndex = g_Scripts[g_CurrThread].Stack.TopIndex;
     value_t arg = g_Scripts[iThreadIndex].Stack.Elmnts[iTopIndex-(iParamIndex+1)];
     return arg;
 }
@@ -2591,7 +2593,7 @@ value_t XVM_GetParam(int iThreadIndex, int iParamIndex)
 int XVM_GetParamAsInt(int iThreadIndex, int iParamIndex)
 {
     // Get the current top element
-    int iTopIndex = g_Scripts[g_CurrThread].Stack.SP;
+    int iTopIndex = g_Scripts[g_CurrThread].Stack.TopIndex;
     value_t Param = g_Scripts[iThreadIndex].Stack.Elmnts[iTopIndex - (iParamIndex + 1)];
 
     // Coerce the top element of the stack to an integer
@@ -2611,7 +2613,7 @@ int XVM_GetParamAsInt(int iThreadIndex, int iParamIndex)
 float XVM_GetParamAsFloat(int iThreadIndex, int iParamIndex)
 {
     // Get the current top element
-    int iTopIndex = g_Scripts[g_CurrThread].Stack.SP;
+    int iTopIndex = g_Scripts[g_CurrThread].Stack.TopIndex;
     value_t Param = g_Scripts[iThreadIndex].Stack.Elmnts[iTopIndex - (iParamIndex + 1)];
 
     // Coerce the top element of the stack to a float
@@ -2630,7 +2632,7 @@ float XVM_GetParamAsFloat(int iThreadIndex, int iParamIndex)
 char* XVM_GetParamAsString(int iThreadIndex, int iParamIndex)
 {
     // Get the current top element
-    int iTopIndex = g_Scripts[g_CurrThread].Stack.SP;
+    int iTopIndex = g_Scripts[g_CurrThread].Stack.TopIndex;
     value_t Param = g_Scripts[iThreadIndex].Stack.Elmnts[iTopIndex - (iParamIndex + 1)];
 
     // Coerce the top element of the stack to a string
@@ -2649,7 +2651,7 @@ char* XVM_GetParamAsString(int iThreadIndex, int iParamIndex)
 void XVM_ReturnFromHost(int iThreadIndex, int iParamCount)
 {
     // Clear the parameters off the stack
-    g_Scripts[iThreadIndex].Stack.SP -= iParamCount;
+    g_Scripts[iThreadIndex].Stack.TopIndex -= iParamCount;
 }
 
 /******************************************************************************************
@@ -2662,7 +2664,7 @@ void XVM_ReturnFromHost(int iThreadIndex, int iParamCount)
 void XVM_ReturnIntFromHost(int iThreadIndex, int iParamCount, int iInt)
 {
     // Clear the parameters off the stack
-    g_Scripts[iThreadIndex].Stack.SP -= iParamCount;
+    g_Scripts[iThreadIndex].Stack.TopIndex -= iParamCount;
 
     // Put the return value and type in _RetVal
     g_Scripts[iThreadIndex]._RetVal.Type = OP_TYPE_INT;
@@ -2679,11 +2681,11 @@ void XVM_ReturnIntFromHost(int iThreadIndex, int iParamCount, int iInt)
 void XVM_ReturnFloatFromHost(int iThreadIndex, int iParamCount, float fFloat)
 {
     // Clear the parameters off the stack
-    g_Scripts[iThreadIndex].Stack.SP -= iParamCount;
+    g_Scripts[iThreadIndex].Stack.TopIndex -= iParamCount;
 
     // Put the return value and type in _RetVal
     g_Scripts[iThreadIndex]._RetVal.Type = OP_TYPE_FLOAT;
-    g_Scripts[iThreadIndex]._RetVal.FloatLiteral = fFloat;
+    g_Scripts[iThreadIndex]._RetVal.Realnum = fFloat;
 }
 
 /******************************************************************************************
@@ -2696,7 +2698,7 @@ void XVM_ReturnFloatFromHost(int iThreadIndex, int iParamCount, float fFloat)
 void XVM_ReturnStringFromHost(int iThreadIndex, int iParamCount, char *pstrString)
 {
     // Clear the parameters off the stack
-    g_Scripts[iThreadIndex].Stack.SP -= iParamCount;
+    g_Scripts[iThreadIndex].Stack.TopIndex -= iParamCount;
 
     // Put the return value and type in _RetVal
     value_t ReturnValue;

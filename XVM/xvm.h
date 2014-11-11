@@ -93,26 +93,27 @@ typedef void(*HOST_FUNC_PTR)(int iThreadIndex);  // Host API function pointer al
 
 #define OP_TYPE_STACK_BASE_MARKER   9           // 从宿主调用脚本中的函数返回时，这个标志被检测到
 
+
 typedef int index_t;    // index(address,pointer)
 
 // ----Runtime Value ---------------------------------------------------------------------
-typedef struct							// A runtime value
+typedef struct							  // A runtime value
 {
-    int Type;                                  // Type
-    union                                       // The value
+    int Type;                             // Type
+    union                                 // The value
     {
-        int Fixnum;                        // Integer literal
-        float FloatLiteral;                    // Float literal
-        char* StringLiteral;					// String literal
-        index_t StackIndex;                        // Stack Index
-        index_t InstrIndex;                        // Instruction index
-        index_t FuncIndex;                         // Function index
-        index_t HostAPICallIndex;                  // Host API Call index
-        int Register;                        // Register code
+        int Fixnum;                       // Integer literal
+        float Realnum;                    // Float literal
+        char* StringLiteral;			  // String literal
+        index_t StackIndex;               // Stack Index
+        index_t InstrIndex;               // Instruction index
+        index_t FuncIndex;                // Function index
+        index_t CFuncIndex;         // Host API Call index
+        int Register;                     // Register code
     };
     // 对于OP_TYPE_REL_STACK_INDEX，该字段保存的是偏移值的地址(偏移值是一个变量)
-    // 对于OP_TYPE_FUNC_INDEX，该字段保存的是前一个栈帧的地址
-    index_t OffsetIndex;                           // Index of the offset
+    // 对于OP_TYPE_FUNC_INDEX，该字段保存的是前一个栈帧的地址(FP)
+    index_t OffsetIndex;                  // Index of the offset
 } value_t;
 
 // ----Function Prototypes -------------------------------------------------------------------
