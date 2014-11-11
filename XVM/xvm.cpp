@@ -56,7 +56,7 @@ struct FUNC							// A function
 {
     int EntryPoint;							// The entry point
     int ParamCount;							// The parameter count
-    int LocalDataSize;							// Total size of all local data
+    int LocalDataSize;						// Total size of all local data
     int StackFrameSize;						// Total size of the stack frame
     char Name[MAX_FUNC_NAME_SIZE+1];		// The function's name
 };
@@ -84,6 +84,7 @@ struct FUNC_TABLE                       // A function table
 };
 
 // ----Host API Call Table ---------------------------------------------------------------
+// 脚本中出现的宿主函数调用
 struct HOST_CALL_TABLE				// A host API call table
 {
     char **Calls;							// Pointer to the call array
@@ -124,7 +125,7 @@ struct SCRIPT							// Encapsulates a full script
 struct HOST_API_FUNC                     // Host API function
 {
     int ThreadIndex;                     // The thread to which this function is visible
-    char *Name;                          // The function name
+    char Name[MAX_FUNC_NAME_SIZE+1];     // The function name
     HOST_FUNC_PTR FuncPtr;               // Pointer to the function definition
 	HOST_API_FUNC* Next;				 // The next record
 };
@@ -209,7 +210,7 @@ void SetStackValue(int iThreadIndex, int iIndex, value_t Val);
 void Push(int iThreadIndex, value_t Val);
 value_t Pop(int iThreadIndex);
 void PushFrame(int iThreadIndex, int iSize);
-void PopFrame(int iSize);
+void PopFrame(value_t FuncIndex);
 
 // ----Function Table Interface ----------------------------------------------------------
 
@@ -277,7 +278,6 @@ void shutdown_xvm()
 	{
 		HOST_API_FUNC* p = g_HostAPIs;
 		g_HostAPIs = g_HostAPIs->Next;
-		free(p->Name);
 		free(p);
 	}
 }
@@ -1545,17 +1545,13 @@ void XVM_RunScript(int iTimesliceDur)
 
                 // Get the previous function index
                 FUNC CurrFunc = GetFunc(g_CurrThread, FuncIndex.FuncIndex);
-                int iFrameIndex = FuncIndex.OffsetIndex;
 
                 // Read the return address structure from the stack, which is stored one
                 // index below the local data
                 value_t ReturnAddr = GetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - (CurrFunc.LocalDataSize + 1));
 
                 // Pop the stack frame along with the return address
-                PopFrame(CurrFunc.StackFrameSize);
-
-                // Restore the previous frame index
-                g_Scripts[g_CurrThread].Stack.FrameIndex = iFrameIndex;
+                PopFrame(FuncIndex);
 
                 // Make the jump to the return address
                 g_Scripts[g_CurrThread].InstrStream.CurrInstr = ReturnAddr.InstrIndex;
@@ -1616,7 +1612,7 @@ void XVM_RunScript(int iTimesliceDur)
         }
 
         // If the instruction pointer hasn't been changed by an instruction, increment it
-
+		// 如果指令没有改变，执行下一条指令
         if (iCurrInstr == g_Scripts[g_CurrThread].InstrStream.CurrInstr)
             ++g_Scripts[g_CurrThread].InstrStream.CurrInstr;
 
@@ -2293,16 +2289,10 @@ inline void PushFrame(int iThreadIndex, int iSize)
 *	Pops a stack frame.
 */
 
-inline void PopFrame(int iSize)
+inline void PopFrame(value_t funcIndex)
 {
-    // Decrement the top index by the size of the frame
-    // 相减后，堆栈指针指向返回地址
-    g_Scripts[g_CurrThread].Stack.TopIndex -= iSize;
-
-    // 更新栈帧指针。修改之后，这个步骤可有可无
-    // Move the frame index to the new top of the stack
-    //[-]
-    //g_Scripts[g_iCurrThread ].Stack.iFrameIndex = g_Scripts[g_iCurrThread].Stack.iTopIndex;
+	g_Scripts[g_CurrThread].Stack.TopIndex = funcIndex.OffsetIndex;
+	g_Scripts[g_CurrThread].Stack.FrameIndex = funcIndex.OffsetIndex;
 }
 
 /******************************************************************************************
@@ -2553,7 +2543,8 @@ int XVM_RegisterCFunction(int iThreadIndex, char *pstrName, HOST_FUNC_PTR fnFunc
 
 	// 添加新的节点到函数列表
 	*pCFuncTable = (HOST_API_FUNC*)malloc(sizeof(HOST_API_FUNC));
-	(*pCFuncTable)->Name = _strdup(pstrName);
+	memset(*pCFuncTable, 0, sizeof(HOST_API_FUNC));
+	strcpy((*pCFuncTable)->Name, pstrName);
 	if (!(*pCFuncTable)->Name)
 	{
 		return FALSE;
@@ -2637,10 +2628,10 @@ char* XVM_GetParamAsString(int iThreadIndex, int iParamIndex)
 *  Returns from a host API function.
 */
 
-void XVM_ReturnFromHost(int iThreadIndex, int iParamCount)
+void XVM_ReturnFromHost(int iThreadIndex)
 {
     // Clear the parameters off the stack
-    g_Scripts[iThreadIndex].Stack.TopIndex -= iParamCount;
+    g_Scripts[iThreadIndex].Stack.TopIndex = g_Scripts[iThreadIndex].Stack.FrameIndex;
 }
 
 /******************************************************************************************
@@ -2650,14 +2641,13 @@ void XVM_ReturnFromHost(int iThreadIndex, int iParamCount)
 *  Returns an integer from a host API function.
 */
 
-void XVM_ReturnIntFromHost(int iThreadIndex, int iParamCount, int iInt)
+void XVM_ReturnIntFromHost(int iThreadIndex, int iInt)
 {
-    // Clear the parameters off the stack
-    g_Scripts[iThreadIndex].Stack.TopIndex -= iParamCount;
-
     // Put the return value and type in _RetVal
     g_Scripts[iThreadIndex]._RetVal.Type = OP_TYPE_INT;
     g_Scripts[iThreadIndex]._RetVal.Fixnum = iInt;
+
+	XVM_ReturnFromHost(iThreadIndex);
 }
 
 /******************************************************************************************
@@ -2667,14 +2657,14 @@ void XVM_ReturnIntFromHost(int iThreadIndex, int iParamCount, int iInt)
 *  Returns a float from a host API function.
 */
 
-void XVM_ReturnFloatFromHost(int iThreadIndex, int iParamCount, float fFloat)
+void XVM_ReturnFloatFromHost(int iThreadIndex, float fFloat)
 {
-    // Clear the parameters off the stack
-    g_Scripts[iThreadIndex].Stack.TopIndex -= iParamCount;
-
     // Put the return value and type in _RetVal
     g_Scripts[iThreadIndex]._RetVal.Type = OP_TYPE_FLOAT;
     g_Scripts[iThreadIndex]._RetVal.Realnum = fFloat;
+
+	// Clear the parameters off the stack
+	XVM_ReturnFromHost(iThreadIndex);
 }
 
 /******************************************************************************************
@@ -2684,27 +2674,31 @@ void XVM_ReturnFloatFromHost(int iThreadIndex, int iParamCount, float fFloat)
 *  Returns a string from a host API function.
 */
 
-void XVM_ReturnStringFromHost(int iThreadIndex, int iParamCount, char *pstrString)
+void XVM_ReturnStringFromHost(int iThreadIndex, char *pstrString)
 {
-    // Clear the parameters off the stack
-    g_Scripts[iThreadIndex].Stack.TopIndex -= iParamCount;
-
     // Put the return value and type in _RetVal
     value_t ReturnValue;
     ReturnValue.Type = OP_TYPE_STRING;
     ReturnValue.StringLiteral = pstrString;
     CopyValue(&g_Scripts[iThreadIndex]._RetVal, ReturnValue);
+
+	// Clear the parameters off the stack
+	XVM_ReturnFromHost(iThreadIndex);
 }
 
-/*
-* Whether a specified thead is stopped
-*/
+
+int XVM_GetParamCount(int iThreadIndex)
+{
+	return g_Scripts[iThreadIndex].Stack.TopIndex - g_Scripts[iThreadIndex].Stack.FrameIndex;
+}
+
+
 int XVM_IsScriptStop(int iThreadIndex)
 {
     return !g_Scripts[iThreadIndex].IsRunning;
 }
 
-// 获取脚本退出代码
+
 int XVM_GetExitCode(int iThreadIndex)
 {
     return g_Scripts[iThreadIndex].ExitCode;

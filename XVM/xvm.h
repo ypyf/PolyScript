@@ -148,39 +148,15 @@ XVM_API int XVM_GetParamAsInt(int iThreadIndex, int iParamIndex);
 XVM_API float XVM_GetParamAsFloat(int iThreadIndex, int iParamIndex);
 XVM_API char* XVM_GetParamAsString(int iThreadIndex, int iParamIndex);
 XVM_API value_t XVM_GetParam(int iThreadIndex, int iParamIndex);
-XVM_API void XVM_ReturnFromHost(int iThreadIndex, int iParamCount);
-XVM_API void XVM_ReturnIntFromHost(int iThreadIndex, int iParamCount, int iInt);
-XVM_API void XVM_ReturnFloatFromHost(int iThreadIndex, int iParamCount, float iFloat);
-XVM_API void XVM_ReturnStringFromHost(int iThreadIndex, int iParamCount, char *pstrString);
 
-// ----Misc------------------------------------------------------
-XVM_API int XVM_IsScriptStop(int iThreadIndex);
-XVM_API int XVM_GetExitCode(int iThreadIndex);
+XVM_API void XVM_ReturnFromHost(int iThreadIndex);
+XVM_API void XVM_ReturnIntFromHost(int iThreadIndex, int iInt);
+XVM_API void XVM_ReturnFloatFromHost(int iThreadIndex, float iFloat);
+XVM_API void XVM_ReturnStringFromHost(int iThreadIndex, char *pstrString);
 
-// Support Functions
-
-// These inline functions are used to wrap the XVM_Return*FromHost() functions to allow the call to
-// also exit the current function.
-
-inline XVM_API void XVM_Return(int ThreadIndex, int ParamCount)
-{
-    XVM_ReturnFromHost(ThreadIndex, ParamCount);
-}
-
-inline XVM_API void XVM_ReturnInt(int ThreadIndex, int ParamCount, int iInt)
-{
-    XVM_ReturnIntFromHost(ThreadIndex, ParamCount, iInt);
-}
-
-inline XVM_API void XVM_ReturnFloat(int ThreadIndex, int ParamCount, float fFloat)
-{
-    XVM_ReturnFloatFromHost(ThreadIndex, ParamCount, fFloat);
-}
-
-inline XVM_API void XVM_ReturnString(int ThreadIndex, int ParamCount, char *pstrString)
-{
-    XVM_ReturnStringFromHost(ThreadIndex, ParamCount, pstrString);
-}
+XVM_API int XVM_GetParamCount(int iThreadIndex);	// 获取传递给函数的参数个数
+XVM_API int XVM_IsScriptStop(int iThreadIndex);		// 脚本是否已经停止
+XVM_API int XVM_GetExitCode(int iThreadIndex);		// 脚本退出代码
 
 #ifdef __cplusplus
 }
