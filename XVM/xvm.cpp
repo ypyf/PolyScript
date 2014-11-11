@@ -4,8 +4,6 @@
 #include "bytecode.h"
 #include "mathlib.h"
 
-#include <vector>
-
 // ----Script Loading --------------------------------------------------------------------
 
 #define EXEC_FILE_EXT			    ".xse"	    // Executable file extension
@@ -36,10 +34,6 @@
 #define THREAD_PRIORITY_DUR_LOW     20          // Low-priority thread timeslice
 #define THREAD_PRIORITY_DUR_MED     40          // Medium-priority thread timeslice
 #define THREAD_PRIORITY_DUR_HIGH    80          // High-priority thread timeslice
-
-// ----The Host API ----------------------------------------------------------------------
-
-#define MAX_HOST_API_COUNT          1024        // Maximum number of functions in the host API
 
 // ----Functions -------------------------------------------------------------------------
 
@@ -129,10 +123,10 @@ struct SCRIPT							// Encapsulates a full script
 // ----Host API --------------------------------------------------------------------------
 struct HOST_API_FUNC                     // Host API function
 {
-    int IsActive;                              // Is this slot in use?
-    int ThreadIndex;                           // The thread to which this function is visible
-    char *Name;                            // The function name
-    HOST_FUNC_PTR FuncPtr;                     // Pointer to the function definition
+    int ThreadIndex;                     // The thread to which this function is visible
+    char *Name;                          // The function name
+    HOST_FUNC_PTR FuncPtr;               // Pointer to the function definition
+	HOST_API_FUNC* Next;				 // The next record
 };
 
 // ----Globals -------------------------------------------------------------------------------
@@ -146,7 +140,7 @@ int g_CurrThread;								// The currently running thread
 int g_CurrThreadActiveTime;					// The time at which the current thread was activated
 
 // ----The Host API ----------------------------------------------------------------------
-HOST_API_FUNC g_HostAPI[MAX_HOST_API_COUNT];    // The host API
+HOST_API_FUNC* g_HostAPIs = NULL;    // The host API
 
 /******************************************************************************************
 *
@@ -260,13 +254,6 @@ void init_xvm()
         g_Scripts[i].HostCallTable.Calls = NULL;
     }
 
-    // ----Initialize the host API
-    for (i = 0; i < MAX_HOST_API_COUNT; ++i)
-    {
-        g_HostAPI[i].IsActive = FALSE;
-        g_HostAPI[i].Name = NULL;
-    }
-
     // ----Set up the threads
     g_CurrThreadMode = THREAD_MODE_MULTI;
     g_CurrThread = 0;
@@ -286,10 +273,13 @@ void shutdown_xvm()
     for (i = 0; i < MAX_THREAD_COUNT; ++i)
         XVM_UnloadScript(i);
 
-    // ----Free the host API's function name strings
-    for (i = 0; i < MAX_HOST_API_COUNT; ++i)
-        if (g_HostAPI[i].Name)
-            free(g_HostAPI[i].Name);
+	while (g_HostAPIs != NULL)
+	{
+		HOST_API_FUNC* p = g_HostAPIs;
+		g_HostAPIs = g_HostAPIs->Next;
+		free(p->Name);
+		free(p);
+	}
 }
 
 /******************************************************************************************
@@ -1487,12 +1477,12 @@ void XVM_RunScript(int iTimesliceDur)
                     // Search through the host API until the matching function is found
 
                     int iMatchFound = FALSE;
-                    int iHostAPIFuncIndex;
-                    for (iHostAPIFuncIndex = 0; iHostAPIFuncIndex < MAX_HOST_API_COUNT; ++iHostAPIFuncIndex)
+					HOST_API_FUNC* api = g_HostAPIs;
+					while (api != NULL)
                     {
                         // Get a pointer to the name of the current host API function
 
-                        char *pstrCurrHostAPIFunc = g_HostAPI[iHostAPIFuncIndex].Name;
+                        char *pstrCurrHostAPIFunc = api->Name;
 
                         // If it equals the requested name, it might be a match
 
@@ -1500,13 +1490,14 @@ void XVM_RunScript(int iTimesliceDur)
                         {
                             // Make sure the function is visible to the current thread
 
-                            int iThreadIndex = g_HostAPI[iHostAPIFuncIndex].ThreadIndex;
+                            int iThreadIndex = api->ThreadIndex;
                             if (iThreadIndex == g_CurrThread || iThreadIndex == XVM_GLOBAL_FUNC)
                             {
                                 iMatchFound = TRUE;
                                 break;
                             }
                         }
+						api = api->Next;
                     }
 
                     // If a match was found, call the host API funcfion and pass the current
@@ -1514,7 +1505,7 @@ void XVM_RunScript(int iTimesliceDur)
 
                     if (iMatchFound) 
                     {
-                        g_HostAPI[iHostAPIFuncIndex].FuncPtr(g_CurrThread);
+                        api->FuncPtr(g_CurrThread);
                     }
                     else 
                     {
@@ -2546,33 +2537,31 @@ void XVM_InvokeScriptFunc(int iThreadIndex, char *pstrName)
 
 int XVM_RegisterCFunction(int iThreadIndex, char *pstrName, HOST_FUNC_PTR fnFunc)
 {
-    int iRegSucceed = FALSE;
-    int i;
-    // Loop through each function in the host API until a free index is found
-    for (i = 0; i < MAX_HOST_API_COUNT; ++i)
-    {
-        // If the current index is free, use it
-        if (!g_HostAPI[i].IsActive)
-        {
-            // Set the function's parameters
-            g_HostAPI[i].ThreadIndex = iThreadIndex;
-            g_HostAPI[i].Name = _strdup(pstrName);
-            if (!g_HostAPI[i].Name)
-            {
-                return iRegSucceed;
-            }
-            //_strupr(g_HostAPI[i].Name);
-            g_HostAPI[i].FuncPtr = fnFunc;
+	HOST_API_FUNC** pCFuncTable = &g_HostAPIs;
 
-            // Set the function to active
+	while (*pCFuncTable != NULL)
+	{
+		// 如果函数名已经存在，则更新它的属性
+		if (strcmp((*pCFuncTable)->Name, pstrName) == 0)
+		{
+			(*pCFuncTable)->ThreadIndex = iThreadIndex;
+			(*pCFuncTable)->FuncPtr = fnFunc;
+			return TRUE;
+		}
+		pCFuncTable = &(*pCFuncTable)->Next;
+	}
 
-            g_HostAPI[i].IsActive = TRUE;
-            iRegSucceed = TRUE;
-
-            break;
-        }
-    }
-    return iRegSucceed;
+	// 添加新的节点到函数列表
+	*pCFuncTable = (HOST_API_FUNC*)malloc(sizeof(HOST_API_FUNC));
+	(*pCFuncTable)->Name = _strdup(pstrName);
+	if (!(*pCFuncTable)->Name)
+	{
+		return FALSE;
+	}
+	(*pCFuncTable)->ThreadIndex = iThreadIndex;
+	(*pCFuncTable)->FuncPtr = fnFunc;
+	(*pCFuncTable)->Next = NULL;
+    return TRUE;
 }
 
 // 返回栈帧上指定的参数

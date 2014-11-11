@@ -83,6 +83,12 @@ int RunVM(const char* filename)
         ExitProcess(1);
     }
 
+	if (!XVM_RegisterCFunction(XVM_GLOBAL_FUNC, "average1", average))
+	{
+		printf("Register Host API Failed!");
+		ExitProcess(1);
+	}
+
     // Declare the thread indices
     int iThreadIndex;
 

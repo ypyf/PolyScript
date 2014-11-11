@@ -54,8 +54,7 @@ extern "C" {
 // ----Script Loading Error Codes --------------------------------------------------------
 
 #define XVM_LOAD_OK						0		// Load successful
-#define XVM_LOAD_ERROR_FILE_IO  	    1		// File I/O error (most likely a file
-// not found error
+#define XVM_LOAD_ERROR_FILE_IO  	    1		// File I/O error (most likely a file not found error
 #define XVM_LOAD_ERROR_INVALID_XSE	    2		// Invalid .XSE structure
 #define XVM_LOAD_ERROR_UNSUPPORTED_VERS	3		// The format version is unsupported
 #define XVM_LOAD_ERROR_OUT_OF_MEMORY	4		// Out of memory
