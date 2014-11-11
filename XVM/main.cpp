@@ -60,14 +60,13 @@ void print_error_message(int iErrorCode)
 /* 打印平均值 */
 static void average(int iThreadIndex)
 {
-    //Value val = XVM_GetParam(iThreadIndex, 0);
-    int ret;
-    int val1 = XVM_GetParamAsInt(iThreadIndex, 0);
-    int val2 = XVM_GetParamAsInt(iThreadIndex, 1);
-    int val3 = XVM_GetParamAsInt(iThreadIndex, 2);
-    ret = (val1+val2+val3)/3;
-    // TODO 让VM处理调用者堆栈的清理，host函数不指定参数个数
-    XVM_ReturnInt(iThreadIndex, 3, ret);
+	int n = XVM_GetParamCount(iThreadIndex);
+	int sum = 0;
+	for (int i = 0; i < n; i++)
+	{
+		sum += XVM_GetParamAsInt(iThreadIndex, i);
+	}
+    XVM_ReturnIntFromHost(iThreadIndex, sum / n);
 }
 
 // ----XVM Entry Main ----------------------------------------------------------------------------------
@@ -82,6 +81,12 @@ int RunVM(const char* filename)
         printf("Register Host API Failed!");
         ExitProcess(1);
     }
+
+	if (!XVM_RegisterCFunction(XVM_GLOBAL_FUNC, "average1", average))
+	{
+		printf("Register Host API Failed!");
+		ExitProcess(1);
+	}
 
     // Declare the thread indices
     int iThreadIndex;

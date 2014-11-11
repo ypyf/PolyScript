@@ -54,8 +54,7 @@ extern "C" {
 // ----Script Loading Error Codes --------------------------------------------------------
 
 #define XVM_LOAD_OK						0		// Load successful
-#define XVM_LOAD_ERROR_FILE_IO  	    1		// File I/O error (most likely a file
-// not found error
+#define XVM_LOAD_ERROR_FILE_IO  	    1		// File I/O error (most likely a file not found error
 #define XVM_LOAD_ERROR_INVALID_XSE	    2		// Invalid .XSE structure
 #define XVM_LOAD_ERROR_UNSUPPORTED_VERS	3		// The format version is unsupported
 #define XVM_LOAD_ERROR_OUT_OF_MEMORY	4		// Out of memory
@@ -93,26 +92,27 @@ typedef void(*HOST_FUNC_PTR)(int iThreadIndex);  // Host API function pointer al
 
 #define OP_TYPE_STACK_BASE_MARKER   9           // 从宿主调用脚本中的函数返回时，这个标志被检测到
 
+
 typedef int index_t;    // index(address,pointer)
 
 // ----Runtime Value ---------------------------------------------------------------------
-typedef struct							// A runtime value
+typedef struct							  // A runtime value
 {
-    int Type;                                  // Type
-    union                                       // The value
+    int Type;                             // Type
+    union                                 // The value
     {
-        int Fixnum;                        // Integer literal
-        float FloatLiteral;                    // Float literal
-        char* StringLiteral;					// String literal
-        index_t StackIndex;                        // Stack Index
-        index_t InstrIndex;                        // Instruction index
-        index_t FuncIndex;                         // Function index
-        index_t HostAPICallIndex;                  // Host API Call index
-        int Register;                        // Register code
+        int Fixnum;                       // Integer literal
+        float Realnum;                    // Float literal
+        char* StringLiteral;			  // String literal
+        index_t StackIndex;               // Stack Index
+        index_t InstrIndex;               // Instruction index
+        index_t FuncIndex;                // Function index
+        index_t CFuncIndex;         // Host API Call index
+        int Register;                     // Register code
     };
     // 对于OP_TYPE_REL_STACK_INDEX，该字段保存的是偏移值的地址(偏移值是一个变量)
-    // 对于OP_TYPE_FUNC_INDEX，该字段保存的是前一个栈帧的地址
-    index_t OffsetIndex;                           // Index of the offset
+    // 对于OP_TYPE_FUNC_INDEX，该字段保存的是前一个栈帧的地址(FP)
+    index_t OffsetIndex;                  // Index of the offset
 } value_t;
 
 // ----Function Prototypes -------------------------------------------------------------------
@@ -148,39 +148,15 @@ XVM_API int XVM_GetParamAsInt(int iThreadIndex, int iParamIndex);
 XVM_API float XVM_GetParamAsFloat(int iThreadIndex, int iParamIndex);
 XVM_API char* XVM_GetParamAsString(int iThreadIndex, int iParamIndex);
 XVM_API value_t XVM_GetParam(int iThreadIndex, int iParamIndex);
-XVM_API void XVM_ReturnFromHost(int iThreadIndex, int iParamCount);
-XVM_API void XVM_ReturnIntFromHost(int iThreadIndex, int iParamCount, int iInt);
-XVM_API void XVM_ReturnFloatFromHost(int iThreadIndex, int iParamCount, float iFloat);
-XVM_API void XVM_ReturnStringFromHost(int iThreadIndex, int iParamCount, char *pstrString);
 
-// ----Misc------------------------------------------------------
-XVM_API int XVM_IsScriptStop(int iThreadIndex);
-XVM_API int XVM_GetExitCode(int iThreadIndex);
+XVM_API void XVM_ReturnFromHost(int iThreadIndex);
+XVM_API void XVM_ReturnIntFromHost(int iThreadIndex, int iInt);
+XVM_API void XVM_ReturnFloatFromHost(int iThreadIndex, float iFloat);
+XVM_API void XVM_ReturnStringFromHost(int iThreadIndex, char *pstrString);
 
-// Support Functions
-
-// These inline functions are used to wrap the XVM_Return*FromHost() functions to allow the call to
-// also exit the current function.
-
-inline XVM_API void XVM_Return(int ThreadIndex, int ParamCount)
-{
-    XVM_ReturnFromHost(ThreadIndex, ParamCount);
-}
-
-inline XVM_API void XVM_ReturnInt(int ThreadIndex, int ParamCount, int iInt)
-{
-    XVM_ReturnIntFromHost(ThreadIndex, ParamCount, iInt);
-}
-
-inline XVM_API void XVM_ReturnFloat(int ThreadIndex, int ParamCount, float fFloat)
-{
-    XVM_ReturnFloatFromHost(ThreadIndex, ParamCount, fFloat);
-}
-
-inline XVM_API void XVM_ReturnString(int ThreadIndex, int ParamCount, char *pstrString)
-{
-    XVM_ReturnStringFromHost(ThreadIndex, ParamCount, pstrString);
-}
+XVM_API int XVM_GetParamCount(int iThreadIndex);	// 获取传递给函数的参数个数
+XVM_API int XVM_IsScriptStop(int iThreadIndex);		// 脚本是否已经停止
+XVM_API int XVM_GetExitCode(int iThreadIndex);		// 脚本退出代码
 
 #ifdef __cplusplus
 }
