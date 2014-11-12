@@ -12,7 +12,6 @@
 #include <functional>
 #include <algorithm>
 
-
 #include "xvm.h"
 
 #define SOURCE_FILE_EXT ".xasm"
@@ -160,7 +159,7 @@ int main(int argc, char* argv[])
    
 
     // 运行脚本并返回
-    printf("退出代码 (%i)\n", XVM_RunScript(ExecFileName));
+    printf("退出代码 (%i)\n", XVM_RunScript(SrcFileName));
 
     return 0;
 }

@@ -1264,8 +1264,6 @@ void InitInstrTable()
         OP_FLAG_TYPE_REG |
         OP_FLAG_TYPE_STRING);
 
-
-
     // ----Conditional Branching
 
     // Jmp          Label
@@ -1377,8 +1375,7 @@ void InitInstrTable()
     // Pop           Destination
 
     iInstrIndex = AddInstrLookup("Pop", INSTR_POP, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF | OP_FLAG_TYPE_REG);
 
     // ----The Function Interface
 
@@ -1390,6 +1387,9 @@ void InitInstrTable()
     // Ret
 
     iInstrIndex = AddInstrLookup("Ret", INSTR_RET, 0);
+
+	// newobj
+	iInstrIndex = AddInstrLookup("Clone", INSTR_NEW, 0);
 
     // CallHost      FunctionName
 
@@ -1849,7 +1849,7 @@ Token GetNextToken()
         g_Lexer.CurrToken = TOKEN_TYPE_GLOBAL;
 
     // Is it Func?
-    if (_stricmp(g_Lexer.CurrLexeme, "def") == 0)
+    if (_stricmp(g_Lexer.CurrLexeme, "func") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_FUNC;
 
     //// 结构体

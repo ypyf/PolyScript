@@ -88,31 +88,36 @@ typedef void(*HOST_FUNC_PTR)(int iThreadIndex);  // Host API function pointer al
 #define OP_TYPE_FUNC_INDEX          6           // Function index
 #define OP_TYPE_HOST_API_CALL_INDEX 7           // Host API call index
 #define OP_TYPE_REG                 8           // Register
-
-#define OP_TYPE_STACK_BASE_MARKER   9           // 从宿主调用脚本中的函数返回时，这个标志被检测到
-
+#define OP_TYPE_STACK_BASE_MARKER   9           // 从C函数调用脚本中的函数，返回时这个标志被检测到
+#define OP_TYPE_OBJECT              10          // Object type
 
 typedef int index_t;    // index(address,pointer)
 
-// ----Runtime Value ---------------------------------------------------------------------
-typedef struct							  // A runtime value
+struct Slot
 {
-    int Type;                             // Type
-    union                                 // The value
+	long RefCount;
+};
+
+// ----Runtime Value ---------------------------------------------------------------------
+struct Value
+{
+    int Type;                           // Type
+    union                               // The value
     {
-        int Fixnum;                       // Integer literal
-        float Realnum;                    // Float literal
-        char* StringLiteral;			  // String literal
-        index_t StackIndex;               // Stack Index
-        index_t InstrIndex;               // Instruction index
-        index_t FuncIndex;                // Function index
-        index_t CFuncIndex;         // Host API Call index
-        int Register;                     // Register code
+		Slot* slot;
+        int Fixnum;                     // Integer literal
+        float Realnum;                  // Float literal
+        char* StringLiteral;			// String literal
+        index_t StackIndex;             // Stack Index
+        index_t InstrIndex;             // Instruction index
+        index_t FuncIndex;              // Function index
+        index_t CFuncIndex;				// Host API Call index
+        int Register;                   // Register code
     };
     // 对于OP_TYPE_REL_STACK_INDEX，该字段保存的是偏移值的地址(偏移值是一个变量)
     // 对于OP_TYPE_FUNC_INDEX，该字段保存的是前一个栈帧的地址(FP)
     index_t OffsetIndex;                  // Index of the offset
-} value_t;
+};
 
 // ----Function Prototypes -------------------------------------------------------------------
 
@@ -146,7 +151,7 @@ XVM_API int XVM_RegisterCFunction(int iThreadIndex, char *pstrName, HOST_FUNC_PT
 XVM_API int XVM_GetParamAsInt(int iThreadIndex, int iParamIndex);
 XVM_API float XVM_GetParamAsFloat(int iThreadIndex, int iParamIndex);
 XVM_API char* XVM_GetParamAsString(int iThreadIndex, int iParamIndex);
-XVM_API value_t XVM_GetParam(int iThreadIndex, int iParamIndex);
+XVM_API Value XVM_GetParam(int iThreadIndex, int iParamIndex);
 
 XVM_API void XVM_ReturnFromHost(int iThreadIndex);
 XVM_API void XVM_ReturnIntFromHost(int iThreadIndex, int iInt);

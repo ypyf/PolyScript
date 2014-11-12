@@ -47,7 +47,7 @@
 // ----Runtime Stack ---------------------------------------------------------------------
 struct RUNTIME_STACK		// A runtime stack
 {
-    value_t *Elmnts;			// The stack elements
+    Value *Elmnts;			// The stack elements
     int Size;				// The number of elements in the stack
 
     int TopIndex;			// 栈顶指针
@@ -69,7 +69,7 @@ struct INSTR                           // An instruction
 {
     int Opcode;                                // The opcode
     int OpCount;                               // The number of operands
-    value_t *pOpList;                            // The operand list
+    Value *pOpList;                            // The operand list
 };
 
 struct INSTR_STREAM                     // An instruction stream
@@ -112,7 +112,7 @@ struct SCRIPT							// Encapsulates a full script
     int TimesliceDur;                          // The thread's timeslice duration
 
     // Register file
-    value_t _RetVal;								// The _RetVal register
+    Value _RetVal;								// The _RetVal register
 
     // 线程退出代码
     int ExitCode;		
@@ -186,17 +186,25 @@ inline int IsThreadActive(int Index)
 
 // ----Function Prototypes -------------------------------------------------------------------
 
+// -------- Object Interface ----------------------
+Slot* NewSlot()
+{
+	Slot* p = (Slot*)malloc(sizeof(Slot));
+	p->RefCount = 0;
+	return p;
+}
+
 // ----Operand Interface -----------------------------------------------------------------
 
-int CoerceValueToInt(value_t Val);
-float CoerceValueToFloat(value_t Val);
-char* CoerceValueToString(value_t Val);
+int CoerceValueToInt(Value Val);
+float CoerceValueToFloat(Value Val);
+char* CoerceValueToString(Value Val);
 
-void CopyValue(value_t*pDest, value_t Source);
+void CopyValue(Value*pDest, Value Source);
 
 int GetOpType(int OpIndex);
 int ResolveOpStackIndex(int OpIndex);
-value_t ResolveOpValue(int iOpIndex);
+Value ResolveOpValue(int iOpIndex);
 int ResolveOpType(int iOpIndex);
 int ResolveOpAsInt(int iOpIndex);
 float ResolveOpAsFloat(int iOpIndex);
@@ -204,16 +212,16 @@ char* ResolveOpAsString(int iOpIndex);
 int ResolveOpAsInstrIndex(int iOpIndex);
 int ResolveOpAsFuncIndex(int iOpIndex);
 char* ResolveOpAsHostAPICall(int iOpIndex);
-value_t* ResolveOpPntr(int iOpIndex);
+Value* ResolveOpPntr(int iOpIndex);
 
 // ----Runtime Stack Interface -----------------------------------------------------------
 
-value_t GetStackValue(int iThreadIndex, int iIndex);
-void SetStackValue(int iThreadIndex, int iIndex, value_t Val);
-void Push(int iThreadIndex, value_t Val);
-value_t Pop(int iThreadIndex);
+Value GetStackValue(int iThreadIndex, int iIndex);
+void SetStackValue(int iThreadIndex, int iIndex, Value Val);
+void Push(int iThreadIndex, Value Val);
+Value Pop(int iThreadIndex);
 void PushFrame(int iThreadIndex, int iSize);
-void PopFrame(value_t FuncIndex);
+void PopFrame(Value FuncIndex);
 
 // ----Function Table Interface ----------------------------------------------------------
 
@@ -300,7 +308,9 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
 	ExecFileName[ExtOffset] = '\0';
 	strcat(ExecFileName, EXEC_FILE_EXT);
 
+	// 编译
 	YASM_Assembly(pstrFilename, ExecFileName);
+
     // ----Find the next free script index
     int iFreeThreadFound = FALSE;
     int i;
@@ -371,7 +381,7 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
     // Allocate the runtime stack
 
     int iStackSize = g_Scripts[iThreadIndex].Stack.Size;
-    if (!(g_Scripts[iThreadIndex].Stack.Elmnts = (value_t *)malloc(iStackSize*sizeof(value_t))))
+    if (!(g_Scripts[iThreadIndex].Stack.Elmnts = (Value *)malloc(iStackSize*sizeof(Value))))
         return XVM_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read the global data size (4 bytes)
@@ -447,8 +457,8 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
 
         // Allocate space for the operand list in a temporary pointer
 
-        value_t*pOpList;
-        if (!(pOpList = (value_t *)malloc(iOpCount*sizeof(value_t))))
+        Value*pOpList;
+        if (!(pOpList = (Value *)malloc(iOpCount*sizeof(Value))))
             return XVM_LOAD_ERROR_OUT_OF_MEMORY;
 
         // Read in the operand list (N bytes)
@@ -582,7 +592,7 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
             // Get the instruction's operand count and a copy of it's operand list
 
             int iOpCount = g_Scripts[iThreadIndex].InstrStream.Instrs[i].OpCount;
-            value_t*pOpList = g_Scripts[iThreadIndex].InstrStream.Instrs[i].pOpList;
+            Value*pOpList = g_Scripts[iThreadIndex].InstrStream.Instrs[i].pOpList;
 
             for (int j = 0; j < iOpCount; ++j)
             {
@@ -750,7 +760,7 @@ void XVM_UnloadScript(int iThreadIndex)
         // Make a local copy of the operand count and operand list
 
         int iOpCount = g_Scripts[iThreadIndex].InstrStream.Instrs[i].OpCount;
-        value_t*pOpList = g_Scripts[iThreadIndex].InstrStream.Instrs[i].pOpList;
+        Value*pOpList = g_Scripts[iThreadIndex].InstrStream.Instrs[i].pOpList;
 
         // Loop through each operand and free its string pointer
 
@@ -976,11 +986,11 @@ void XVM_RunScript(int iTimesliceDur)
             {
                 // Get a local copy of the destination operand (operand index 0)
 
-                value_t Dest = ResolveOpValue(0);
+                Value Dest = ResolveOpValue(0);
 
                 // Get a local copy of the source operand (operand index 1)
 
-                value_t Source = ResolveOpValue(1);
+                Value Source = ResolveOpValue(1);
 
                 // Depending on the instruction, perform a binary operation
 
@@ -1119,15 +1129,13 @@ void XVM_RunScript(int iTimesliceDur)
 
                 // Get a local copy of the destination itself
 
-                value_t Dest = ResolveOpValue(0);
+                Value Dest = ResolveOpValue(0);
 
                 switch (iOpcode)
                 {
-
                 case INSTR_SQRT:
                     // FIXME 类型检查
                     Dest.Realnum = sqrtf(Dest.Realnum);
-
                     break;
 
                 case INSTR_NEG:
@@ -1177,7 +1185,7 @@ void XVM_RunScript(int iTimesliceDur)
             {
                 // Get a local copy of the destination operand (operand index 0)
 
-                value_t Dest = ResolveOpValue(0);
+                Value Dest = ResolveOpValue(0);
 
                 // Get a local copy of the source string (operand index 1)
 
@@ -1219,7 +1227,7 @@ void XVM_RunScript(int iTimesliceDur)
             {
                 // Get a local copy of the destination operand (operand index 0)
 
-                value_t Dest = ResolveOpValue(0);
+                Value Dest = ResolveOpValue(0);
 
                 // Get a local copy of the source string (operand index 1)
 
@@ -1304,8 +1312,8 @@ void XVM_RunScript(int iTimesliceDur)
         case INSTR_JGE:
         case INSTR_JLE:
             {
-                value_t Op0 = ResolveOpValue(0);
-                value_t Op1 = ResolveOpValue(1);
+                Value Op0 = ResolveOpValue(0);
+                Value Op1 = ResolveOpValue(1);
 
                 // Get the index of the target instruction (opcode index 2)
 
@@ -1440,7 +1448,7 @@ void XVM_RunScript(int iTimesliceDur)
         case INSTR_PUSH:
             {
                 // Get a local copy of the source operand (operand index 0)
-                value_t Source = ResolveOpValue(0);
+                Value Source = ResolveOpValue(0);
 
                 // Push the value onto the stack
                 Push(g_CurrThread, Source);
@@ -1459,7 +1467,7 @@ void XVM_RunScript(int iTimesliceDur)
 
         case INSTR_CALL:
             {
-                value_t oprand = ResolveOpValue(0);
+                Value oprand = ResolveOpValue(0);
                 if (oprand.Type == OP_TYPE_FUNC_INDEX) 
                 {
                     // 调用函数
@@ -1482,7 +1490,7 @@ void XVM_RunScript(int iTimesliceDur)
                     // Use operand zero to index into the host API call table and get the
                     // host API function name
 
-                    value_t HostAPICall = ResolveOpValue(0);
+                    Value HostAPICall = ResolveOpValue(0);
                     int iHostAPICallIndex = HostAPICall.CFuncIndex;
 
                     // Get the name of the host API function
@@ -1543,7 +1551,7 @@ void XVM_RunScript(int iTimesliceDur)
             {
                 // Get the current function index off the top of the stack and use it to get
                 // the corresponding function structure
-                value_t FuncIndex = Pop(g_CurrThread);
+                Value FuncIndex = Pop(g_CurrThread);
 
                 // Check for the presence of a stack base marker
                 if (FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER)
@@ -1563,7 +1571,7 @@ void XVM_RunScript(int iTimesliceDur)
 
                 // Read the return address structure from the stack, which is stored one
                 // index below the local data
-                value_t ReturnAddr = GetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - (CurrFunc.LocalDataSize + 1));
+                Value ReturnAddr = GetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - (CurrFunc.LocalDataSize + 1));
 
                 // Pop the stack frame along with the return address
                 PopFrame(FuncIndex);
@@ -1576,7 +1584,7 @@ void XVM_RunScript(int iTimesliceDur)
 
         case INSTR_PRINT:
             {
-                value_t val = ResolveOpValue(0);
+                Value val = ResolveOpValue(0);
                 switch (val.Type)
                 {
                 case OP_TYPE_INT:
@@ -1596,6 +1604,15 @@ void XVM_RunScript(int iTimesliceDur)
                 }
                 break;
             }
+
+		case INSTR_NEW:
+			{
+				Value val;
+				val.Type = OP_TYPE_OBJECT;
+				val.slot = NewSlot();
+				Push(g_CurrThread, val);
+			}
+			break;
 
         case INSTR_PAUSE:
             {
@@ -1794,7 +1811,7 @@ char* XVM_GetReturnValueAsString(int iThreadIndex)
 *  Copies a value structure to another, taking strings into account.
 */
 
-void CopyValue(value_t* pDest, value_t Source)
+void CopyValue(Value* pDest, Value Source)
 {
     // If the destination already contains a string, make sure to free it first
 
@@ -1821,7 +1838,7 @@ void CopyValue(value_t* pDest, value_t Source)
 *  Coerces a Value structure from it's current type to an integer value.
 */
 
-int CoerceValueToInt(value_t Val)
+int CoerceValueToInt(Value Val)
 {
     // Determine which type the Value currently is
 
@@ -1856,7 +1873,7 @@ int CoerceValueToInt(value_t Val)
 *  Coerces a Value structure from it's current type to an float value.
 */
 
-float CoerceValueToFloat(value_t Val)
+float CoerceValueToFloat(Value Val)
 {
     // Determine which type the Value currently is
 
@@ -1891,7 +1908,7 @@ float CoerceValueToFloat(value_t Val)
 *  Coerces a Value structure from it's current type to a string value.
 */
 
-char*CoerceValueToString(value_t Val)
+char*CoerceValueToString(Value Val)
 {
 
     char *pstrCoercion;
@@ -1955,7 +1972,7 @@ inline int ResolveOpStackIndex(int iOpIndex)
 
     // Get the operand type
 
-    value_t OpValue = g_Scripts[g_CurrThread].InstrStream.Instrs[iCurrInstr].pOpList[iOpIndex];
+    Value OpValue = g_Scripts[g_CurrThread].InstrStream.Instrs[iCurrInstr].pOpList[iOpIndex];
 
     // Resolve the stack index based on its type
 
@@ -1974,7 +1991,7 @@ inline int ResolveOpStackIndex(int iOpIndex)
             int iOffsetIndex = OpValue.OffsetIndex;
 
             // Get the variable's value
-            value_t sv = GetStackValue(g_CurrThread, iOffsetIndex);
+            Value sv = GetStackValue(g_CurrThread, iOffsetIndex);
 
             // 绝对地址 = 基址 + 偏移
             return iBaseIndex + sv.Fixnum;
@@ -1991,7 +2008,7 @@ inline int ResolveOpStackIndex(int iOpIndex)
 *	Resolves an operand and returns it's associated Value structure.
 */
 
-inline value_t ResolveOpValue(int iOpIndex)
+inline Value ResolveOpValue(int iOpIndex)
 {
     // Get the current instruction
 
@@ -1999,7 +2016,7 @@ inline value_t ResolveOpValue(int iOpIndex)
 
     // Get the operand type
 
-    value_t OpValue = g_Scripts[g_CurrThread].InstrStream.Instrs[iCurrInstr].pOpList[iOpIndex];
+    Value OpValue = g_Scripts[g_CurrThread].InstrStream.Instrs[iCurrInstr].pOpList[iOpIndex];
 
     // Determine what to return based on the value's type
 
@@ -2040,7 +2057,7 @@ inline int ResolveOpType(int iOpIndex)
 {
     // Resolve the operand's value
 
-    value_t OpValue = ResolveOpValue(iOpIndex);
+    Value OpValue = ResolveOpValue(iOpIndex);
 
     // Return the value type
 
@@ -2058,7 +2075,7 @@ inline int ResolveOpAsInt(int iOpIndex)
 {
     // Resolve the operand's value
 
-    value_t OpValue = ResolveOpValue(iOpIndex);
+    Value OpValue = ResolveOpValue(iOpIndex);
 
     // Coerce it to an int and return it
 
@@ -2077,7 +2094,7 @@ inline float ResolveOpAsFloat(int iOpIndex)
 {
     // Resolve the operand's value
 
-    value_t OpValue = ResolveOpValue(iOpIndex);
+    Value OpValue = ResolveOpValue(iOpIndex);
 
     // Coerce it to a float and return it
 
@@ -2097,7 +2114,7 @@ inline char*ResolveOpAsString(int iOpIndex)
 {
     // Resolve the operand's value
 
-    value_t OpValue = ResolveOpValue(iOpIndex);
+    Value OpValue = ResolveOpValue(iOpIndex);
 
     // Coerce it to a string and return it
 
@@ -2116,7 +2133,7 @@ inline int ResolveOpAsInstrIndex(int iOpIndex)
 {
     // Resolve the operand's value
 
-    value_t OpValue = ResolveOpValue(iOpIndex);
+    Value OpValue = ResolveOpValue(iOpIndex);
 
     // Return it's instruction index
 
@@ -2134,7 +2151,7 @@ inline int ResolveOpAsFuncIndex(int iOpIndex)
 {
     // Resolve the operand's value
 
-    value_t OpValue = ResolveOpValue(iOpIndex);
+    Value OpValue = ResolveOpValue(iOpIndex);
 
     // Return the function index
 
@@ -2152,7 +2169,7 @@ inline char*ResolveOpAsHostAPICall(int iOpIndex)
 {
     // Resolve the operand's value
 
-    value_t OpValue = ResolveOpValue(iOpIndex);
+    Value OpValue = ResolveOpValue(iOpIndex);
 
     // Get the value's host API call index
 
@@ -2170,7 +2187,7 @@ inline char*ResolveOpAsHostAPICall(int iOpIndex)
 *  Resolves an operand and returns a pointer to its Value structure.
 */
 
-inline value_t*ResolveOpPntr(int iOpIndex)
+inline Value*ResolveOpPntr(int iOpIndex)
 {
     // Get the method of indirection
 
@@ -2209,7 +2226,7 @@ inline value_t*ResolveOpPntr(int iOpIndex)
 *	Returns the specified stack value.
 */
 
-inline value_t GetStackValue(int iThreadIndex, int iIndex)
+inline Value GetStackValue(int iThreadIndex, int iIndex)
 {
     // Use ResolveStackIndex() to return the element at the specified index
 
@@ -2223,7 +2240,7 @@ inline value_t GetStackValue(int iThreadIndex, int iIndex)
 *	Sets the specified stack value.
 */
 
-inline void SetStackValue(int iThreadIndex, int iIndex, value_t Val)
+inline void SetStackValue(int iThreadIndex, int iIndex, Value Val)
 {
     // Use ResolveStackIndex() to set the element at the specified index
 
@@ -2237,7 +2254,7 @@ inline void SetStackValue(int iThreadIndex, int iIndex, value_t Val)
 *	Pushes an element onto the stack.
 */
 
-inline void Push(int iThreadIndex, value_t Val)
+inline void Push(int iThreadIndex, Value Val)
 {
     // Get the current top element
 
@@ -2259,7 +2276,7 @@ inline void Push(int iThreadIndex, value_t Val)
 *	Pops the element off the top of the stack.
 */
 
-inline value_t Pop(int iThreadIndex)
+inline Value Pop(int iThreadIndex)
 {
     // Decrement the top index to clear the old element for overwriting
 
@@ -2271,7 +2288,7 @@ inline value_t Pop(int iThreadIndex)
 
     // Use this index to read the top element
 
-    value_t Val;
+    Value Val;
     CopyValue(&Val, g_Scripts[iThreadIndex].Stack.Elmnts[iTopIndex]);
 
     // Return the value to the caller
@@ -2304,7 +2321,7 @@ inline void PushFrame(int iThreadIndex, int iSize)
 *	Pops a stack frame.
 */
 
-inline void PopFrame(value_t funcIndex)
+inline void PopFrame(Value funcIndex)
 {
 	g_Scripts[g_CurrThread].Stack.TopIndex = funcIndex.OffsetIndex;
 	g_Scripts[g_CurrThread].Stack.FrameIndex = funcIndex.OffsetIndex;
@@ -2364,7 +2381,7 @@ void CallFunc(int iThreadIndex, int iIndex)
     int iFrameIndex = g_Scripts[iThreadIndex].Stack.FrameIndex;
 
     // 保存返回地址（即当前指令指针）
-    value_t ReturnAddr;
+    Value ReturnAddr;
     ReturnAddr.InstrIndex = g_Scripts[iThreadIndex].InstrStream.CurrInstr;
     Push(iThreadIndex, ReturnAddr);
 
@@ -2373,7 +2390,7 @@ void CallFunc(int iThreadIndex, int iIndex)
     PushFrame(iThreadIndex, DestFunc.LocalDataSize + 1);
 
     // Write the function index and old stack frame to the top of the stack
-    value_t FuncIndex;
+    Value FuncIndex;
     FuncIndex.FuncIndex = iIndex;
     FuncIndex.OffsetIndex = iFrameIndex;
     SetStackValue(iThreadIndex, g_Scripts[iThreadIndex].Stack.TopIndex - 1, FuncIndex);
@@ -2392,7 +2409,7 @@ void CallFunc(int iThreadIndex, int iIndex)
 void XVM_PassIntParam(int iThreadIndex, int iInt)
 {
     // Create a Value structure to encapsulate the parameter
-    value_t Param;
+    Value Param;
     Param.Type = OP_TYPE_INT;
     Param.Fixnum = iInt;
 
@@ -2410,7 +2427,7 @@ void XVM_PassIntParam(int iThreadIndex, int iInt)
 void XVM_PassFloatParam(int iThreadIndex, float fFloat)
 {
     // Create a Value structure to encapsulate the parameter
-    value_t Param;
+    Value Param;
     Param.Type = OP_TYPE_FLOAT;
     Param.Realnum = fFloat;
 
@@ -2428,7 +2445,7 @@ void XVM_PassFloatParam(int iThreadIndex, float fFloat)
 void XVM_PassStringParam(int iThreadIndex, char *pstrString)
 {
     // Create a Value structure to encapsulate the parameter
-    value_t Param;
+    Value Param;
     Param.Type = OP_TYPE_STRING;
     Param.StringLiteral = (char *)malloc(strlen(pstrString) + 1);
     strcpy(Param.StringLiteral, pstrString);
@@ -2494,7 +2511,7 @@ void XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
     CallFunc(iThreadIndex, iFuncIndex);
 
     // Set the stack base
-    value_t StackBase = GetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - 1);
+    Value StackBase = GetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - 1);
     StackBase.Type = OP_TYPE_STACK_BASE_MARKER;
     SetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - 1, StackBase);
 
@@ -2571,10 +2588,10 @@ int XVM_RegisterCFunction(int iThreadIndex, char *pstrName, HOST_FUNC_PTR fnFunc
 }
 
 // 返回栈帧上指定的参数
-value_t XVM_GetParam(int iThreadIndex, int iParamIndex)
+Value XVM_GetParam(int iThreadIndex, int iParamIndex)
 {
     int iTopIndex = g_Scripts[g_CurrThread].Stack.TopIndex;
-    value_t arg = g_Scripts[iThreadIndex].Stack.Elmnts[iTopIndex-(iParamIndex+1)];
+    Value arg = g_Scripts[iThreadIndex].Stack.Elmnts[iTopIndex-(iParamIndex+1)];
     return arg;
 }
 
@@ -2589,7 +2606,7 @@ int XVM_GetParamAsInt(int iThreadIndex, int iParamIndex)
 {
     // Get the current top element
     int iTopIndex = g_Scripts[g_CurrThread].Stack.TopIndex;
-    value_t Param = g_Scripts[iThreadIndex].Stack.Elmnts[iTopIndex - (iParamIndex + 1)];
+    Value Param = g_Scripts[iThreadIndex].Stack.Elmnts[iTopIndex - (iParamIndex + 1)];
 
     // Coerce the top element of the stack to an integer
     int iInt = CoerceValueToInt(Param);
@@ -2609,7 +2626,7 @@ float XVM_GetParamAsFloat(int iThreadIndex, int iParamIndex)
 {
     // Get the current top element
     int iTopIndex = g_Scripts[g_CurrThread].Stack.TopIndex;
-    value_t Param = g_Scripts[iThreadIndex].Stack.Elmnts[iTopIndex - (iParamIndex + 1)];
+    Value Param = g_Scripts[iThreadIndex].Stack.Elmnts[iTopIndex - (iParamIndex + 1)];
 
     // Coerce the top element of the stack to a float
     float fFloat = CoerceValueToFloat(Param);
@@ -2628,7 +2645,7 @@ char* XVM_GetParamAsString(int iThreadIndex, int iParamIndex)
 {
     // Get the current top element
     int iTopIndex = g_Scripts[g_CurrThread].Stack.TopIndex;
-    value_t Param = g_Scripts[iThreadIndex].Stack.Elmnts[iTopIndex - (iParamIndex + 1)];
+    Value Param = g_Scripts[iThreadIndex].Stack.Elmnts[iTopIndex - (iParamIndex + 1)];
 
     // Coerce the top element of the stack to a string
     char *pstrString = CoerceValueToString(Param);
@@ -2692,7 +2709,7 @@ void XVM_ReturnFloatFromHost(int iThreadIndex, float fFloat)
 void XVM_ReturnStringFromHost(int iThreadIndex, char *pstrString)
 {
     // Put the return value and type in _RetVal
-    value_t ReturnValue;
+    Value ReturnValue;
     ReturnValue.Type = OP_TYPE_STRING;
     ReturnValue.StringLiteral = pstrString;
     CopyValue(&g_Scripts[iThreadIndex]._RetVal, ReturnValue);
