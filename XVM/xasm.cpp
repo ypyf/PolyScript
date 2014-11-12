@@ -5,12 +5,14 @@
 
 // ------------Disable deprecation
 #define _CRT_SECURE_NO_WARNINGS
+#include <windows.h>
 
 // ----Include Files -------------------------------------------------------------------------
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h> 
 
 // ----Constants -----------------------------------------------------------------------------
 
@@ -2068,7 +2070,7 @@ int AddFunc(char *pstrName, int iEntryPoint)
 
     // Add the function to the list and get its index
 
-    int iIndex = AddNode(& g_FuncTable, pNewFunc);
+    int iIndex = AddNode(&g_FuncTable, pNewFunc);
 
     // Set the function node's index
 
@@ -2164,7 +2166,7 @@ int AddLabel(char *pstrIdent, int iTargetIndex, int iFuncIndex)
 
     // Add the label to the list and get its index
 
-    int iIndex = AddNode(& g_LabelTable, pNewLabel);
+    int iIndex = AddNode(&g_LabelTable, pNewLabel);
 
     // Set the index of the label node
 
@@ -2281,7 +2283,7 @@ int AddSymbol(char *pstrIdent, int iSize, int iStackIndex, int iFuncIndex)
 
     // Add the symbol to the list and get its index
 
-    int iIndex = AddNode(& g_SymbolTable, pNewSymbol);
+    int iIndex = AddNode(&g_SymbolTable, pNewSymbol);
 
     // Set the symbol node's index
 
@@ -2463,8 +2465,8 @@ void AssmblSourceFile()
         case TOKEN_TYPE_GLOBAL:
         case TOKEN_TYPE_LOCAL:
             {
-                if (iIsFuncActive && g_Lexer.CurrToken == TOKEN_TYPE_GLOBAL ||
-                    !iIsFuncActive && g_Lexer.CurrToken == TOKEN_TYPE_LOCAL)
+                if (iIsFuncActive &&g_Lexer.CurrToken == TOKEN_TYPE_GLOBAL ||
+                    !iIsFuncActive &&g_Lexer.CurrToken == TOKEN_TYPE_LOCAL)
                     ExitOnCodeError(ERROR_MSSG_INVALID_SCOPE_KIND);
 
                 // Get the variable's identifier
@@ -2961,7 +2963,7 @@ void AssmblSourceFile()
                                         // Add the string to the table, or get the index of
                                         // the existing copy
 
-                                        int iStringIndex = AddString(& g_StringTable, pstrString);
+                                        int iStringIndex = AddString(&g_StringTable, pstrString);
 
                                         // Make sure the closing double-quote is present
 
@@ -3232,18 +3234,19 @@ void AssmblSourceFile()
     }
 }
 
-// srcf -- 汇编文件名
-// bcf -- 字节码文件名
-void YASM_Assembly(const char* src, const char* dest)
+// Assembly .XASM to .XSE
+void YASM_Assembly(const char* filename)
 {
-    // TODO
-    // 如果字节码文件不存在或者时间戳记录早于源文件，则重新生成
-    // 否则返回
+	char ExecFileName[MAX_PATH] = {0};
+	int ExtOffset = strrchr(filename, '.') - filename;
+	strncpy(ExecFileName, filename, ExtOffset);
+	ExecFileName[ExtOffset] = '\0';
+	strcat(ExecFileName, EXEC_FILE_EXT);
 
     Init();
-    LoadSourceFile(src);
+    LoadSourceFile(filename);
     AssmblSourceFile();
-    BuildXSE(dest);
+    BuildXSE(ExecFileName);
     ShutDown();
 }
 
@@ -3375,16 +3378,20 @@ void BuildXSE(const char* file)
 
     char cVersionMajor = VERSION_MAJOR,
          cVersionMinor = VERSION_MINOR;
-    fwrite(& cVersionMajor, 1, 1, pExecFile);
-    fwrite(& cVersionMinor, 1, 1, pExecFile);
-
+    fwrite(&cVersionMajor, 1, 1, pExecFile);
+    fwrite(&cVersionMinor, 1, 1, pExecFile);
+#ifdef USE_TIMESTAMP
+	// 写入编译时间
+	time_t now = time(0);
+	fwrite(&now, sizeof now, 1, pExecFile);
+#endif
     // Write the stack size(4 bytes)
 
-    fwrite(& g_ScriptHeader.StackSize, 4, 1, pExecFile);
+    fwrite(&g_ScriptHeader.StackSize, 4, 1, pExecFile);
 
     // Write the global data size(4 bytes)
 
-    fwrite(& g_ScriptHeader.GlobalDataSize, 4, 1, pExecFile);
+    fwrite(&g_ScriptHeader.GlobalDataSize, 4, 1, pExecFile);
 
     // Write the _Main() flag(1 byte)
 
@@ -3395,7 +3402,7 @@ void BuildXSE(const char* file)
 
     // Write the _Main() function index(4 bytes)
 
-    fwrite(& g_ScriptHeader.MainFuncIndex, 4, 1, pExecFile);
+    fwrite(&g_ScriptHeader.MainFuncIndex, 4, 1, pExecFile);
 
     // Write the priority type(1 byte)
 
@@ -3404,13 +3411,13 @@ void BuildXSE(const char* file)
 
     // Write the user-defined priority(4 bytes)
 
-    fwrite(& g_ScriptHeader.UserPriority, 4, 1, pExecFile);
+    fwrite(&g_ScriptHeader.UserPriority, 4, 1, pExecFile);
 
     // ----Write the instruction stream
 
     // Output the instruction count(4 bytes)
 
-    fwrite(& g_iInstrStreamSize, 4, 1, pExecFile);
+    fwrite(&g_iInstrStreamSize, 4, 1, pExecFile);
 
     // Loop through each instruction and write its data out
 
@@ -3510,7 +3517,7 @@ void BuildXSE(const char* file)
 
     // Write out the string count(4 bytes)
 
-    fwrite(& g_StringTable.NodeCount, 4, 1, pExecFile);
+    fwrite(&g_StringTable.NodeCount, 4, 1, pExecFile);
 
     // Set the pointer to the head of the list
 
@@ -3543,7 +3550,7 @@ void BuildXSE(const char* file)
 
     // Write out the function count(4 bytes)
 
-    fwrite(& g_FuncTable.NodeCount, 4, 1, pExecFile);
+    fwrite(&g_FuncTable.NodeCount, 4, 1, pExecFile);
 
     // Set the pointer to the head of the list
 
@@ -3588,7 +3595,7 @@ void BuildXSE(const char* file)
 
     // Write out the call count(4 bytes)
 
-    fwrite(& g_HostAPICallTable.NodeCount, 4, 1, pExecFile);
+    fwrite(&g_HostAPICallTable.NodeCount, 4, 1, pExecFile);
 
     // Set the pointer to the head of the list
 

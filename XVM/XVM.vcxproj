@@ -78,6 +78,7 @@
     <ClInclude Include="mathlib.h" />
     <ClInclude Include="xasm.h" />
     <ClInclude Include="xvm.h" />
+    <ClInclude Include="xvmlib.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

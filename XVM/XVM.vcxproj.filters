@@ -24,18 +24,24 @@
     <ClInclude Include="xasm.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="xvmlib.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
     <ClInclude Include="xvm.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="mathlib.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="xasm.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="xvmlib.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="xvm.cpp">

@@ -1,8 +1,11 @@
 ﻿#define _XVM_SOURCE
 
-#include "xvm.h"
+#include "xasm.h"
+#include "xvmlib.h"
 #include "bytecode.h"
 #include "mathlib.h"
+
+#include <time.h>
 
 // ----Script Loading --------------------------------------------------------------------
 
@@ -291,6 +294,13 @@ void shutdown_xvm()
 
 int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimeslice)
 {
+	char ExecFileName[MAX_PATH] = {0};	// 编译后的文件名
+	int ExtOffset = strrchr(pstrFilename, '.') - pstrFilename;
+	strncpy(ExecFileName, pstrFilename, ExtOffset);
+	ExecFileName[ExtOffset] = '\0';
+	strcat(ExecFileName, EXEC_FILE_EXT);
+
+	YASM_Assembly(pstrFilename);
     // ----Find the next free script index
     int iFreeThreadFound = FALSE;
     int i;
@@ -314,7 +324,7 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
     // ----Open the input file
 
     FILE *pScriptFile;
-    if (!(pScriptFile = fopen(pstrFilename, "rb")))
+    if (!(pScriptFile = fopen(ExecFileName, "rb")))
         return XVM_LOAD_ERROR_FILE_IO;
 
     //fseek(pScriptFile, offset, SEEK_SET);	// .xvm节文件偏移
@@ -343,6 +353,11 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
 
     if (iMajorVersion != VERSION_MAJOR || iMinorVersion != VERSION_MINOR)
         return XVM_LOAD_ERROR_UNSUPPORTED_VERS;
+
+#ifdef USE_TIMESTAMP
+	// 跳过时间戳
+	fseek(pScriptFile, sizeof(time_t), SEEK_SET);
+#endif
 
     // Read the stack size (4 bytes)
 
@@ -1477,12 +1492,12 @@ void XVM_RunScript(int iTimesliceDur)
                     // Search through the host API until the matching function is found
 
                     int iMatchFound = FALSE;
-					HOST_API_FUNC* api = g_HostAPIs;
-					while (api != NULL)
+					HOST_API_FUNC* pCFunction = g_HostAPIs;
+					while (pCFunction != NULL)
                     {
                         // Get a pointer to the name of the current host API function
 
-                        char *pstrCurrHostAPIFunc = api->Name;
+                        char *pstrCurrHostAPIFunc = pCFunction->Name;
 
                         // If it equals the requested name, it might be a match
 
@@ -1490,14 +1505,14 @@ void XVM_RunScript(int iTimesliceDur)
                         {
                             // Make sure the function is visible to the current thread
 
-                            int iThreadIndex = api->ThreadIndex;
+                            int iThreadIndex = pCFunction->ThreadIndex;
                             if (iThreadIndex == g_CurrThread || iThreadIndex == XVM_GLOBAL_FUNC)
                             {
                                 iMatchFound = TRUE;
                                 break;
                             }
                         }
-						api = api->Next;
+						pCFunction = pCFunction->Next;
                     }
 
                     // If a match was found, call the host API funcfion and pass the current
@@ -1505,7 +1520,7 @@ void XVM_RunScript(int iTimesliceDur)
 
                     if (iMatchFound) 
                     {
-                        api->FuncPtr(g_CurrThread);
+                        pCFunction->FuncPtr(g_CurrThread);
                     }
                     else 
                     {
@@ -2520,7 +2535,7 @@ void XVM_InvokeScriptFunc(int iThreadIndex, char *pstrName)
 
 /******************************************************************************************
 *
-*  XVM_RegisterHostAPIFunc()
+*  XVM_RegisterCFunction()
 *
 *  Registers a function with the host API.
 */

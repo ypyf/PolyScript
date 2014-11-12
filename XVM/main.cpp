@@ -1,4 +1,6 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
+﻿#if 1
+#define STANDALONE
+#define _CRT_SECURE_NO_WARNINGS
 
 // ----Include Files -------------------------------------------------------------------------
 #include <stdio.h>
@@ -10,7 +12,7 @@
 #include <functional>
 #include <algorithm>
 
-#include "xasm.h"
+
 #include "xvm.h"
 
 #define SOURCE_FILE_EXT ".xasm"
@@ -70,8 +72,9 @@ static void average(int iThreadIndex)
 }
 
 // ----XVM Entry Main ----------------------------------------------------------------------------------
-int RunVM(const char* filename)
+int XVM_RunScript(const char* filename)
 {
+	
     // Initialize the runtime environment
     init_xvm();
 
@@ -81,12 +84,6 @@ int RunVM(const char* filename)
         printf("Register Host API Failed!");
         ExitProcess(1);
     }
-
-	if (!XVM_RegisterCFunction(XVM_GLOBAL_FUNC, "average1", average))
-	{
-		printf("Register Host API Failed!");
-		ExitProcess(1);
-	}
 
     // Declare the thread indices
     int iThreadIndex;
@@ -160,10 +157,12 @@ int main(int argc, char* argv[])
     }
 
     // 生成字节码文件
-    YASM_Assembly(SrcFileName, ExecFileName);
+   
 
     // 运行脚本并返回
-    printf("退出代码 (%i)\n", RunVM(ExecFileName));
+    printf("退出代码 (%i)\n", XVM_RunScript(ExecFileName));
 
     return 0;
 }
+
+#endif // 0
