@@ -300,7 +300,7 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
 	ExecFileName[ExtOffset] = '\0';
 	strcat(ExecFileName, EXEC_FILE_EXT);
 
-	YASM_Assembly(pstrFilename);
+	YASM_Assembly(pstrFilename, ExecFileName);
     // ----Find the next free script index
     int iFreeThreadFound = FALSE;
     int i;

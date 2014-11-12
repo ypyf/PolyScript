@@ -5,7 +5,6 @@
 
 // ------------Disable deprecation
 #define _CRT_SECURE_NO_WARNINGS
-#include <windows.h>
 
 // ----Include Files -------------------------------------------------------------------------
 
@@ -3235,18 +3234,12 @@ void AssmblSourceFile()
 }
 
 // Assembly .XASM to .XSE
-void YASM_Assembly(const char* filename)
+void YASM_Assembly(const char* filename, const char* execFileName)
 {
-	char ExecFileName[MAX_PATH] = {0};
-	int ExtOffset = strrchr(filename, '.') - filename;
-	strncpy(ExecFileName, filename, ExtOffset);
-	ExecFileName[ExtOffset] = '\0';
-	strcat(ExecFileName, EXEC_FILE_EXT);
-
     Init();
     LoadSourceFile(filename);
     AssmblSourceFile();
-    BuildXSE(ExecFileName);
+    BuildXSE(execFileName);
     ShutDown();
 }
 
