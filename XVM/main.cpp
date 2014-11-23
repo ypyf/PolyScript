@@ -109,7 +109,7 @@ int XVM_RunScript(const char* filename)
     int iExitCode = XVM_GetExitCode(iThreadIndex);
 
     // Free resources and perform general cleanup
-    shutdown_xvm();
+    XVM_ShutDown();
 
     return iExitCode;
 }

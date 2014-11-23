@@ -113,6 +113,7 @@ struct SCRIPT							// Encapsulates a full script
 
     // Register file
     Value _RetVal;								// The _RetVal register
+	Value _ThisVal;
 
     // 线程退出代码
     int ExitCode;		
@@ -187,11 +188,15 @@ inline int IsThreadActive(int Index)
 // ----Function Prototypes -------------------------------------------------------------------
 
 // -------- Object Interface ----------------------
-Slot* NewSlot()
+Value allocate_object(Value val)
 {
-	Slot* p = (Slot*)malloc(sizeof(Slot));
-	p->RefCount = 0;
-	return p;
+	Value newobj;
+	newobj.Type = val.Type;
+	newobj.Object = (PolarObject*)malloc(sizeof(PolarObject));
+	newobj.Object->RefCount = 1;
+	newobj.Object->Type = val.Object;
+	//newobj.Reference->Name = val.Reference->Name;
+	return newobj;
 }
 
 // ----Operand Interface -----------------------------------------------------------------
@@ -278,7 +283,7 @@ void init_xvm()
 *	Shuts down the runtime environment.
 */
 
-void shutdown_xvm()
+void XVM_ShutDown()
 {
     int i;
     // ----Unload any scripts that may still be in memory
@@ -1117,6 +1122,7 @@ void XVM_RunScript(int iTimesliceDur)
             // they only work with integers and floats (except Not, which works with
             // integers only). Any other destination data type will be ignored.
 
+        case INSTR_THISCALL:
         case INSTR_NEG:
         case INSTR_NOT:
         case INSTR_INC:
@@ -1133,6 +1139,13 @@ void XVM_RunScript(int iTimesliceDur)
 
                 switch (iOpcode)
                 {
+				case INSTR_THISCALL:
+					{
+						Value& val = allocate_object(g_Scripts[g_CurrThread]._ThisVal);
+						Push(g_CurrThread, val);
+					}
+					break;
+
                 case INSTR_SQRT:
                     // FIXME 类型检查
                     Dest.Realnum = sqrtf(Dest.Realnum);
@@ -1604,15 +1617,6 @@ void XVM_RunScript(int iTimesliceDur)
                 }
                 break;
             }
-
-		case INSTR_NEW:
-			{
-				Value val;
-				val.Type = OP_TYPE_OBJECT;
-				val.slot = NewSlot();
-				Push(g_CurrThread, val);
-			}
-			break;
 
         case INSTR_PAUSE:
             {
@@ -2574,16 +2578,17 @@ int XVM_RegisterCFunction(int iThreadIndex, char *pstrName, HOST_FUNC_PTR fnFunc
 	}
 
 	// 添加新的节点到函数列表
-	*pCFuncTable = (HOST_API_FUNC*)malloc(sizeof(HOST_API_FUNC));
-	memset(*pCFuncTable, 0, sizeof(HOST_API_FUNC));
-	strcpy((*pCFuncTable)->Name, pstrName);
-	if (!(*pCFuncTable)->Name)
+	HOST_API_FUNC* node = (HOST_API_FUNC*)malloc(sizeof(HOST_API_FUNC));
+	*pCFuncTable = node;
+	memset(node, 0, sizeof(HOST_API_FUNC));
+	strcpy(node->Name, pstrName);
+	if (!node->Name)
 	{
 		return FALSE;
 	}
-	(*pCFuncTable)->ThreadIndex = iThreadIndex;
-	(*pCFuncTable)->FuncPtr = fnFunc;
-	(*pCFuncTable)->Next = NULL;
+	node->ThreadIndex = iThreadIndex;
+	node->FuncPtr = fnFunc;
+	node->Next = NULL;
     return TRUE;
 }
 

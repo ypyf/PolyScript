@@ -74,8 +74,9 @@
 #define TOKEN_TYPE_FUNC             16          // The Func directives
 #define TOKEN_TYPE_PARAM            17          // The Param directives
 #define TOKEN_TYPE_LOCAL			18			// The Locals directives
-#define TOKEN_TYPE_REG_RETVAL       19          // The _RetVal directives
-#define TOKEN_TYPE_NAMESPACE		20          // 命名空间
+#define TOKEN_TYPE_REG_RETVAL       19          // The _RetVal register
+#define TOKEN_TYPE_REG_THISVAL      20			// The _ThisVal register
+//#define TOKEN_TYPE_NAMESPACE		20          // 命名空间
 #define END_OF_TOKEN_STREAM         21          // The end of the stream has been reached
 
 #define MAX_IDENT_SIZE              256        // Maximum identifier size
@@ -94,9 +95,10 @@
 #define OP_FLAG_TYPE_FLOAT      2           // Floating-point literal value
 #define OP_FLAG_TYPE_STRING     4           // Integer literal value
 #define OP_FLAG_TYPE_MEM_REF    8           // Memory reference(variable or array index, both absolute and relative)
-#define OP_FLAG_TYPE_LINE_LABEL 16          // Line label(used for ( jumps)
-#define OP_FLAG_TYPE_FUNC_NAME  32          // Function table index(used for ( Call)
-//#define OP_FLAG_TYPE_HOST_API_CALL  64    // Host API Call table index(used for (CallHost)
+#define OP_FLAG_TYPE_LINE_LABEL 16          // Line label(used for jumps)
+#define OP_FLAG_TYPE_FUNC_NAME  32          // Function table index(used for Call)
+#define OP_FLAG_TYPE_ATTR_NAME  64			// 对象属性名
+//#define OP_FLAG_TYPE_HOST_API_CALL  64    // Host API Call table index(used for CallHost)
 #define OP_FLAG_TYPE_REG        128         // Register
 
 // ----Assembled Instruction Stream ------------------------------------------------------
@@ -917,7 +919,7 @@ int IsStringFloat( char *pstrString)
 *
 *   PrintLogo()
 *
-*   Prints out logo/credits infor (mation.
+*   Prints out logo/credits information.
 */
 
 void PrintLogo()
@@ -932,7 +934,7 @@ void PrintLogo()
 *
 *   PrintUsage()
 *
-*   Prints out usage infor (mation.
+*   Prints out usage information.
 */
 
 static void PrintUsage()
@@ -1388,8 +1390,9 @@ void InitInstrTable()
 
     iInstrIndex = AddInstrLookup("Ret", INSTR_RET, 0);
 
-	// newobj
-	iInstrIndex = AddInstrLookup("Clone", INSTR_NEW, 0);
+	// Clone Object
+	iInstrIndex = AddInstrLookup("ThisCall", INSTR_THISCALL, 1);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_ATTR_NAME);
 
     // CallHost      FunctionName
 
@@ -1828,8 +1831,6 @@ Token GetNextToken()
     if (IsStringIdent(g_Lexer.CurrLexeme))
         g_Lexer.CurrToken = TOKEN_TYPE_IDENT;
 
-    // Check for ( directives or _RetVal
-
     // Is it SetStackSize?
 
     if (_stricmp(g_Lexer.CurrLexeme, "SETSTACKSIZE") == 0)
@@ -1840,9 +1841,9 @@ Token GetNextToken()
     if (_stricmp(g_Lexer.CurrLexeme, "SETPRIORITY") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_SETPRIORITY;
 
-    // 是否是 NameSpace?
-    if (_stricmp(g_Lexer.CurrLexeme, "NAMESPACE") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_NAMESPACE;
+    //// 是否是 NameSpace?
+    //if (_stricmp(g_Lexer.CurrLexeme, "NAMESPACE") == 0)
+    //    g_Lexer.CurrToken = TOKEN_TYPE_NAMESPACE;
 
     // Is it Var/Var []?
     if (_stricmp(g_Lexer.CurrLexeme, "global") == 0)
@@ -1868,6 +1869,9 @@ Token GetNextToken()
 
     if (_stricmp(g_Lexer.CurrLexeme, "_RETVAL") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_REG_RETVAL;
+
+	if (_stricmp(g_Lexer.CurrLexeme, "_THISVAL") == 0)
+		g_Lexer.CurrToken = TOKEN_TYPE_REG_THISVAL;
 
     // Is it an instruction?
     InstrLookup Instr;
@@ -2232,7 +2236,7 @@ SymbolNode *GetSymbolByIdent(char *pstrIdent, int iFuncIndex)
 
 inline int GetStackIndexByIdent(char *pstrIdent, int iFuncIndex)
 {
-    // Get the symbol's infor (mation
+    // Get the symbol's information
     SymbolNode *pSymbol = GetSymbolByIdent(pstrIdent, iFuncIndex);
 
     // Return its stack index
@@ -2248,7 +2252,7 @@ inline int GetStackIndexByIdent(char *pstrIdent, int iFuncIndex)
 
 static inline int GetSizeByIdent(char *pstrIdent, int iFuncIndex)
 {
-    // Get the symbol's infor (mation
+    // Get the symbol's information
     SymbolNode *pSymbol = GetSymbolByIdent(pstrIdent, iFuncIndex);
 
     // Return its size
@@ -2323,7 +2327,7 @@ void AssmblSourceFile()
     int iCurrFuncParamCount = 0;
     int iCurrFuncLocalDataSize = 0;
 
-    // Create an instruction definition structure to hold instruction infor (mation when
+    // Create an instruction definition structure to hold instruction information when
     // dealing with instructions.
 
     InstrLookup CurrInstr;
@@ -2989,8 +2993,7 @@ void AssmblSourceFile()
                             break;
                         }
 
-                        // _RetVal
-
+					case TOKEN_TYPE_REG_THISVAL:
                     case TOKEN_TYPE_REG_RETVAL:
 
                         // Make sure the operand type is valid
@@ -3142,7 +3145,7 @@ void AssmblSourceFile()
 
                                 char *pstrLabelIdent = GetCurrLexeme();
 
-                                // Use the label identifier to get the label's infor (mation
+                                // Use the label identifier to get the label's information
 
                                 LabelNode *pLabel = GetLabelByIdent(pstrLabelIdent, iCurrFuncIndex);
 
@@ -3158,6 +3161,10 @@ void AssmblSourceFile()
                                 pOpList[iCurrOpIndex].InstrIndex = pLabel->iTargetIndex;
                             }
 
+							if (CurrOpTypes & OP_FLAG_TYPE_ATTR_NAME)
+							{
+
+							}
                             // Parse a function name
 
                             if (CurrOpTypes & OP_FLAG_TYPE_FUNC_NAME)
@@ -3166,11 +3173,11 @@ void AssmblSourceFile()
 
                                 char *pstrFuncName = GetCurrLexeme();
 
-                                // Use the function name to get the function's infor (mation
+                                // Use the function name to get the function's information
 
                                 FuncNode *pFunc = GetFuncByName(pstrFuncName);
 
-                                // 外部函数(host call)
+                                // C 函数(host call)
 
                                 if (!pFunc) {
                                     //ExitOnCodeError(ERROR_MSSG_UNDEFINED_FUNC);
@@ -3684,7 +3691,7 @@ void ExitOnCodeError(char *pstrErrorMssg)
     printf("^\n");
 
     // Print the message
-    printf("Error: %s (Line %d).\n", pstrErrorMssg, g_Lexer.CurrSourceLine);
+    printf("Error: %s (Line %d).\n", pstrErrorMssg, g_Lexer.CurrSourceLine + 1);
 
     // Exit the program
     Exit();

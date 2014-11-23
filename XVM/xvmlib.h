@@ -93,9 +93,12 @@ typedef void(*HOST_FUNC_PTR)(int iThreadIndex);  // Host API function pointer al
 
 typedef int index_t;    // index(address,pointer)
 
-struct Slot
+struct  PolarObject
 {
 	long RefCount;
+	PolarObject* Type;
+	char* Name;
+
 };
 
 // ----Runtime Value ---------------------------------------------------------------------
@@ -104,7 +107,7 @@ struct Value
     int Type;                           // Type
     union                               // The value
     {
-		Slot* slot;
+		PolarObject* Object;
         int Fixnum;                     // Integer literal
         float Realnum;                  // Float literal
         char* StringLiteral;			// String literal
@@ -124,7 +127,7 @@ struct Value
 // ----Main ------------------------------------------------------------------------------
 
 XVM_API void init_xvm();
-XVM_API void shutdown_xvm();
+XVM_API void XVM_ShutDown();
 
 // ----Script Interface ------------------------------------------------------------------
 
