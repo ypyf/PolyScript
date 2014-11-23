@@ -434,7 +434,7 @@ void AssmblSourceFile();
 void BuildXSE(const char* file);
 void ShutDown();
 
-void Exit();
+void ExitProgram();
 void ExitOnError(char *pstrErrorMssg);
 void ExitOnCodeError(char *pstrErrorMssg);
 void ExitOnCharExpectedError(char cChar);
@@ -3632,7 +3632,7 @@ void BuildXSE(const char* file)
 *   Exits the program.
 */
 
-void Exit()
+void ExitProgram()
 {
     // Give allocated resources a chance to be freed
     ShutDown();
@@ -3654,7 +3654,7 @@ void ExitOnError(char *pstrErrorMssg)
 
     // Exit the program
 
-    Exit();
+    ExitProgram();
 }
 
 /******************************************************************************************
@@ -3693,8 +3693,7 @@ void ExitOnCodeError(char *pstrErrorMssg)
     // Print the message
     printf("Error: %s (Line %d).\n", pstrErrorMssg, g_Lexer.CurrSourceLine + 1);
 
-    // Exit the program
-    Exit();
+    ExitProgram();
 }
 
 /******************************************************************************************
@@ -3706,12 +3705,7 @@ void ExitOnCodeError(char *pstrErrorMssg)
 
 void ExitOnCharExpectedError(char cChar)
 {
-    // Create an error message based on the character
-
-    char *pstrErrorMssg = (char *) malloc(strlen("' ' expected"));
-    sprintf(pstrErrorMssg, "'%c' expected", cChar);
-
-    // Exit on the code error
-
-    ExitOnCodeError(pstrErrorMssg);
+    char pstrErrorMesg[16];
+    sprintf(pstrErrorMesg, "'%c' expected", cChar);
+    ExitOnCodeError(pstrErrorMesg);
 }
