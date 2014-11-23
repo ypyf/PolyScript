@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h> 
 
 // ----Constants -----------------------------------------------------------------------------
 
@@ -73,8 +74,9 @@
 #define TOKEN_TYPE_FUNC             16          // The Func directives
 #define TOKEN_TYPE_PARAM            17          // The Param directives
 #define TOKEN_TYPE_LOCAL			18			// The Locals directives
-#define TOKEN_TYPE_REG_RETVAL       19          // The _RetVal directives
-#define TOKEN_TYPE_NAMESPACE		20          // 命名空间
+#define TOKEN_TYPE_REG_RETVAL       19          // The _RetVal register
+#define TOKEN_TYPE_REG_THISVAL      20			// The _ThisVal register
+//#define TOKEN_TYPE_NAMESPACE		20          // 命名空间
 #define END_OF_TOKEN_STREAM         21          // The end of the stream has been reached
 
 #define MAX_IDENT_SIZE              256        // Maximum identifier size
@@ -93,9 +95,10 @@
 #define OP_FLAG_TYPE_FLOAT      2           // Floating-point literal value
 #define OP_FLAG_TYPE_STRING     4           // Integer literal value
 #define OP_FLAG_TYPE_MEM_REF    8           // Memory reference(variable or array index, both absolute and relative)
-#define OP_FLAG_TYPE_LINE_LABEL 16          // Line label(used for ( jumps)
-#define OP_FLAG_TYPE_FUNC_NAME  32          // Function table index(used for ( Call)
-//#define OP_FLAG_TYPE_HOST_API_CALL  64    // Host API Call table index(used for (CallHost)
+#define OP_FLAG_TYPE_LINE_LABEL 16          // Line label(used for jumps)
+#define OP_FLAG_TYPE_FUNC_NAME  32          // Function table index(used for Call)
+#define OP_FLAG_TYPE_ATTR_NAME  64			// 对象属性名
+//#define OP_FLAG_TYPE_HOST_API_CALL  64    // Host API Call table index(used for CallHost)
 #define OP_FLAG_TYPE_REG        128         // Register
 
 // ----Assembled Instruction Stream ------------------------------------------------------
@@ -236,7 +239,7 @@ struct Lexer                           // The lexical analyzer/tokenizer
 {
     int CurrSourceLine;                        // Current line in the source
 
-    unsigned int Index0,                       // Indices into the string
+    size_t Index0,                       // Indices into the string
         Index1;
 
     Token CurrToken;                            // Current token
@@ -431,7 +434,7 @@ void AssmblSourceFile();
 void BuildXSE(const char* file);
 void ShutDown();
 
-void Exit();
+void ExitProgram();
 void ExitOnError(char *pstrErrorMssg);
 void ExitOnCodeError(char *pstrErrorMssg);
 void ExitOnCharExpectedError(char cChar);
@@ -607,7 +610,7 @@ int AddNode(LinkedList *pList, void *pData)
 
 void StripComments(char *pstrSourceLine)
 {
-    unsigned int iCurrCharIndex;
+    size_t iCurrCharIndex;
     int iInString;
 
     // Scan through the source line and terminate the string at the first semicolon
@@ -722,9 +725,9 @@ int IsCharDelimiter(char cChar)
 
 void TrimWhitespace(char *pstrString)
 {
-    unsigned int iStringLength = strlen(pstrString);
-    unsigned int iPadLength;
-    unsigned int iCurrCharIndex;
+    size_t iStringLength = strlen(pstrString);
+    size_t iPadLength;
+    size_t iCurrCharIndex;
 
     if (iStringLength > 1)
     {
@@ -780,7 +783,7 @@ void TrimWhitespace(char *pstrString)
 // 
 // 	// Loop through each character and return false if a non-whitespace is found
 // 
-// 	for (unsigned int iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
+// 	for (size_t iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
 // 		if (!IsCharWhitespace(pstrString[iCurrCharIndex]) && pstrString[iCurrCharIndex] != '\n')
 // 			return FALSE;
 // 
@@ -817,7 +820,7 @@ int IsStringIdent(char *pstrString)
     // Loop through each character and return zero upon encountering the first invalid identifier
     // character
 
-    for (unsigned int iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
+    for (size_t iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
         if (!IsIdentStart(pstrString[iCurrCharIndex]))
             return FALSE;
 
@@ -846,7 +849,7 @@ int IsStringInteger(char *pstrString)
     if (strlen(pstrString) == 0)
         return FALSE;
 
-    unsigned int iCurrCharIndex;
+    size_t iCurrCharIndex;
 
     // Loop through the string and make sure each character is a valid number or minus sign
 
@@ -881,7 +884,7 @@ int IsStringFloat( char *pstrString)
 
     // First make sure we've got only numbers and radix points
 
-    unsigned int iCurrCharIndex;
+    size_t iCurrCharIndex;
 
     for (iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
         if (!IsCharNumeric(pstrString[iCurrCharIndex]) && !(pstrString[iCurrCharIndex] == '.') && !(pstrString[iCurrCharIndex] == '-'))
@@ -916,7 +919,7 @@ int IsStringFloat( char *pstrString)
 *
 *   PrintLogo()
 *
-*   Prints out logo/credits infor (mation.
+*   Prints out logo/credits information.
 */
 
 void PrintLogo()
@@ -931,7 +934,7 @@ void PrintLogo()
 *
 *   PrintUsage()
 *
-*   Prints out usage infor (mation.
+*   Prints out usage information.
 */
 
 static void PrintUsage()
@@ -1263,8 +1266,6 @@ void InitInstrTable()
         OP_FLAG_TYPE_REG |
         OP_FLAG_TYPE_STRING);
 
-
-
     // ----Conditional Branching
 
     // Jmp          Label
@@ -1376,8 +1377,7 @@ void InitInstrTable()
     // Pop           Destination
 
     iInstrIndex = AddInstrLookup("Pop", INSTR_POP, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF | OP_FLAG_TYPE_REG);
 
     // ----The Function Interface
 
@@ -1389,6 +1389,10 @@ void InitInstrTable()
     // Ret
 
     iInstrIndex = AddInstrLookup("Ret", INSTR_RET, 0);
+
+	// Clone Object
+	iInstrIndex = AddInstrLookup("ThisCall", INSTR_THISCALL, 1);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_ATTR_NAME);
 
     // CallHost      FunctionName
 
@@ -1698,8 +1702,8 @@ Token GetNextToken()
         ++g_Lexer.Index1;
 
     // 将词素从输入流拷贝到单独的缓冲区中
-    unsigned int iCurrDestIndex = 0;
-    for (unsigned int i = g_Lexer.Index0; i < g_Lexer.Index1; ++i)
+    size_t iCurrDestIndex = 0;
+    for (size_t i = g_Lexer.Index0; i < g_Lexer.Index1; ++i)
     {
         // 处理字符串中的转义字符
         if (g_Lexer.CurrLexState == LEX_STATE_IN_STRING)
@@ -1827,8 +1831,6 @@ Token GetNextToken()
     if (IsStringIdent(g_Lexer.CurrLexeme))
         g_Lexer.CurrToken = TOKEN_TYPE_IDENT;
 
-    // Check for ( directives or _RetVal
-
     // Is it SetStackSize?
 
     if (_stricmp(g_Lexer.CurrLexeme, "SETSTACKSIZE") == 0)
@@ -1839,16 +1841,16 @@ Token GetNextToken()
     if (_stricmp(g_Lexer.CurrLexeme, "SETPRIORITY") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_SETPRIORITY;
 
-    // 是否是 NameSpace?
-    if (_stricmp(g_Lexer.CurrLexeme, "NAMESPACE") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_NAMESPACE;
+    //// 是否是 NameSpace?
+    //if (_stricmp(g_Lexer.CurrLexeme, "NAMESPACE") == 0)
+    //    g_Lexer.CurrToken = TOKEN_TYPE_NAMESPACE;
 
     // Is it Var/Var []?
     if (_stricmp(g_Lexer.CurrLexeme, "global") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_GLOBAL;
 
     // Is it Func?
-    if (_stricmp(g_Lexer.CurrLexeme, "def") == 0)
+    if (_stricmp(g_Lexer.CurrLexeme, "func") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_FUNC;
 
     //// 结构体
@@ -1867,6 +1869,9 @@ Token GetNextToken()
 
     if (_stricmp(g_Lexer.CurrLexeme, "_RETVAL") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_REG_RETVAL;
+
+	if (_stricmp(g_Lexer.CurrLexeme, "_THISVAL") == 0)
+		g_Lexer.CurrToken = TOKEN_TYPE_REG_THISVAL;
 
     // Is it an instruction?
     InstrLookup Instr;
@@ -1902,7 +1907,7 @@ char GetLookAheadChar()
     // We don't actually want to move the lexer's indices, so we'll make a copy of them
 
     int iCurrSourceLine = g_Lexer.CurrSourceLine;
-    unsigned int iIndex = g_Lexer.Index1;
+    size_t iIndex = g_Lexer.Index1;
 
     // If the next lexeme is not a string, scan past any potential leading whitespace
 
@@ -2068,7 +2073,7 @@ int AddFunc(char *pstrName, int iEntryPoint)
 
     // Add the function to the list and get its index
 
-    int iIndex = AddNode(& g_FuncTable, pNewFunc);
+    int iIndex = AddNode(&g_FuncTable, pNewFunc);
 
     // Set the function node's index
 
@@ -2164,7 +2169,7 @@ int AddLabel(char *pstrIdent, int iTargetIndex, int iFuncIndex)
 
     // Add the label to the list and get its index
 
-    int iIndex = AddNode(& g_LabelTable, pNewLabel);
+    int iIndex = AddNode(&g_LabelTable, pNewLabel);
 
     // Set the index of the label node
 
@@ -2231,7 +2236,7 @@ SymbolNode *GetSymbolByIdent(char *pstrIdent, int iFuncIndex)
 
 inline int GetStackIndexByIdent(char *pstrIdent, int iFuncIndex)
 {
-    // Get the symbol's infor (mation
+    // Get the symbol's information
     SymbolNode *pSymbol = GetSymbolByIdent(pstrIdent, iFuncIndex);
 
     // Return its stack index
@@ -2247,7 +2252,7 @@ inline int GetStackIndexByIdent(char *pstrIdent, int iFuncIndex)
 
 static inline int GetSizeByIdent(char *pstrIdent, int iFuncIndex)
 {
-    // Get the symbol's infor (mation
+    // Get the symbol's information
     SymbolNode *pSymbol = GetSymbolByIdent(pstrIdent, iFuncIndex);
 
     // Return its size
@@ -2281,7 +2286,7 @@ int AddSymbol(char *pstrIdent, int iSize, int iStackIndex, int iFuncIndex)
 
     // Add the symbol to the list and get its index
 
-    int iIndex = AddNode(& g_SymbolTable, pNewSymbol);
+    int iIndex = AddNode(&g_SymbolTable, pNewSymbol);
 
     // Set the symbol node's index
 
@@ -2322,7 +2327,7 @@ void AssmblSourceFile()
     int iCurrFuncParamCount = 0;
     int iCurrFuncLocalDataSize = 0;
 
-    // Create an instruction definition structure to hold instruction infor (mation when
+    // Create an instruction definition structure to hold instruction information when
     // dealing with instructions.
 
     InstrLookup CurrInstr;
@@ -2463,8 +2468,8 @@ void AssmblSourceFile()
         case TOKEN_TYPE_GLOBAL:
         case TOKEN_TYPE_LOCAL:
             {
-                if (iIsFuncActive && g_Lexer.CurrToken == TOKEN_TYPE_GLOBAL ||
-                    !iIsFuncActive && g_Lexer.CurrToken == TOKEN_TYPE_LOCAL)
+                if (iIsFuncActive &&g_Lexer.CurrToken == TOKEN_TYPE_GLOBAL ||
+                    !iIsFuncActive &&g_Lexer.CurrToken == TOKEN_TYPE_LOCAL)
                     ExitOnCodeError(ERROR_MSSG_INVALID_SCOPE_KIND);
 
                 // Get the variable's identifier
@@ -2961,7 +2966,7 @@ void AssmblSourceFile()
                                         // Add the string to the table, or get the index of
                                         // the existing copy
 
-                                        int iStringIndex = AddString(& g_StringTable, pstrString);
+                                        int iStringIndex = AddString(&g_StringTable, pstrString);
 
                                         // Make sure the closing double-quote is present
 
@@ -2988,8 +2993,7 @@ void AssmblSourceFile()
                             break;
                         }
 
-                        // _RetVal
-
+					case TOKEN_TYPE_REG_THISVAL:
                     case TOKEN_TYPE_REG_RETVAL:
 
                         // Make sure the operand type is valid
@@ -3141,7 +3145,7 @@ void AssmblSourceFile()
 
                                 char *pstrLabelIdent = GetCurrLexeme();
 
-                                // Use the label identifier to get the label's infor (mation
+                                // Use the label identifier to get the label's information
 
                                 LabelNode *pLabel = GetLabelByIdent(pstrLabelIdent, iCurrFuncIndex);
 
@@ -3157,6 +3161,10 @@ void AssmblSourceFile()
                                 pOpList[iCurrOpIndex].InstrIndex = pLabel->iTargetIndex;
                             }
 
+							if (CurrOpTypes & OP_FLAG_TYPE_ATTR_NAME)
+							{
+
+							}
                             // Parse a function name
 
                             if (CurrOpTypes & OP_FLAG_TYPE_FUNC_NAME)
@@ -3165,11 +3173,11 @@ void AssmblSourceFile()
 
                                 char *pstrFuncName = GetCurrLexeme();
 
-                                // Use the function name to get the function's infor (mation
+                                // Use the function name to get the function's information
 
                                 FuncNode *pFunc = GetFuncByName(pstrFuncName);
 
-                                // 外部函数(host call)
+                                // C 函数(host call)
 
                                 if (!pFunc) {
                                     //ExitOnCodeError(ERROR_MSSG_UNDEFINED_FUNC);
@@ -3232,18 +3240,13 @@ void AssmblSourceFile()
     }
 }
 
-// srcf -- 汇编文件名
-// bcf -- 字节码文件名
-void YASM_Assembly(const char* src, const char* dest)
+/* Assembly .XASM to .XSE */
+void XASM_Assembly(const char* filename, const char* execFileName)
 {
-    // TODO
-    // 如果字节码文件不存在或者时间戳记录早于源文件，则重新生成
-    // 否则返回
-
     Init();
-    LoadSourceFile(src);
+    LoadSourceFile(filename);
     AssmblSourceFile();
-    BuildXSE(dest);
+    BuildXSE(execFileName);
     ShutDown();
 }
 
@@ -3375,16 +3378,20 @@ void BuildXSE(const char* file)
 
     char cVersionMajor = VERSION_MAJOR,
          cVersionMinor = VERSION_MINOR;
-    fwrite(& cVersionMajor, 1, 1, pExecFile);
-    fwrite(& cVersionMinor, 1, 1, pExecFile);
-
+    fwrite(&cVersionMajor, 1, 1, pExecFile);
+    fwrite(&cVersionMinor, 1, 1, pExecFile);
+#ifdef USE_TIMESTAMP
+	// 写入编译时间
+	time_t now = time(0);
+	fwrite(&now, sizeof now, 1, pExecFile);
+#endif
     // Write the stack size(4 bytes)
 
-    fwrite(& g_ScriptHeader.StackSize, 4, 1, pExecFile);
+    fwrite(&g_ScriptHeader.StackSize, 4, 1, pExecFile);
 
     // Write the global data size(4 bytes)
 
-    fwrite(& g_ScriptHeader.GlobalDataSize, 4, 1, pExecFile);
+    fwrite(&g_ScriptHeader.GlobalDataSize, 4, 1, pExecFile);
 
     // Write the _Main() flag(1 byte)
 
@@ -3395,7 +3402,7 @@ void BuildXSE(const char* file)
 
     // Write the _Main() function index(4 bytes)
 
-    fwrite(& g_ScriptHeader.MainFuncIndex, 4, 1, pExecFile);
+    fwrite(&g_ScriptHeader.MainFuncIndex, 4, 1, pExecFile);
 
     // Write the priority type(1 byte)
 
@@ -3404,13 +3411,13 @@ void BuildXSE(const char* file)
 
     // Write the user-defined priority(4 bytes)
 
-    fwrite(& g_ScriptHeader.UserPriority, 4, 1, pExecFile);
+    fwrite(&g_ScriptHeader.UserPriority, 4, 1, pExecFile);
 
     // ----Write the instruction stream
 
     // Output the instruction count(4 bytes)
 
-    fwrite(& g_iInstrStreamSize, 4, 1, pExecFile);
+    fwrite(&g_iInstrStreamSize, 4, 1, pExecFile);
 
     // Loop through each instruction and write its data out
 
@@ -3510,7 +3517,7 @@ void BuildXSE(const char* file)
 
     // Write out the string count(4 bytes)
 
-    fwrite(& g_StringTable.NodeCount, 4, 1, pExecFile);
+    fwrite(&g_StringTable.NodeCount, 4, 1, pExecFile);
 
     // Set the pointer to the head of the list
 
@@ -3543,7 +3550,7 @@ void BuildXSE(const char* file)
 
     // Write out the function count(4 bytes)
 
-    fwrite(& g_FuncTable.NodeCount, 4, 1, pExecFile);
+    fwrite(&g_FuncTable.NodeCount, 4, 1, pExecFile);
 
     // Set the pointer to the head of the list
 
@@ -3588,7 +3595,7 @@ void BuildXSE(const char* file)
 
     // Write out the call count(4 bytes)
 
-    fwrite(& g_HostAPICallTable.NodeCount, 4, 1, pExecFile);
+    fwrite(&g_HostAPICallTable.NodeCount, 4, 1, pExecFile);
 
     // Set the pointer to the head of the list
 
@@ -3625,7 +3632,7 @@ void BuildXSE(const char* file)
 *   Exits the program.
 */
 
-void Exit()
+void ExitProgram()
 {
     // Give allocated resources a chance to be freed
     ShutDown();
@@ -3647,7 +3654,7 @@ void ExitOnError(char *pstrErrorMssg)
 
     // Exit the program
 
-    Exit();
+    ExitProgram();
 }
 
 /******************************************************************************************
@@ -3669,7 +3676,7 @@ void ExitOnCodeError(char *pstrErrorMssg)
 
     // Loop through each character and replace tabs with spaces
 
-    for (unsigned int iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrSourceLine); ++iCurrCharIndex)
+    for (size_t iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrSourceLine); ++iCurrCharIndex)
         if (pstrSourceLine[iCurrCharIndex] == '\t')
             pstrSourceLine[iCurrCharIndex] = ' ';
 
@@ -3679,15 +3686,14 @@ void ExitOnCodeError(char *pstrErrorMssg)
 
     // Print a karet at the start of the(presumably) offending lexeme
 
-    for (unsigned int iCurrSpace = 0; iCurrSpace < g_Lexer.Index0; ++iCurrSpace)
+    for (size_t iCurrSpace = 0; iCurrSpace < g_Lexer.Index0; ++iCurrSpace)
         printf(" ");
     printf("^\n");
 
     // Print the message
-    printf("Error: %s (Line %d).\n", pstrErrorMssg, g_Lexer.CurrSourceLine);
+    printf("Error: %s (Line %d).\n", pstrErrorMssg, g_Lexer.CurrSourceLine + 1);
 
-    // Exit the program
-    Exit();
+    ExitProgram();
 }
 
 /******************************************************************************************
@@ -3699,12 +3705,7 @@ void ExitOnCodeError(char *pstrErrorMssg)
 
 void ExitOnCharExpectedError(char cChar)
 {
-    // Create an error message based on the character
-
-    char *pstrErrorMssg = (char *) malloc(strlen("' ' expected"));
-    sprintf(pstrErrorMssg, "'%c' expected", cChar);
-
-    // Exit on the code error
-
-    ExitOnCodeError(pstrErrorMssg);
+    char pstrErrorMesg[16];
+    sprintf(pstrErrorMesg, "'%c' expected", cChar);
+    ExitOnCodeError(pstrErrorMesg);
 }

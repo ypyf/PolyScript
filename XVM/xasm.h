@@ -1,6 +1,12 @@
-#ifndef __xasm_h__
-#define __xasm_h__
+#ifndef __XASM_H__
+#define __XASM_H__
 
-void YASM_Assembly(const char* asmf, const char* bcf);
+struct AssemblyInfo
+{
+	char* sourceName;
 
-#endif // __xasm_h__
+};
+
+void XASM_Assembly(const char* filename, const char* execFileName);
+
+#endif // __XASM_H__
