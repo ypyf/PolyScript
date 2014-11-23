@@ -314,7 +314,7 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
 	strcat(ExecFileName, EXEC_FILE_EXT);
 
 	// 编译
-	YASM_Assembly(pstrFilename, ExecFileName);
+	XASM_Assembly(pstrFilename, ExecFileName);
 
     // ----Find the next free script index
     int iFreeThreadFound = FALSE;

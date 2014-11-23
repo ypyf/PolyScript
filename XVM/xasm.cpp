@@ -239,7 +239,7 @@ struct Lexer                           // The lexical analyzer/tokenizer
 {
     int CurrSourceLine;                        // Current line in the source
 
-    unsigned int Index0,                       // Indices into the string
+    size_t Index0,                       // Indices into the string
         Index1;
 
     Token CurrToken;                            // Current token
@@ -610,7 +610,7 @@ int AddNode(LinkedList *pList, void *pData)
 
 void StripComments(char *pstrSourceLine)
 {
-    unsigned int iCurrCharIndex;
+    size_t iCurrCharIndex;
     int iInString;
 
     // Scan through the source line and terminate the string at the first semicolon
@@ -725,9 +725,9 @@ int IsCharDelimiter(char cChar)
 
 void TrimWhitespace(char *pstrString)
 {
-    unsigned int iStringLength = strlen(pstrString);
-    unsigned int iPadLength;
-    unsigned int iCurrCharIndex;
+    size_t iStringLength = strlen(pstrString);
+    size_t iPadLength;
+    size_t iCurrCharIndex;
 
     if (iStringLength > 1)
     {
@@ -783,7 +783,7 @@ void TrimWhitespace(char *pstrString)
 // 
 // 	// Loop through each character and return false if a non-whitespace is found
 // 
-// 	for (unsigned int iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
+// 	for (size_t iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
 // 		if (!IsCharWhitespace(pstrString[iCurrCharIndex]) && pstrString[iCurrCharIndex] != '\n')
 // 			return FALSE;
 // 
@@ -820,7 +820,7 @@ int IsStringIdent(char *pstrString)
     // Loop through each character and return zero upon encountering the first invalid identifier
     // character
 
-    for (unsigned int iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
+    for (size_t iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
         if (!IsIdentStart(pstrString[iCurrCharIndex]))
             return FALSE;
 
@@ -849,7 +849,7 @@ int IsStringInteger(char *pstrString)
     if (strlen(pstrString) == 0)
         return FALSE;
 
-    unsigned int iCurrCharIndex;
+    size_t iCurrCharIndex;
 
     // Loop through the string and make sure each character is a valid number or minus sign
 
@@ -884,7 +884,7 @@ int IsStringFloat( char *pstrString)
 
     // First make sure we've got only numbers and radix points
 
-    unsigned int iCurrCharIndex;
+    size_t iCurrCharIndex;
 
     for (iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
         if (!IsCharNumeric(pstrString[iCurrCharIndex]) && !(pstrString[iCurrCharIndex] == '.') && !(pstrString[iCurrCharIndex] == '-'))
@@ -1702,8 +1702,8 @@ Token GetNextToken()
         ++g_Lexer.Index1;
 
     // 将词素从输入流拷贝到单独的缓冲区中
-    unsigned int iCurrDestIndex = 0;
-    for (unsigned int i = g_Lexer.Index0; i < g_Lexer.Index1; ++i)
+    size_t iCurrDestIndex = 0;
+    for (size_t i = g_Lexer.Index0; i < g_Lexer.Index1; ++i)
     {
         // 处理字符串中的转义字符
         if (g_Lexer.CurrLexState == LEX_STATE_IN_STRING)
@@ -1907,7 +1907,7 @@ char GetLookAheadChar()
     // We don't actually want to move the lexer's indices, so we'll make a copy of them
 
     int iCurrSourceLine = g_Lexer.CurrSourceLine;
-    unsigned int iIndex = g_Lexer.Index1;
+    size_t iIndex = g_Lexer.Index1;
 
     // If the next lexeme is not a string, scan past any potential leading whitespace
 
@@ -3240,8 +3240,8 @@ void AssmblSourceFile()
     }
 }
 
-// Assembly .XASM to .XSE
-void YASM_Assembly(const char* filename, const char* execFileName)
+/* Assembly .XASM to .XSE */
+void XASM_Assembly(const char* filename, const char* execFileName)
 {
     Init();
     LoadSourceFile(filename);
@@ -3676,7 +3676,7 @@ void ExitOnCodeError(char *pstrErrorMssg)
 
     // Loop through each character and replace tabs with spaces
 
-    for (unsigned int iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrSourceLine); ++iCurrCharIndex)
+    for (size_t iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrSourceLine); ++iCurrCharIndex)
         if (pstrSourceLine[iCurrCharIndex] == '\t')
             pstrSourceLine[iCurrCharIndex] = ' ';
 
@@ -3686,7 +3686,7 @@ void ExitOnCodeError(char *pstrErrorMssg)
 
     // Print a karet at the start of the(presumably) offending lexeme
 
-    for (unsigned int iCurrSpace = 0; iCurrSpace < g_Lexer.Index0; ++iCurrSpace)
+    for (size_t iCurrSpace = 0; iCurrSpace < g_Lexer.Index0; ++iCurrSpace)
         printf(" ");
     printf("^\n");
 
