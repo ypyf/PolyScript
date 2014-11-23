@@ -75,12 +75,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="bytecode.h" />
+    <ClInclude Include="jit\compiler.h" />
+    <ClInclude Include="jit\dyn_array.h" />
+    <ClInclude Include="jit\types.h" />
     <ClInclude Include="mathlib.h" />
     <ClInclude Include="xasm.h" />
     <ClInclude Include="xvm.h" />
-    <ClInclude Include="xvmlib.h" />
+    <ClInclude Include="xvm-internal.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="jit\dyn_array.c" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mathlib.cpp" />
     <ClCompile Include="xasm.cpp" />

@@ -14,8 +14,6 @@
 
 #include "xvm.h"
 
-#define SOURCE_FILE_EXT ".xasm"
-#define EXEC_FILE_EXT	".xse"
 
 void PrintUsage()
 {

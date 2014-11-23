@@ -1,9 +1,14 @@
 ﻿#define _XVM_SOURCE
 
 #include "xasm.h"
-#include "xvmlib.h"
+#include "xvm-internal.h"
+#include "xvm.h"
 #include "bytecode.h"
 #include "mathlib.h"
+
+#if USE_JIT
+#include "jit/compiler.h"
+#endif  /* USE_JIT */
 
 #include <time.h>
 
@@ -95,7 +100,7 @@ struct HOST_CALL_TABLE				// A host API call table
 };
 
 // ----Scripts ---------------------------------------------------------------------------
-struct SCRIPT							// Encapsulates a full script
+struct ScriptContext							// Encapsulates a full script
 {
     int IsActive;								// Is this script structure in use?
 
@@ -123,6 +128,11 @@ struct SCRIPT							// Encapsulates a full script
     RUNTIME_STACK Stack;                        // The runtime stack
     FUNC_TABLE FuncTable;                        // The function table
     HOST_CALL_TABLE HostCallTable;			// The host API call table
+
+#if USE_JIT
+    JitContext  jit_context;
+#endif
+
 };
 
 // ----Host API --------------------------------------------------------------------------
@@ -137,7 +147,7 @@ struct HOST_API_FUNC                     // Host API function
 // ----Globals -------------------------------------------------------------------------------
 
 // ----Scripts ---------------------------------------------------------------------------
-SCRIPT g_Scripts[MAX_THREAD_COUNT];		    // The script array
+ScriptContext g_Scripts[MAX_THREAD_COUNT];		    // The script array
 
 // ----Threading -------------------------------------------------------------------------
 int g_CurrThreadMode;                          // The current threading mode
@@ -884,7 +894,7 @@ void XVM_RunScript(int iTimesliceDur)
 
     while (TRUE)
     {
-        // 如果所有线程都已终结，则中断执行循环
+        // 当所有线程已经终结，则退出执行循环
         int iIsStillActive = FALSE;
         for (int i = 0; i < MAX_THREAD_COUNT; ++i)
         {
@@ -897,7 +907,7 @@ void XVM_RunScript(int iTimesliceDur)
         // Update the current time
         iCurrTime = GetCurrTime();
 
-        // Check for a context switch if the threading mode is set for multithreading
+        // 多线程模式下的上下文切换
         if (g_CurrThreadMode == THREAD_MODE_MULTI)
         {
             // If the current thread's timeslice has elapsed, or if it's terminated switch
@@ -905,7 +915,7 @@ void XVM_RunScript(int iTimesliceDur)
             if (iCurrTime > g_CurrThreadActiveTime + g_Scripts[g_CurrThread].TimesliceDur ||
                 !g_Scripts[g_CurrThread].IsRunning)
             {
-                // Loop until the next thread is found
+                // 查找下一个可运行的线程
                 while (TRUE)
                 {
                     // Move to the next thread in the array
@@ -920,7 +930,7 @@ void XVM_RunScript(int iTimesliceDur)
                         break;
                 }
 
-                // Reset the timeslice
+                // 重置时间片
                 g_CurrThreadActiveTime = iCurrTime;
             }
         }
@@ -949,7 +959,7 @@ void XVM_RunScript(int iTimesliceDur)
             break;
         }
 
-        // Make a copy of the instruction pointer to compare later
+        // 保存指令指针，用于之后的比较
         int iCurrInstr = g_Scripts[g_CurrThread].InstrStream.CurrInstr;
 
         // Get the current opcode
