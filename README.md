@@ -10,7 +10,7 @@ A game script virtual machine.
 	proc Main
 	{
 		local s
-		local i	
+		local i
 
 		mov i, 1
 		mov s, "Hello world!"
@@ -26,7 +26,7 @@ A game script virtual machine.
 	}
 
 Program output:
-	
+
 	Hello world!
 	H.llo world!
 	H..lo world!
