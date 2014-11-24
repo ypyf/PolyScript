@@ -847,15 +847,19 @@ void XVM_ResetScript(int iThreadIndex)
 
     // If the function table is present, set the entry point
 
-    // 	if (g_Scripts[iThreadIndex].FuncTable.Funcs)
-    // 	{
-    // 		if (g_Scripts[iThreadIndex].IsMainFuncPresent)
-    // 		{
-    // 			// 如果主函数存在，那么设置脚本入口地址为主函数入口
-    // 			// 否则脚本从地址0开始执行
-    // 			g_Scripts[iThreadIndex].InstrStream.CurrInstr = g_Scripts[iThreadIndex].FuncTable.Funcs[iMainFuncIndex].EntryPoint;
-    // 		}
-    // 	}
+    if (g_Scripts[iThreadIndex].FuncTable.Funcs)
+    {
+        // 如果主函数存在，那么设置脚本入口地址为主函数入口
+        // 否则脚本从地址0开始执行
+     	if (g_Scripts[iThreadIndex].IsMainFuncPresent)
+     	{
+     		g_Scripts[iThreadIndex].InstrStream.CurrInstr = g_Scripts[iThreadIndex].FuncTable.Funcs[iMainFuncIndex].EntryPoint;
+     	}
+        else
+        {
+            g_Scripts[iThreadIndex].InstrStream.CurrInstr = 0;
+        }
+    }
 
     // Clear the stack
     g_Scripts[iThreadIndex].Stack.TopIndex = 0;

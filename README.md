@@ -9,7 +9,6 @@ A game script virtual machine.
 
 	proc Main
 	{
-
 		local s
 		local i	
 
@@ -20,10 +19,21 @@ A game script virtual machine.
 		print s
 		setchar s, i, "."
 		inc i
-		pause 800
 		jmp L0
 	L1:
 		mov _RetVal, 0
 		ret
 	}
 
+Program output:
+	
+	Hello world!
+	H.llo world!
+	H..lo world!
+	H...o world!
+	H.... world!
+	H.....world!
+	H......orld!
+	H.......rld!
+	H........ld!
+	H.........d!
