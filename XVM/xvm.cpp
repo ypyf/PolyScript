@@ -6,10 +6,6 @@
 #include "bytecode.h"
 #include "mathlib.h"
 
-#if USE_JIT
-#include "jit/x86jit.h"
-#endif  /* USE_JIT */
-
 #include <time.h>
 
 // ----Script Loading --------------------------------------------------------------------
@@ -126,11 +122,6 @@ struct ScriptContext							// Encapsulates a full script
     RUNTIME_STACK Stack;                        // The runtime stack
     FUNC_TABLE FuncTable;                        // The function table
     HOST_CALL_TABLE HostCallTable;			// The host API call table
-
-#if USE_JIT
-    JitContext  jit_context;
-#endif
-
 };
 
 // ----Host API --------------------------------------------------------------------------
@@ -740,14 +731,6 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
 
     g_Scripts[iThreadIndex].IsActive = TRUE;
 
-#if USE_JIT
-    JitContext& jit = g_Scripts[iThreadIndex].jit_context;
-    jit.emit_ptr = funcalloc(4096);
-    jit.func_ptr = (jit_function)jit.emit_ptr;
-    jit.code_size = 0;
-    jit.ri = 0;
-#endif /* USE_JIT */
-
     // Reset the script
 
     XVM_ResetScript(iThreadIndex);
@@ -825,10 +808,6 @@ void XVM_UnloadScript(int iThreadIndex)
 
     if (g_Scripts[iThreadIndex].HostCallTable.Calls)
         free(g_Scripts[iThreadIndex].HostCallTable.Calls);
-
-#if USE_JIT
-    funcfree(g_Scripts[iThreadIndex].jit_context.emit_ptr, 4096);
-#endif /* USE_JIT */
 }
 
 /******************************************************************************************
