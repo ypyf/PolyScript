@@ -1,12 +1,12 @@
-#ifndef __XASM_H__
-#define __XASM_H__
+#ifndef XASM_H_
+#define XASM_H_
 
 struct AssemblyInfo
 {
-	char* sourceName;
+    char* sourceName;
 
 };
 
 void XASM_Assembly(const char* filename, const char* execFileName);
 
-#endif // __XASM_H__
+#endif /* XASM_H_ */

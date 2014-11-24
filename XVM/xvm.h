@@ -1,5 +1,5 @@
-#ifndef __XVM_H__
-#define __XVM_H__
+#ifndef XVM_H_
+#define XVM_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -142,4 +142,4 @@ XVM_API int XVM_GetExitCode(int iThreadIndex);         // ½Å±¾ÍË³ö´úÂë
 }
 #endif
 
-#endif // __XVM_H__
+#endif /* XVM_H_ */

@@ -1,5 +1,5 @@
-#ifndef __byte_code_h__
-#define __byte_code_h__
+#ifndef BYTE_CODE_H_
+#define BYTE_CODE_H_
 
 // ----Instruction Opcodes -----------------------------------------------------------
 
@@ -49,4 +49,4 @@
 #define INSTR_THISCALL          0x55
 
 
-#endif // __byte_code_h__
+#endif /* BYTE_CODE_H_ */

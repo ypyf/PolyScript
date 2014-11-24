@@ -203,7 +203,7 @@ Value allocate_object(Value val)
 
 int CoerceValueToInt(Value Val);
 float CoerceValueToFloat(Value Val);
-char* CoerceValueToString(Value Val);
+char *CoerceValueToString(Value Val);
 
 void CopyValue(Value*pDest, Value Source);
 
@@ -1917,7 +1917,7 @@ float CoerceValueToFloat(Value Val)
 *  Coerces a Value structure from it's current type to a string value.
 */
 
-char*CoerceValueToString(Value Val)
+char *CoerceValueToString(Value Val)
 {
 
     char *pstrCoercion;
