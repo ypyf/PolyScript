@@ -1,16 +1,17 @@
 ﻿#if 1
+
 #define STANDALONE
 #define _CRT_SECURE_NO_WARNINGS
 
 // ----Include Files -------------------------------------------------------------------------
 #include <stdio.h>
-#include <conio.h>
-#include <windows.h>
-#include <imagehlp.h>
 #include <iostream>
 #include <string>
 #include <functional>
 #include <algorithm>
+#include <conio.h>
+#include <windows.h>
+#include <imagehlp.h>
 
 #include "xvm.h"
 
@@ -59,16 +60,17 @@ void print_error_message(int iErrorCode)
 /* 打印平均值 */
 static void average(int iThreadIndex)
 {
-	int n = XVM_GetParamCount(iThreadIndex);
-	int sum = 0;
-	for (int i = 0; i < n; i++)
-	{
-		sum += XVM_GetParamAsInt(iThreadIndex, i);
-	}
+    int n = XVM_GetParamCount(iThreadIndex);
+    int sum = 0;
+    for (int i = 0; i < n; i++)
+    {
+        sum += XVM_GetParamAsInt(iThreadIndex, i);
+    }
     XVM_ReturnIntFromHost(iThreadIndex, sum / n);
 }
 
 // ----XVM Entry Main ----------------------------------------------------------------------------------
+
 int RunScript(const char* filename)
 {
     // Initialize the runtime environment
@@ -91,7 +93,7 @@ int RunScript(const char* filename)
     iErrorCode = XVM_LoadScript(filename, iThreadIndex, XVM_THREAD_PRIORITY_USER);
 
     // Check for an error
-    if (iErrorCode != XVM_LOAD_OK) 
+    if (iErrorCode != XVM_LOAD_OK)
     {
         print_error_message(iErrorCode);
         exit(1);
@@ -118,7 +120,7 @@ int main(int argc, char* argv[])
 
     SetCurrentDirectory(TEXT("../Debug"));
 
-    if (argc < 2) 
+    if (argc < 2)
     {
         PrintUsage();
         return 0;
@@ -158,4 +160,4 @@ int main(int argc, char* argv[])
     printf("退出代码 (%i)\n", iExitCode);
 }
 
-#endif // 0
+#endif

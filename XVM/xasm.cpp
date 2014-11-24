@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h> 
+#include <time.h>
 
 // ----Constants -----------------------------------------------------------------------------
 
@@ -67,16 +67,16 @@
 #define TOKEN_TYPE_OPEN_BRACE       9           // An openening curly brace
 #define TOKEN_TYPE_CLOSE_BRACE      10          // An closing curly brace
 #define TOKEN_TYPE_NEWLINE          11          // A newline
-#define TOKEN_TYPE_INSTR			12			// An instruction
+#define TOKEN_TYPE_INSTR            12          // An instruction
 #define TOKEN_TYPE_SETSTACKSIZE     13          // The SetStackSize directive
 #define TOKEN_TYPE_SETPRIORITY      14          // The SetPriority directive
 #define TOKEN_TYPE_GLOBAL           15          // The global/global [] directives
 #define TOKEN_TYPE_FUNC             16          // The Func directives
 #define TOKEN_TYPE_PARAM            17          // The Param directives
-#define TOKEN_TYPE_LOCAL			18			// The Locals directives
+#define TOKEN_TYPE_LOCAL            18          // The Locals directives
 #define TOKEN_TYPE_REG_RETVAL       19          // The _RetVal register
-#define TOKEN_TYPE_REG_THISVAL      20			// The _ThisVal register
-//#define TOKEN_TYPE_NAMESPACE		20          // 命名空间
+#define TOKEN_TYPE_REG_THISVAL      20          // The _ThisVal register
+//#define TOKEN_TYPE_NAMESPACE        20        // 命名空间
 #define END_OF_TOKEN_STREAM         21          // The end of the stream has been reached
 
 #define MAX_IDENT_SIZE              256        // Maximum identifier size
@@ -91,27 +91,27 @@
 // The following constants are used as flags into an operand type bit field, hence
 // their values being increasing powers of 2.
 
-#define OP_FLAG_TYPE_INT        1           // Integer literal value
-#define OP_FLAG_TYPE_FLOAT      2           // Floating-point literal value
-#define OP_FLAG_TYPE_STRING     4           // Integer literal value
-#define OP_FLAG_TYPE_MEM_REF    8           // Memory reference(variable or array index, both absolute and relative)
-#define OP_FLAG_TYPE_LINE_LABEL 16          // Line label(used for jumps)
-#define OP_FLAG_TYPE_FUNC_NAME  32          // Function table index(used for Call)
-#define OP_FLAG_TYPE_ATTR_NAME  64			// 对象属性名
-//#define OP_FLAG_TYPE_HOST_API_CALL  64    // Host API Call table index(used for CallHost)
-#define OP_FLAG_TYPE_REG        128         // Register
+#define OP_FLAG_TYPE_INT              1           // Integer literal value
+#define OP_FLAG_TYPE_FLOAT            2           // Floating-point literal value
+#define OP_FLAG_TYPE_STRING           4           // Integer literal value
+#define OP_FLAG_TYPE_MEM_REF          8           // Memory reference(variable or array index, both absolute and relative)
+#define OP_FLAG_TYPE_LINE_LABEL       16          // Line label(used for jumps)
+#define OP_FLAG_TYPE_FUNC_NAME        32          // Function table index(used for Call)
+#define OP_FLAG_TYPE_ATTR_NAME        64          // 对象属性名
+//#define OP_FLAG_TYPE_HOST_API_CALL  64          // Host API Call table index(used for CallHost)
+#define OP_FLAG_TYPE_REG              128         // Register
 
 // ----Assembled Instruction Stream ------------------------------------------------------
 
-#define OP_TYPE_INT                 0           // Integer literal value
-#define OP_TYPE_FLOAT               1           // Floating-point literal value
-#define OP_TYPE_STRING_INDEX        2           // String literal value
-#define OP_TYPE_ABS_STACK_INDEX     3           // Absolute array index
-#define OP_TYPE_REL_STACK_INDEX     4           // Relative array index
-#define OP_TYPE_INSTR_INDEX         5           // Instruction index
-#define OP_TYPE_FUNC_INDEX          6           // Function index
-#define OP_TYPE_HOST_API_CALL_INDEX 7           // Host API call index
-#define OP_TYPE_REG                 8           // Register
+#define OP_TYPE_INT                     0           // Integer literal value
+#define OP_TYPE_FLOAT                   1           // Floating-point literal value
+#define OP_TYPE_STRING_INDEX            2           // String literal value
+#define OP_TYPE_ABS_STACK_INDEX         3           // Absolute array index
+#define OP_TYPE_REL_STACK_INDEX         4           // Relative array index
+#define OP_TYPE_INSTR_INDEX             5           // Instruction index
+#define OP_TYPE_FUNC_INDEX              6           // Function index
+#define OP_TYPE_HOST_API_CALL_INDEX     7           // Host API call index
+#define OP_TYPE_REG                     8           // Register
 
 // ----Priority Types --------------------------------------------------------------------
 
@@ -126,91 +126,91 @@
 
 // ----Functions -------------------------------------------------------------------------
 
-#define MAIN_FUNC_NAME		"Main"		// 程序入口
+#define MAIN_FUNC_NAME              "Main"      // 程序入口
 
 // ----Error Strings ---------------------------------------------------------------------
 
 // The following macros are used to represent assembly-time error strings
 
-#define ERROR_MSSG_INVALID_INPUT	\
+#define ERROR_MSSG_INVALID_INPUT    \
     "Invalid input"
 
 #define ERROR_MSSG_INVALID_SCOPE_KIND \
     "Invalid scope kind"
 
-#define ERROR_MSSG_LOCAL_SETSTACKSIZE	\
+#define ERROR_MSSG_LOCAL_SETSTACKSIZE    \
     "SetStackSize can only appear in the global scope"
 
-#define ERROR_MSSG_INVALID_STACK_SIZE	\
+#define ERROR_MSSG_INVALID_STACK_SIZE    \
     "Invalid stack size"
 
-#define ERROR_MSSG_MULTIPLE_SETSTACKSIZES	\
+#define ERROR_MSSG_MULTIPLE_SETSTACKSIZES    \
     "Multiple instances of SetStackSize illegal"
 
 #define ERROR_MSSG_LOCAL_SETPRIORITY   \
     "SetPriority can only appear in the global scope"
 
-#define ERROR_MSSG_INVALID_PRIORITY	\
+#define ERROR_MSSG_INVALID_PRIORITY    \
     "Invalid priority"
 
 #define ERROR_MSSG_MULTIPLE_SETPRIORITIES   \
     "Multiple instances of SetPriority illegal"
 
-#define ERROR_MSSG_IDENT_EXPECTED	\
+#define ERROR_MSSG_IDENT_EXPECTED    \
     "Identifier expected"
 
-#define ERROR_MSSG_INVALID_ARRAY_SIZE	\
+#define ERROR_MSSG_INVALID_ARRAY_SIZE    \
     "Invalid array size"
 
-#define ERROR_MSSG_IDENT_REDEFINITION	\
+#define ERROR_MSSG_IDENT_REDEFINITION    \
     "Identifier redefinition"
 
-#define ERROR_MSSG_UNDEFINED_IDENT	\
+#define ERROR_MSSG_UNDEFINED_IDENT    \
     "Undefined identifier"
 
-#define ERROR_MSSG_NESTED_FUNC	\
+#define ERROR_MSSG_NESTED_FUNC    \
     "Nested functions illegal"
 
-#define ERROR_MSSG_FUNC_REDEFINITION	\
+#define ERROR_MSSG_FUNC_REDEFINITION    \
     "Function redefinition"
 
-#define ERROR_MSSG_UNDEFINED_FUNC	\
+#define ERROR_MSSG_UNDEFINED_FUNC    \
     "Undefined function"
 
-#define ERROR_MSSG_GLOBAL_PARAM	\
+#define ERROR_MSSG_GLOBAL_PARAM    \
     "Parameters can only appear inside functions"
 
-#define ERROR_MSSG_MAIN_PARAM	\
+#define ERROR_MSSG_MAIN_PARAM    \
     "_Main() function cannot accept parameters"
 
-#define ERROR_MSSG_GLOBAL_LINE_LABEL	\
+#define ERROR_MSSG_GLOBAL_LINE_LABEL    \
     "Line labels can only appear inside functions"
 
-#define ERROR_MSSG_LINE_LABEL_REDEFINITION	\
+#define ERROR_MSSG_LINE_LABEL_REDEFINITION    \
     "Line label redefinition"
 
-#define ERROR_MSSG_UNDEFINED_LINE_LABEL	\
+#define ERROR_MSSG_UNDEFINED_LINE_LABEL    \
     "Undefined line label"
 
-#define ERROR_MSSG_GLOBAL_INSTR	\
+#define ERROR_MSSG_GLOBAL_INSTR    \
     "Instructions can only appear inside functions"
 
-#define ERROR_MSSG_INVALID_INSTR	\
+#define ERROR_MSSG_INVALID_INSTR    \
     "Invalid instruction"
 
-#define ERROR_MSSG_INVALID_OP	\
+#define ERROR_MSSG_INVALID_OP    \
     "Invalid operand"
 
-#define ERROR_MSSG_INVALID_STRING	\
+#define ERROR_MSSG_INVALID_STRING    \
     "Invalid string"
 
-#define ERROR_MSSG_INVALID_ARRAY_NOT_INDEXED	\
+#define ERROR_MSSG_INVALID_ARRAY_NOT_INDEXED    \
     "Arrays must be indexed"
 
-#define ERROR_MSSG_INVALID_ARRAY	\
+#define ERROR_MSSG_INVALID_ARRAY    \
     "Invalid array"
 
-#define ERROR_MSSG_INVALID_ARRAY_INDEX	\
+#define ERROR_MSSG_INVALID_ARRAY_INDEX    \
     "Invalid array index"
 
 // ----Data Structures -----------------------------------------------------------------------
@@ -226,14 +226,14 @@ struct LinkedListNode                  // A linked list node
 struct LinkedList                      // A linked list
 {
     LinkedListNode *head,              // Pointer to head node
-        *last;						   // Pointer to tail nail node
+        *last;                           // Pointer to tail nail node
 
-    int NodeCount;					   // The number of nodes in the list
+    int NodeCount;                       // The number of nodes in the list
 };
 
 // ----Lexical Analysis ------------------------------------------------------------------
 
-typedef int Token;					   // Tokenizer alias type
+typedef int Token;                       // Tokenizer alias type
 
 struct Lexer                           // The lexical analyzer/tokenizer
 {
@@ -252,10 +252,10 @@ struct Lexer                           // The lexical analyzer/tokenizer
 struct ScriptHeader                    // Script header data
 {
     int StackSize;                             // Requested stack size
-    int GlobalDataSize;						// The size of the script's global data
+    int GlobalDataSize;                        // The size of the script's global data
 
     int IsMainFuncPresent;                     // Is _Main() present?
-    int MainFuncIndex;							// _Main()'s function index
+    int MainFuncIndex;                            // _Main()'s function index
 
     int PriorityType;                          // The thread priority type
     int UserPriority;                          // The user-defined priority(if any)
@@ -271,7 +271,7 @@ struct InstrLookup                     // An instruction lookup
     char Mnemonic[MAX_INSTR_MNEMONIC_SIZE];  // Mnemonic string
     int Opcode;                                // Opcode
     int OpCount;                               // Number of operands
-    OpTypes *OpTypeList;					// Pointer to operand type list
+    OpTypes *OpTypeList;                    // Pointer to operand type list
 };
 
 // ----Assembled Instruction Stream ------------------------------------------------------
@@ -304,20 +304,20 @@ struct Instr                           // An instruction
 
 struct FuncNode                        // A function table node
 {
-    int Index;									// Index
+    int Index;                                    // Index
     char pstrName[MAX_IDENT_SIZE];           // Name
     int iEntryPoint;                            // Entry point
     int iParamCount;                            // Param count
     int iLocalDataSize;                         // Local data size
     int iNameSpaceIndex;
-    //int iCharacteristics;				// 函数属性
+    //int iCharacteristics;                // 函数属性
 };
 
 // ----Label Table -----------------------------------------------------------------------
 
 typedef struct _LabelNode                       // A label table node
 {
-    int iIndex;									// Index
+    int iIndex;                                    // Index
     char pstrIdent[MAX_IDENT_SIZE];          // Identifier
     int iTargetIndex;                           // Index of the target instruction
     int iFuncIndex;                             // Function in which the label resides
@@ -327,7 +327,7 @@ typedef struct _LabelNode                       // A label table node
 
 typedef struct _SymbolNode                      // A symbol table node
 {
-    int iIndex;									// Index
+    int iIndex;                                    // Index
     char pstrIdent[MAX_IDENT_SIZE];          // Identifier
     int iSize;                                  // Size(1 for ( variables, N for ( arrays)
     int iStackIndex;                            // The stack index to which the symbol points
@@ -338,10 +338,10 @@ typedef struct _SymbolNode                      // A symbol table node
 // 命名空间
 struct NameSpace
 {
-    int iIndex;	
-    int iType;	// 命名空间的类型(类、模块)
-    char pstrIdent[MAX_IDENT_SIZE];	// 类名
-    int iParentNameSpaceIndex;	// 命名空间可以嵌套
+    int iIndex;
+    int iType;    // 命名空间的类型(类、模块)
+    char pstrIdent[MAX_IDENT_SIZE];    // 类名
+    int iParentNameSpaceIndex;    // 命名空间可以嵌套
 };
 
 // ----Global Variables ----------------------------------------------------------------------
@@ -395,11 +395,11 @@ LinkedList g_SymbolTable;                       // The symbol table
 
 // ----String Table ----------------------------------------------------------------------
 
-LinkedList g_StringTable;						// The string table
+LinkedList g_StringTable;                        // The string table
 
 // ----Host API Call Table ---------------------------------------------------------------
 
-LinkedList g_HostAPICallTable;					// The host API call table
+LinkedList g_HostAPICallTable;                    // The host API call table
 
 // ----Function Prototypes -------------------------------------------------------------------
 
@@ -601,11 +601,11 @@ int AddNode(LinkedList *pList, void *pData)
 
 /******************************************************************************************
 *
-*	StripComments()
+*    StripComments()
 *
-*	Strips the comments from a given line of source code, ignoring comment symbols found
-*	inside strings. The new string is shortended to the index of the comment symbol
-*	character.
+*    Strips the comments from a given line of source code, ignoring comment symbols found
+*    inside strings. The new string is shortended to the index of the comment symbol
+*    character.
 */
 
 void StripComments(char *pstrSourceLine)
@@ -642,9 +642,9 @@ void StripComments(char *pstrSourceLine)
 
 /******************************************************************************************
 *
-*	IsCharWhitespace()
+*    IsCharWhitespace()
 *
-*	Returns a nonzero if the given character is whitespace, or zero otherwise.
+*    Returns a nonzero if the given character is whitespace, or zero otherwise.
 */
 
 int IsCharWhitespace(char cChar)
@@ -659,9 +659,9 @@ int IsCharWhitespace(char cChar)
 
 /******************************************************************************************
 *
-*	IsCharNumeric()
+*    IsCharNumeric()
 *
-*	Returns a nonzero if the given character is numeric, or zero otherwise.
+*    Returns a nonzero if the given character is numeric, or zero otherwise.
 */
 
 int IsCharNumeric(char cChar)
@@ -676,10 +676,10 @@ int IsCharNumeric(char cChar)
 
 /******************************************************************************************
 *
-*	IsCharIdentifier()
+*    IsCharIdentifier()
 *
-*	Returns a nonzero if the given character is part of a valid identifier, meaning it's an
-*	alphanumeric or underscore. Zero is returned otherwise.
+*    Returns a nonzero if the given character is part of a valid identifier, meaning it's an
+*    alphanumeric or underscore. Zero is returned otherwise.
 */
 
 int IsIdentStart(char cChar)
@@ -698,9 +698,9 @@ int IsIdentStart(char cChar)
 
 /******************************************************************************************
 *
-*	IsCharDelimiter()
+*    IsCharDelimiter()
 *
-*	Return a nonzero if the given character is a token delimeter, and return zero otherwise
+*    Return a nonzero if the given character is a token delimeter, and return zero otherwise
 */
 
 int IsCharDelimiter(char cChar)
@@ -718,9 +718,9 @@ int IsCharDelimiter(char cChar)
 
 /******************************************************************************************
 *
-*	TrimWhitespace()
+*    TrimWhitespace()
 *
-*	Trims whitespace off both sides of a string.
+*    Trims whitespace off both sides of a string.
 */
 
 void TrimWhitespace(char *pstrString)
@@ -764,40 +764,40 @@ void TrimWhitespace(char *pstrString)
 
 /******************************************************************************************
 *
-*	IsStringWhitespace()
+*    IsStringWhitespace()
 *
-*	Returns a nonzero if the given string is whitespace, or zero otherwise.
+*    Returns a nonzero if the given string is whitespace, or zero otherwise.
 */
 
 // int IsStringWhitespace(char *pstrString)
 // {
-// 	// If the string is NULL, return false
-// 
-// 	if (!pstrString)
-// 		return FALSE;
-// 
-// 	// If the length is zero, it's technically whitespace
-// 
-// 	if (strlen(pstrString) == 0)
-// 		return TRUE;
-// 
-// 	// Loop through each character and return false if a non-whitespace is found
-// 
-// 	for (size_t iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
-// 		if (!IsCharWhitespace(pstrString[iCurrCharIndex]) && pstrString[iCurrCharIndex] != '\n')
-// 			return FALSE;
-// 
-// 	// Otherwise return true
-// 
-// 	return TRUE;
+//     // If the string is NULL, return false
+//
+//     if (!pstrString)
+//         return FALSE;
+//
+//     // If the length is zero, it's technically whitespace
+//
+//     if (strlen(pstrString) == 0)
+//         return TRUE;
+//
+//     // Loop through each character and return false if a non-whitespace is found
+//
+//     for (size_t iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
+//         if (!IsCharWhitespace(pstrString[iCurrCharIndex]) && pstrString[iCurrCharIndex] != '\n')
+//             return FALSE;
+//
+//     // Otherwise return true
+//
+//     return TRUE;
 // }
 
 /******************************************************************************************
 *
-*	IsStringIdentifier()
+*    IsStringIdentifier()
 *
-*	Returns a nonzero if the given string is composed entirely of valid identifier
-*	characters and begins with a letter or underscore. Zero is returned otherwise.
+*    Returns a nonzero if the given string is composed entirely of valid identifier
+*    characters and begins with a letter or underscore. Zero is returned otherwise.
 */
 
 int IsStringIdent(char *pstrString)
@@ -831,10 +831,10 @@ int IsStringIdent(char *pstrString)
 
 /******************************************************************************************
 *
-*	IsStringInteger()
+*    IsStringInteger()
 *
-*	Returns a nonzero if the given string is composed entire of integer characters, or zero
-*	otherwise.
+*    Returns a nonzero if the given string is composed entire of integer characters, or zero
+*    otherwise.
 */
 
 int IsStringInteger(char *pstrString)
@@ -868,10 +868,10 @@ int IsStringInteger(char *pstrString)
 
 /******************************************************************************************
 *
-*	IsStringFloat()
+*    IsStringFloat()
 *
-*	Returns a nonzero if the given string is composed entire of float characters, or zero
-*	otherwise.
+*    Returns a nonzero if the given string is composed entire of float characters, or zero
+*    otherwise.
 */
 
 int IsStringFloat( char *pstrString)
@@ -1057,7 +1057,7 @@ void InitInstrTable()
 
     // ----Main
 
-    // Print	Object
+    // Print    Object
     iInstrIndex = AddInstrLookup("Print", INSTR_PRINT, 1);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
         OP_FLAG_TYPE_FLOAT |
@@ -1142,7 +1142,7 @@ void InitInstrTable()
         OP_FLAG_TYPE_MEM_REF |
         OP_FLAG_TYPE_REG);
 
-    // Sqrt	Destination 
+    // Sqrt    Destination 
     iInstrIndex = AddInstrLookup("Sqrt", INSTR_SQRT, 1);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
         OP_FLAG_TYPE_FLOAT |
@@ -1390,9 +1390,9 @@ void InitInstrTable()
 
     iInstrIndex = AddInstrLookup("Ret", INSTR_RET, 0);
 
-	// Clone Object
-	iInstrIndex = AddInstrLookup("ThisCall", INSTR_THISCALL, 1);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_ATTR_NAME);
+    // Clone Object
+    iInstrIndex = AddInstrLookup("ThisCall", INSTR_THISCALL, 1);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_ATTR_NAME);
 
     // CallHost      FunctionName
 
@@ -1465,9 +1465,9 @@ int AddInstrLookup(char *pstrMnemonic, int iOpcode, int iOpCount)
 
 /******************************************************************************************
 *
-*	AddString()
+*    AddString()
 *
-*	Adds a string to a linked list, blocking duplicate entries
+*    Adds a string to a linked list, blocking duplicate entries
 */
 
 int AddString(LinkedList *pList, char *pstrString)
@@ -1518,9 +1518,9 @@ void SetOpType(int iInstrIndex, int iOpIndex, OpTypes iOpType)
 
 /******************************************************************************************
 *
-*	Init()
+*    Init()
 *
-*	Initializes the assembler.
+*    Initializes the assembler.
 */
 
 void Init()
@@ -1855,7 +1855,7 @@ Token GetNextToken()
 
     //// 结构体
     //if (strcmp(g_Lexer.CurrLexeme, "STRUCT") == 0)
-    //	g_Lexer.CurrToken = TOKEN_TYPE_STRUCT;
+    //    g_Lexer.CurrToken = TOKEN_TYPE_STRUCT;
 
     if (_stricmp(g_Lexer.CurrLexeme, "LOCAL") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_LOCAL;
@@ -1870,8 +1870,8 @@ Token GetNextToken()
     if (_stricmp(g_Lexer.CurrLexeme, "_RETVAL") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_REG_RETVAL;
 
-	if (_stricmp(g_Lexer.CurrLexeme, "_THISVAL") == 0)
-		g_Lexer.CurrToken = TOKEN_TYPE_REG_THISVAL;
+    if (_stricmp(g_Lexer.CurrLexeme, "_THISVAL") == 0)
+        g_Lexer.CurrToken = TOKEN_TYPE_REG_THISVAL;
 
     // Is it an instruction?
     InstrLookup Instr;
@@ -2229,9 +2229,9 @@ SymbolNode *GetSymbolByIdent(char *pstrIdent, int iFuncIndex)
 
 /******************************************************************************************
 *
-*	GetStackIndexByIdent()
+*    GetStackIndexByIdent()
 *
-*	Returns a symbol's stack index based on its identifier and function index.
+*    Returns a symbol's stack index based on its identifier and function index.
 */
 
 inline int GetStackIndexByIdent(char *pstrIdent, int iFuncIndex)
@@ -2245,9 +2245,9 @@ inline int GetStackIndexByIdent(char *pstrIdent, int iFuncIndex)
 
 /******************************************************************************************
 *
-*	GetSizeByIndent()
+*    GetSizeByIndent()
 *
-*	Returns a variable's size based on its identifier.
+*    Returns a variable's size based on its identifier.
 */
 
 static inline int GetSizeByIdent(char *pstrIdent, int iFuncIndex)
@@ -2388,14 +2388,14 @@ void AssmblSourceFile()
 
             //case TOKEN_TYPE_NAMESPACE:
 
-            //	// Read the next lexeme, which is the function name
+            //    // Read the next lexeme, which is the function name
 
-            //	if (GetNextToken() != TOKEN_TYPE_IDENT)
-            //		ExitOnCodeError(ERROR_MSSG_IDENT_EXPECTED);
+            //    if (GetNextToken() != TOKEN_TYPE_IDENT)
+            //        ExitOnCodeError(ERROR_MSSG_IDENT_EXPECTED);
 
-            //	char *pstrNameSpaceName = GetCurrLexeme();
+            //    char *pstrNameSpaceName = GetCurrLexeme();
 
-            //	break;
+            //    break;
 
             // SetPriority
 
@@ -2791,7 +2791,7 @@ void AssmblSourceFile()
                 // Make sure the lexeme was an opening brace
                 // 其实下面两行代码是不需要的，因为在第一遍时已经检察过
                 //if (g_Lexer.CurrToken != TOKEN_TYPE_OPEN_BRACE)
-                //	ExitOnCharExpectedError('{');
+                //    ExitOnCharExpectedError('{');
 
                 break;
             }
@@ -2993,7 +2993,7 @@ void AssmblSourceFile()
                             break;
                         }
 
-					case TOKEN_TYPE_REG_THISVAL:
+                    case TOKEN_TYPE_REG_THISVAL:
                     case TOKEN_TYPE_REG_RETVAL:
 
                         // Make sure the operand type is valid
@@ -3161,10 +3161,10 @@ void AssmblSourceFile()
                                 pOpList[iCurrOpIndex].InstrIndex = pLabel->iTargetIndex;
                             }
 
-							if (CurrOpTypes & OP_FLAG_TYPE_ATTR_NAME)
-							{
+                            if (CurrOpTypes & OP_FLAG_TYPE_ATTR_NAME)
+                            {
 
-							}
+                            }
                             // Parse a function name
 
                             if (CurrOpTypes & OP_FLAG_TYPE_FUNC_NAME)
@@ -3381,9 +3381,9 @@ void BuildXSE(const char* file)
     fwrite(&cVersionMajor, 1, 1, pExecFile);
     fwrite(&cVersionMinor, 1, 1, pExecFile);
 #ifdef USE_TIMESTAMP
-	// 写入编译时间
-	time_t now = time(0);
-	fwrite(&now, sizeof now, 1, pExecFile);
+    // 写入编译时间
+    time_t now = time(0);
+    fwrite(&now, sizeof now, 1, pExecFile);
 #endif
     // Write the stack size(4 bytes)
 
@@ -3698,9 +3698,9 @@ void ExitOnCodeError(char *pstrErrorMssg)
 
 /******************************************************************************************
 *
-*	ExitOnCharExpectedError()
+*    ExitOnCharExpectedError()
 *
-*	Exits because a specific character was expected but not found.
+*    Exits because a specific character was expected but not found.
 */
 
 void ExitOnCharExpectedError(char cChar)

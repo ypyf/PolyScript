@@ -1,6 +1,6 @@
 #include "mathlib.h"
 
-namespace math 
+namespace math
 {
     int IntPow(int base, int index)
     {
@@ -11,4 +11,4 @@ namespace math
         return r;
     }
 
-}	// namespace math
+}    // namespace math

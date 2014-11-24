@@ -17,11 +17,11 @@
 // The maximum number of scripts that
 // can be loaded at once. Change this
 // to support more or less.
-#define MAX_THREAD_COUNT		    1024        
+#define MAX_THREAD_COUNT            1024
 
 // ----Stack -----------------------------------------------------------------------------
 
-#define DEF_STACK_SIZE			    1024	    // The default stack size
+#define DEF_STACK_SIZE                1024        // The default stack size
 
 // ----Coercion --------------------------------------------------------------------------
 
@@ -44,23 +44,23 @@
 // ----Data Structures -----------------------------------------------------------------------
 
 // ----Runtime Stack ---------------------------------------------------------------------
-struct RUNTIME_STACK		// A runtime stack
+struct RUNTIME_STACK        // A runtime stack
 {
-    Value *Elmnts;			// The stack elements
-    int Size;				// The number of elements in the stack
+    Value *Elmnts;            // The stack elements
+    int Size;                // The number of elements in the stack
 
-    int TopIndex;			// 栈顶指针
+    int TopIndex;            // 栈顶指针
     int FrameIndex;         // 当前帧指针
 };
 
 // ----Functions -------------------------------------------------------------------------
-struct FUNC							// A function
+struct FUNC                            // A function
 {
-    int EntryPoint;							// The entry point
-    int ParamCount;							// The parameter count
-    int LocalDataSize;						// Total size of all local data
-    int StackFrameSize;						// Total size of the stack frame
-    char Name[MAX_FUNC_NAME_SIZE+1];		// The function's name
+    int EntryPoint;                            // The entry point
+    int ParamCount;                            // The parameter count
+    int LocalDataSize;                        // Total size of all local data
+    int StackFrameSize;                        // Total size of the stack frame
+    char Name[MAX_FUNC_NAME_SIZE+1];        // The function's name
 };
 
 // ----Instructions ----------------------------------------------------------------------
@@ -73,7 +73,7 @@ struct INSTR                           // An instruction
 
 struct INSTR_STREAM                     // An instruction stream
 {
-    INSTR *Instrs;							// The instructions themselves
+    INSTR *Instrs;                            // The instructions themselves
     int Size;                                  // The number of instructions in the stream
     int CurrInstr;                             // The instruction pointer
 };
@@ -87,41 +87,41 @@ struct FUNC_TABLE                       // A function table
 
 // ----Host API Call Table ---------------------------------------------------------------
 // 脚本中出现的宿主函数调用
-struct HOST_CALL_TABLE				// A host API call table
+struct HOST_CALL_TABLE                // A host API call table
 {
-    char **Calls;							// Pointer to the call array
-    int Size;									// The number of calls in the array
+    char **Calls;                            // Pointer to the call array
+    int Size;                                    // The number of calls in the array
 };
 
 // ----Scripts ---------------------------------------------------------------------------
-struct ScriptContext							// Encapsulates a full script
+struct ScriptContext                            // Encapsulates a full script
 {
-    int IsActive;								// Is this script structure in use?
+    int IsActive;                                // Is this script structure in use?
 
     // Header data
-    int GlobalDataSize;						// The size of the script's global data
+    int GlobalDataSize;                        // The size of the script's global data
     int IsMainFuncPresent;                     // Is _Main() present?
-    int MainFuncIndex;							// _Main()'s function index
+    int MainFuncIndex;                            // _Main()'s function index
 
-    int IsRunning;								// Is the script running?
-    int IsPaused;								// Is the script currently paused?
-    int PauseEndTime;			                // If so, when should it resume?
+    int IsRunning;                                // Is the script running?
+    int IsPaused;                                // Is the script currently paused?
+    int PauseEndTime;                            // If so, when should it resume?
 
     // Threading
     int TimesliceDur;                          // The thread's timeslice duration
 
     // Register file
-    Value _RetVal;								// The _RetVal register
-	Value _ThisVal;
+    Value _RetVal;                                // The _RetVal register
+    Value _ThisVal;
 
     // 线程退出代码
-    int ExitCode;		
+    int ExitCode;
 
     // Script data
     INSTR_STREAM InstrStream;                    // The instruction stream
     RUNTIME_STACK Stack;                        // The runtime stack
     FUNC_TABLE FuncTable;                        // The function table
-    HOST_CALL_TABLE HostCallTable;			// The host API call table
+    HOST_CALL_TABLE HostCallTable;            // The host API call table
 };
 
 // ----Host API --------------------------------------------------------------------------
@@ -130,29 +130,29 @@ struct HOST_API_FUNC                     // Host API function
     int ThreadIndex;                     // The thread to which this function is visible
     char Name[MAX_FUNC_NAME_SIZE+1];     // The function name
     HOST_FUNC_PTR FuncPtr;               // Pointer to the function definition
-	HOST_API_FUNC* Next;				 // The next record
+    HOST_API_FUNC* Next;                 // The next record
 };
 
 // ----Globals -------------------------------------------------------------------------------
 
 // ----Scripts ---------------------------------------------------------------------------
-ScriptContext g_Scripts[MAX_THREAD_COUNT];		    // The script array
+ScriptContext g_Scripts[MAX_THREAD_COUNT];            // The script array
 ScriptContext **g_pScript;
 
 // ----Threading -------------------------------------------------------------------------
 int g_CurrThreadMode;                          // The current threading mode
-int g_CurrThread;								// The currently running thread
-int g_CurrThreadActiveTime;					// The time at which the current thread was activated
+int g_CurrThread;                                // The currently running thread
+int g_CurrThreadActiveTime;                    // The time at which the current thread was activated
 
 // ----The Host API ----------------------------------------------------------------------
 HOST_API_FUNC* g_HostAPIs = NULL;    // The host API
 
 /******************************************************************************************
 *
-*	ResolveStackIndex()
+*    ResolveStackIndex()
 *
-*	Resolves a stack index by translating negative indices relative to the top of the
-*	stack, to positive ones relative to the bottom.
+*    Resolves a stack index by translating negative indices relative to the top of the
+*    stack, to positive ones relative to the bottom.
 */
 
 inline int ResolveStackIndex(int Index)
@@ -190,13 +190,13 @@ inline int IsThreadActive(int Index)
 // -------- Object Interface ----------------------
 Value allocate_object(Value val)
 {
-	Value newobj;
-	newobj.Type = val.Type;
-	newobj.Object = (PolarObject*)malloc(sizeof(PolarObject));
-	newobj.Object->RefCount = 1;
-	newobj.Object->Type = val.Object;
-	//newobj.Reference->Name = val.Reference->Name;
-	return newobj;
+    Value newobj;
+    newobj.Type = val.Type;
+    newobj.Object = (PolarObject*)malloc(sizeof(PolarObject));
+    newobj.Object->RefCount = 1;
+    newobj.Object->Type = val.Object;
+    //newobj.Reference->Name = val.Reference->Name;
+    return newobj;
 }
 
 // ----Operand Interface -----------------------------------------------------------------
@@ -248,9 +248,9 @@ void CallFunc(int iThreadIndex, int iIndex);
 
 /******************************************************************************************
 *
-*	XVM_Init()
+*    XVM_Init()
 *
-*	Initializes the runtime environment.
+*    Initializes the runtime environment.
 */
 
 void XVM_Init()
@@ -278,9 +278,9 @@ void XVM_Init()
 
 /******************************************************************************************
 *
-*	XVM_ShutDown()
+*    XVM_ShutDown()
 *
-*	Shuts down the runtime environment.
+*    Shuts down the runtime environment.
 */
 
 void XVM_ShutDown()
@@ -290,30 +290,30 @@ void XVM_ShutDown()
     for (i = 0; i < MAX_THREAD_COUNT; ++i)
         XVM_UnloadScript(i);
 
-	while (g_HostAPIs != NULL) {
-		HOST_API_FUNC* p = g_HostAPIs;
-		g_HostAPIs = g_HostAPIs->Next;
-		free(p);
-	}
+    while (g_HostAPIs != NULL) {
+        HOST_API_FUNC* p = g_HostAPIs;
+        g_HostAPIs = g_HostAPIs->Next;
+        free(p);
+    }
 }
 
 /******************************************************************************************
 *
-*	XVM_LoadScript()
+*    XVM_LoadScript()
 *
-*	Loads an .XSE file into memory.
+*    Loads an .XSE file into memory.
 */
 
 int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimeslice)
 {
-	char ExecFileName[MAX_PATH] = {0};	// 编译后的文件名
-	int ExtOffset = strrchr(pstrFilename, '.') - pstrFilename;
-	strncpy(ExecFileName, pstrFilename, ExtOffset);
-	ExecFileName[ExtOffset] = '\0';
-	strcat(ExecFileName, EXEC_FILE_EXT);
+    char ExecFileName[MAX_PATH] = {0};    // 编译后的文件名
+    int ExtOffset = strrchr(pstrFilename, '.') - pstrFilename;
+    strncpy(ExecFileName, pstrFilename, ExtOffset);
+    ExecFileName[ExtOffset] = '\0';
+    strcat(ExecFileName, EXEC_FILE_EXT);
 
-	// 编译
-	XASM_Assembly(pstrFilename, ExecFileName);
+    // 编译
+    XASM_Assembly(pstrFilename, ExecFileName);
 
     // ----Find the next free script index
     int iFreeThreadFound = FALSE;
@@ -341,7 +341,7 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
     if (!(pScriptFile = fopen(ExecFileName, "rb")))
         return XVM_LOAD_ERROR_FILE_IO;
 
-    //fseek(pScriptFile, offset, SEEK_SET);	// .xvm节文件偏移
+    //fseek(pScriptFile, offset, SEEK_SET);    // .xvm节文件偏移
 
     // ----Read the header
 
@@ -369,8 +369,8 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
         return XVM_LOAD_ERROR_UNSUPPORTED_VERS;
 
 #ifdef USE_TIMESTAMP
-	// 跳过时间戳
-	fseek(pScriptFile, sizeof(time_t), SEEK_SET);
+    // 跳过时间戳
+    fseek(pScriptFile, sizeof(time_t), SEEK_SET);
 #endif
 
     // Read the stack size (4 bytes)
@@ -742,9 +742,9 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
 
 /******************************************************************************************
 *
-*	XVM_UnloadScript()
+*    XVM_UnloadScript()
 *
-*	Unloads a script from memory.
+*    Unloads a script from memory.
 */
 
 void XVM_UnloadScript(int iThreadIndex)
@@ -812,10 +812,10 @@ void XVM_UnloadScript(int iThreadIndex)
 
 /******************************************************************************************
 *
-*	XVM_ResetScript()
+*    XVM_ResetScript()
 *
-*	Resets the script. This function accepts a thread index rather than relying on the
-*	currently active thread, because scripts can (and will) need to be reset arbitrarily.
+*    Resets the script. This function accepts a thread index rather than relying on the
+*    currently active thread, because scripts can (and will) need to be reset arbitrarily.
 */
 
 void XVM_ResetScript(int iThreadIndex)
@@ -830,10 +830,10 @@ void XVM_ResetScript(int iThreadIndex)
     {
         // 如果主函数存在，那么设置脚本入口地址为主函数入口
         // 否则脚本从地址0开始执行
-     	if (g_Scripts[iThreadIndex].IsMainFuncPresent)
-     	{
-     		g_Scripts[iThreadIndex].InstrStream.CurrInstr = g_Scripts[iThreadIndex].FuncTable.Funcs[iMainFuncIndex].EntryPoint;
-     	}
+         if (g_Scripts[iThreadIndex].IsMainFuncPresent)
+         {
+             g_Scripts[iThreadIndex].InstrStream.CurrInstr = g_Scripts[iThreadIndex].FuncTable.Funcs[iMainFuncIndex].EntryPoint;
+         }
         else
         {
             g_Scripts[iThreadIndex].InstrStream.CurrInstr = 0;
@@ -864,9 +864,9 @@ void XVM_ResetScript(int iThreadIndex)
 
 /******************************************************************************************
 *
-*	XVM_RunScripts()
+*    XVM_RunScripts()
 *
-*	Runs the currenty loaded script array for a given timeslice duration.
+*    Runs the currenty loaded script array for a given timeslice duration.
 */
 
 void XVM_RunScript(int iTimesliceDur)
@@ -1142,12 +1142,12 @@ void XVM_RunScript(int iTimesliceDur)
 
                 switch (iOpcode)
                 {
-				case INSTR_THISCALL:
-					{
-						//Value& val = allocate_object(g_Scripts[g_CurrThread]._ThisVal);
-						//Push(g_CurrThread, val);
-					}
-					break;
+                case INSTR_THISCALL:
+                    {
+                        //Value& val = allocate_object(g_Scripts[g_CurrThread]._ThisVal);
+                        //Push(g_CurrThread, val);
+                    }
+                    break;
 
                 case INSTR_SQRT:
                     if (Dest.Type == OP_TYPE_INT)
@@ -1486,7 +1486,7 @@ void XVM_RunScript(int iTimesliceDur)
         case INSTR_CALL:
             {
                 Value oprand = ResolveOpValue(0);
-                if (oprand.Type == OP_TYPE_FUNC_INDEX) 
+                if (oprand.Type == OP_TYPE_FUNC_INDEX)
                 {
                     // 调用函数
 
@@ -1500,10 +1500,10 @@ void XVM_RunScript(int iTimesliceDur)
 
                     // Call the function
                     CallFunc(g_CurrThread, iFuncIndex);
-                } 
-                else if (oprand.Type == OP_TYPE_HOST_API_CALL_INDEX) 
+                }
+                else if (oprand.Type == OP_TYPE_HOST_API_CALL_INDEX)
                 {
-                    // 调用宿主函数 
+                    // 调用宿主函数
 
                     // Use operand zero to index into the host API call table and get the
                     // host API function name
@@ -1518,8 +1518,8 @@ void XVM_RunScript(int iTimesliceDur)
                     // Search through the host API until the matching function is found
 
                     int iMatchFound = FALSE;
-					HOST_API_FUNC* pCFunction = g_HostAPIs;
-					while (pCFunction != NULL)
+                    HOST_API_FUNC* pCFunction = g_HostAPIs;
+                    while (pCFunction != NULL)
                     {
                         // Get a pointer to the name of the current host API function
 
@@ -1538,23 +1538,23 @@ void XVM_RunScript(int iTimesliceDur)
                                 break;
                             }
                         }
-						pCFunction = pCFunction->Next;
+                        pCFunction = pCFunction->Next;
                     }
 
                     // If a match was found, call the host API funcfion and pass the current
                     // thread index
 
-                    if (iMatchFound) 
+                    if (iMatchFound)
                     {
                         pCFunction->FuncPtr(g_CurrThread);
                     }
-                    else 
+                    else
                     {
                         printf("未定义的host api%s\n", pstrFuncName);
                         exit(1);
                     }
-                } 
-                else 
+                }
+                else
                 {
                     printf("shouldn't get here\n");
                     /* shouldn't get here */
@@ -1576,7 +1576,7 @@ void XVM_RunScript(int iTimesliceDur)
                     iExitExecLoop = TRUE;
 
                 // 如果是在主函数中 则退出脚本
-                if (g_Scripts[g_CurrThread].IsMainFuncPresent && 
+                if (g_Scripts[g_CurrThread].IsMainFuncPresent &&
                     g_Scripts[g_CurrThread].MainFuncIndex == FuncIndex.FuncIndex)
                 {
                     g_Scripts[g_CurrThread].ExitCode = g_Scripts[g_CurrThread]._RetVal.Fixnum;
@@ -1653,7 +1653,7 @@ void XVM_RunScript(int iTimesliceDur)
         }
 
         // If the instruction pointer hasn't been changed by an instruction, increment it
-		// 如果指令没有改变，执行下一条指令
+        // 如果指令没有改变，执行下一条指令
         if (iCurrInstr == g_Scripts[g_CurrThread].InstrStream.CurrInstr)
             ++g_Scripts[g_CurrThread].InstrStream.CurrInstr;
 
@@ -1670,7 +1670,7 @@ void XVM_RunScript(int iTimesliceDur)
 
 /******************************************************************************************
 *
-*	XVM_StartScript()
+*    XVM_StartScript()
 *
 *  Starts the execution of a script.
 */
@@ -1697,7 +1697,7 @@ void XVM_StartScript(int iThreadIndex)
 
 /******************************************************************************************
 *
-*	XVM_StopScript()
+*    XVM_StopScript()
 *
 *  Stops the execution of a script.
 */
@@ -1716,7 +1716,7 @@ void XVM_StopScript(int iThreadIndex)
 
 /******************************************************************************************
 *
-*	XVM_PauseScript()
+*    XVM_PauseScript()
 *
 *  Pauses a script for a specified duration.
 */
@@ -1739,7 +1739,7 @@ void XVM_PauseScript(int iThreadIndex, int iDur)
 
 /******************************************************************************************
 *
-*	XVM_ResumeScript()
+*    XVM_ResumeScript()
 *
 *  Unpauses a script.
 */
@@ -1758,9 +1758,9 @@ void XVM_ResumeScript(int iThreadIndex)
 
 /******************************************************************************************
 *
-*	XVM_GetReturnValueAsInt()
+*    XVM_GetReturnValueAsInt()
 *
-*	Returns the last returned value as an integer.
+*    Returns the last returned value as an integer.
 */
 
 int XVM_GetReturnValueAsInt(int iThreadIndex)
@@ -1777,9 +1777,9 @@ int XVM_GetReturnValueAsInt(int iThreadIndex)
 
 /******************************************************************************************
 *
-*	XVM_GetReturnValueAsFloat()
+*    XVM_GetReturnValueAsFloat()
 *
-*	Returns the last returned value as an float.
+*    Returns the last returned value as an float.
 */
 
 float XVM_GetReturnValueAsFloat(int iThreadIndex)
@@ -1796,9 +1796,9 @@ float XVM_GetReturnValueAsFloat(int iThreadIndex)
 
 /******************************************************************************************
 *
-*	XVM_GetReturnValueAsString()
+*    XVM_GetReturnValueAsString()
 *
-*	Returns the last returned value as a string.
+*    Returns the last returned value as a string.
 */
 
 char* XVM_GetReturnValueAsString(int iThreadIndex)
@@ -1955,9 +1955,9 @@ char*CoerceValueToString(Value Val)
 
 /******************************************************************************************
 *
-*	GetOpType()
+*    GetOpType()
 *
-*	Returns the type of the specified operand in the current instruction.
+*    Returns the type of the specified operand in the current instruction.
 */
 
 inline int GetOpType(int iOpIndex)
@@ -2006,15 +2006,15 @@ inline int ResolveOpStackIndex(int iOpIndex)
             return iBaseIndex + sv.Fixnum;
         }
     default:
-        return -1;	// unexpected
+        return -1;    // unexpected
     }
 }
 
 /******************************************************************************************
 *
-*	ResolveOpValue()
+*    ResolveOpValue()
 *
-*	Resolves an operand and returns it's associated Value structure.
+*    Resolves an operand and returns it's associated Value structure.
 */
 
 inline Value ResolveOpValue(int iOpIndex)
@@ -2056,10 +2056,10 @@ inline Value ResolveOpValue(int iOpIndex)
 
 /******************************************************************************************
 *
-*	ResolveOpType()
+*    ResolveOpType()
 *
-*	Resolves the type of the specified operand in the current instruction and returns the
-*	resolved type.
+*    Resolves the type of the specified operand in the current instruction and returns the
+*    resolved type.
 */
 
 inline int ResolveOpType(int iOpIndex)
@@ -2075,9 +2075,9 @@ inline int ResolveOpType(int iOpIndex)
 
 /******************************************************************************************
 *
-*	ResolveOpAsInt()
+*    ResolveOpAsInt()
 *
-*	Resolves and coerces an operand's value to an integer value.
+*    Resolves and coerces an operand's value to an integer value.
 */
 
 inline int ResolveOpAsInt(int iOpIndex)
@@ -2094,9 +2094,9 @@ inline int ResolveOpAsInt(int iOpIndex)
 
 /******************************************************************************************
 *
-*	ResolveOpAsFloat()
+*    ResolveOpAsFloat()
 *
-*	Resolves and coerces an operand's value to a floating-point value.
+*    Resolves and coerces an operand's value to a floating-point value.
 */
 
 inline float ResolveOpAsFloat(int iOpIndex)
@@ -2113,9 +2113,9 @@ inline float ResolveOpAsFloat(int iOpIndex)
 
 /******************************************************************************************
 *
-*	ResolveOpAsString()
+*    ResolveOpAsString()
 *
-*	Resolves and coerces an operand's value to a string value, allocating the space for a
+*    Resolves and coerces an operand's value to a string value, allocating the space for a
 *  new string if necessary.
 */
 
@@ -2133,9 +2133,9 @@ inline char*ResolveOpAsString(int iOpIndex)
 
 /******************************************************************************************
 *
-*	ResolveOpAsInstrIndex()
+*    ResolveOpAsInstrIndex()
 *
-*	Resolves an operand as an intruction index.
+*    Resolves an operand as an intruction index.
 */
 
 inline int ResolveOpAsInstrIndex(int iOpIndex)
@@ -2151,9 +2151,9 @@ inline int ResolveOpAsInstrIndex(int iOpIndex)
 
 /******************************************************************************************
 *
-*	ResolveOpAsFuncIndex()
+*    ResolveOpAsFuncIndex()
 *
-*	Resolves an operand as a function index.
+*    Resolves an operand as a function index.
 */
 
 inline int ResolveOpAsFuncIndex(int iOpIndex)
@@ -2169,9 +2169,9 @@ inline int ResolveOpAsFuncIndex(int iOpIndex)
 
 /******************************************************************************************
 *
-*	ResolveOpAsHostAPICall()
+*    ResolveOpAsHostAPICall()
 *
-*	Resolves an operand as a host API call
+*    Resolves an operand as a host API call
 */
 
 inline char*ResolveOpAsHostAPICall(int iOpIndex)
@@ -2229,9 +2229,9 @@ inline Value* ResolveOpPntr(int iOpIndex)
 
 /******************************************************************************************
 *
-*	GetStackValue()
+*    GetStackValue()
 *
-*	Returns the specified stack value.
+*    Returns the specified stack value.
 */
 
 inline Value GetStackValue(int iThreadIndex, int iIndex)
@@ -2243,9 +2243,9 @@ inline Value GetStackValue(int iThreadIndex, int iIndex)
 
 /******************************************************************************************
 *
-*	SetStackValue()
+*    SetStackValue()
 *
-*	Sets the specified stack value.
+*    Sets the specified stack value.
 */
 
 inline void SetStackValue(int iThreadIndex, int iIndex, Value Val)
@@ -2257,9 +2257,9 @@ inline void SetStackValue(int iThreadIndex, int iIndex, Value Val)
 
 /******************************************************************************************
 *
-*	Push()
+*    Push()
 *
-*	Pushes an element onto the stack.
+*    Pushes an element onto the stack.
 */
 
 inline void Push(int iThreadIndex, Value Val)
@@ -2279,9 +2279,9 @@ inline void Push(int iThreadIndex, Value Val)
 
 /******************************************************************************************
 *
-*	Pop()
+*    Pop()
 *
-*	Pops the element off the top of the stack.
+*    Pops the element off the top of the stack.
 */
 
 inline Value Pop(int iThreadIndex)
@@ -2306,9 +2306,9 @@ inline Value Pop(int iThreadIndex)
 
 /******************************************************************************************
 *
-*	PushFrame()
+*    PushFrame()
 *
-*	Pushes a stack frame.
+*    Pushes a stack frame.
 */
 
 inline void PushFrame(int iThreadIndex, int iSize)
@@ -2324,22 +2324,22 @@ inline void PushFrame(int iThreadIndex, int iSize)
 
 /******************************************************************************************
 *
-*	PopFrame()
+*    PopFrame()
 *
-*	Pops a stack frame.
+*    Pops a stack frame.
 */
 
 inline void PopFrame(Value funcIndex)
 {
-	g_Scripts[g_CurrThread].Stack.TopIndex = funcIndex.OffsetIndex;
-	g_Scripts[g_CurrThread].Stack.FrameIndex = funcIndex.OffsetIndex;
+    g_Scripts[g_CurrThread].Stack.TopIndex = funcIndex.OffsetIndex;
+    g_Scripts[g_CurrThread].Stack.FrameIndex = funcIndex.OffsetIndex;
 }
 
 /******************************************************************************************
 *
-*	GetFunc()
+*    GetFunc()
 *
-*	Returns the function corresponding to the specified index.
+*    Returns the function corresponding to the specified index.
 */
 
 inline FUNC GetFunc(int iThreadIndex, int iIndex)
@@ -2349,9 +2349,9 @@ inline FUNC GetFunc(int iThreadIndex, int iIndex)
 
 /******************************************************************************************
 *
-*	GetHostFunc()
+*    GetHostFunc()
 *
-*	Returns the host API call corresponding to the specified index.
+*    Returns the host API call corresponding to the specified index.
 */
 
 inline char* GetHostFunc(int iIndex)
@@ -2567,32 +2567,32 @@ void XVM_InvokeScriptFunc(int iThreadIndex, char *pstrName)
 
 int XVM_RegisterCFunction(int iThreadIndex, char *pstrName, HOST_FUNC_PTR fnFunc)
 {
-	HOST_API_FUNC** pCFuncTable = &g_HostAPIs;
+    HOST_API_FUNC** pCFuncTable = &g_HostAPIs;
 
-	while (*pCFuncTable != NULL)
-	{
-		// 如果函数名已经存在，则更新它的属性
-		if (strcmp((*pCFuncTable)->Name, pstrName) == 0)
-		{
-			(*pCFuncTable)->ThreadIndex = iThreadIndex;
-			(*pCFuncTable)->FuncPtr = fnFunc;
-			return TRUE;
-		}
-		pCFuncTable = &(*pCFuncTable)->Next;
-	}
+    while (*pCFuncTable != NULL)
+    {
+        // 如果函数名已经存在，则更新它的属性
+        if (strcmp((*pCFuncTable)->Name, pstrName) == 0)
+        {
+            (*pCFuncTable)->ThreadIndex = iThreadIndex;
+            (*pCFuncTable)->FuncPtr = fnFunc;
+            return TRUE;
+        }
+        pCFuncTable = &(*pCFuncTable)->Next;
+    }
 
-	// 添加新的节点到函数列表
-	HOST_API_FUNC* node = (HOST_API_FUNC*)malloc(sizeof(HOST_API_FUNC));
-	*pCFuncTable = node;
-	memset(node, 0, sizeof(HOST_API_FUNC));
-	strcpy(node->Name, pstrName);
-	if (!node->Name)
-	{
-		return FALSE;
-	}
-	node->ThreadIndex = iThreadIndex;
-	node->FuncPtr = fnFunc;
-	node->Next = NULL;
+    // 添加新的节点到函数列表
+    HOST_API_FUNC* node = (HOST_API_FUNC*)malloc(sizeof(HOST_API_FUNC));
+    *pCFuncTable = node;
+    memset(node, 0, sizeof(HOST_API_FUNC));
+    strcpy(node->Name, pstrName);
+    if (!node->Name)
+    {
+        return FALSE;
+    }
+    node->ThreadIndex = iThreadIndex;
+    node->FuncPtr = fnFunc;
+    node->Next = NULL;
     return TRUE;
 }
 
@@ -2688,7 +2688,7 @@ void XVM_ReturnIntFromHost(int iThreadIndex, int iInt)
     g_Scripts[iThreadIndex]._RetVal.Type = OP_TYPE_INT;
     g_Scripts[iThreadIndex]._RetVal.Fixnum = iInt;
 
-	XVM_ReturnFromHost(iThreadIndex);
+    XVM_ReturnFromHost(iThreadIndex);
 }
 
 /******************************************************************************************
@@ -2704,8 +2704,8 @@ void XVM_ReturnFloatFromHost(int iThreadIndex, float fFloat)
     g_Scripts[iThreadIndex]._RetVal.Type = OP_TYPE_FLOAT;
     g_Scripts[iThreadIndex]._RetVal.Realnum = fFloat;
 
-	// Clear the parameters off the stack
-	XVM_ReturnFromHost(iThreadIndex);
+    // Clear the parameters off the stack
+    XVM_ReturnFromHost(iThreadIndex);
 }
 
 /******************************************************************************************
@@ -2723,14 +2723,14 @@ void XVM_ReturnStringFromHost(int iThreadIndex, char *pstrString)
     ReturnValue.StringLiteral = pstrString;
     CopyValue(&g_Scripts[iThreadIndex]._RetVal, ReturnValue);
 
-	// Clear the parameters off the stack
-	XVM_ReturnFromHost(iThreadIndex);
+    // Clear the parameters off the stack
+    XVM_ReturnFromHost(iThreadIndex);
 }
 
 
 int XVM_GetParamCount(int iThreadIndex)
 {
-	return g_Scripts[iThreadIndex].Stack.TopIndex - g_Scripts[iThreadIndex].Stack.FrameIndex;
+    return g_Scripts[iThreadIndex].Stack.TopIndex - g_Scripts[iThreadIndex].Stack.FrameIndex;
 }
 
 

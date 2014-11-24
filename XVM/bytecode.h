@@ -43,10 +43,10 @@
 #define INSTR_PAUSE             41
 #define INSTR_EXIT              42
 
-#define INSTR_PRINT				50
-#define INSTR_SQRT				51
+#define INSTR_PRINT             50
+#define INSTR_SQRT              51
 
-#define INSTR_THISCALL			0x55
+#define INSTR_THISCALL          0x55
 
 
 #endif // __byte_code_h__

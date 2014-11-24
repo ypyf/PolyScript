@@ -33,16 +33,16 @@ extern "C" {
 #endif
 
 // ---- Script Exit Code
-#define XVM_EXIT_OK				0
+#define XVM_EXIT_OK                0
 
 // ----Script Loading Error Codes --------------------------------------------------------
 
-#define XVM_LOAD_OK						0		// Load successful
-#define XVM_LOAD_ERROR_FILE_IO  	    1		// File I/O error (most likely a file not found error
-#define XVM_LOAD_ERROR_INVALID_XSE	    2		// Invalid .XSE structure
-#define XVM_LOAD_ERROR_UNSUPPORTED_VERS	3		// The format version is unsupported
-#define XVM_LOAD_ERROR_OUT_OF_MEMORY	4		// Out of memory
-#define XVM_LOAD_ERROR_OUT_OF_THREADS	5		// Out of threads
+#define XVM_LOAD_OK                        0        // Load successful
+#define XVM_LOAD_ERROR_FILE_IO             1        // File I/O error (most likely a file not found error
+#define XVM_LOAD_ERROR_INVALID_XSE         2        // Invalid .XSE structure
+#define XVM_LOAD_ERROR_UNSUPPORTED_VERS    3        // The format version is unsupported
+#define XVM_LOAD_ERROR_OUT_OF_MEMORY       4        // Out of memory
+#define XVM_LOAD_ERROR_OUT_OF_THREADS      5        // Out of threads
 
 // ----Threading -------------------------------------------------------------------------
 
@@ -51,14 +51,14 @@ extern "C" {
 #define XVM_THREAD_PRIORITY_MED      2           // Medium priority
 #define XVM_THREAD_PRIORITY_HIGH     3           // High priority
 
-#define XVM_INFINITE_TIMESLICE       -1          // Allows a thread to run indefinitely
+#define XVM_INFINITE_TIMESLICE       1          // Allows a thread to run indefinitely
 
 // ----The Host API ----------------------------------------------------------------------
 
-#define XVM_GLOBAL_FUNC              -1          // Flags a host API function as being global
+#define XVM_GLOBAL_FUNC              1          // Flags a host API function as being global
 
 #define SOURCE_FILE_EXT              ".xasm"
-#define EXEC_FILE_EXT	             ".xse"      // Executable file extension
+#define EXEC_FILE_EXT                ".xse"      // Executable file extension
 
 // ----Data Structures -----------------------------------------------------------------------
 
@@ -83,11 +83,11 @@ struct Value
         PolarObject* Object;
         int Fixnum;                     // Integer literal
         float Realnum;                  // Float literal
-        char* StringLiteral;			// String literal
+        char* StringLiteral;            // String literal
         index_t StackIndex;             // Stack Index
         index_t InstrIndex;             // Instruction index
         index_t FuncIndex;              // Function index
-        index_t CFuncIndex;				// Host API Call index
+        index_t CFuncIndex;             // Host API Call index
         int Register;                   // Register code
     };
     // 对于OP_TYPE_REL_STACK_INDEX，该字段保存的是偏移值的地址(偏移值是一个变量)
@@ -134,9 +134,9 @@ XVM_API void XVM_ReturnIntFromHost(int iThreadIndex, int iInt);
 XVM_API void XVM_ReturnFloatFromHost(int iThreadIndex, float iFloat);
 XVM_API void XVM_ReturnStringFromHost(int iThreadIndex, char *pstrString);
 
-XVM_API int XVM_GetParamCount(int iThreadIndex);	// 获取传递给函数的参数个数
-XVM_API int XVM_IsScriptStop(int iThreadIndex);		// 脚本是否已经停止
-XVM_API int XVM_GetExitCode(int iThreadIndex);		// 脚本退出代码
+XVM_API int XVM_GetParamCount(int iThreadIndex);       // 获取传递给函数的参数个数
+XVM_API int XVM_IsScriptStop(int iThreadIndex);        // 脚本是否已经停止
+XVM_API int XVM_GetExitCode(int iThreadIndex);         // 脚本退出代码
 
 #ifdef __cplusplus
 }

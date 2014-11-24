@@ -21,7 +21,7 @@
 #define OP_TYPE_NULL                -1          // Uninitialized/Null data
 #define OP_TYPE_INT                 0           // Integer literal value
 #define OP_TYPE_FLOAT               1           // Floating-point literal value
-#define OP_TYPE_STRING		        2           // String literal value
+#define OP_TYPE_STRING              2           // String literal value
 #define OP_TYPE_ABS_STACK_INDEX     3           // Absolute array index
 #define OP_TYPE_REL_STACK_INDEX     4           // Relative array index
 #define OP_TYPE_INSTR_INDEX         5           // Instruction index
