@@ -126,7 +126,7 @@
 
 // ----Functions -------------------------------------------------------------------------
 
-#define MAIN_FUNC_NAME		"main"		// 程序入口
+#define MAIN_FUNC_NAME		"Main"		// 程序入口
 
 // ----Error Strings ---------------------------------------------------------------------
 
@@ -1850,7 +1850,7 @@ Token GetNextToken()
         g_Lexer.CurrToken = TOKEN_TYPE_GLOBAL;
 
     // Is it Func?
-    if (_stricmp(g_Lexer.CurrLexeme, "func") == 0)
+    if (_stricmp(g_Lexer.CurrLexeme, "proc") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_FUNC;
 
     //// 结构体

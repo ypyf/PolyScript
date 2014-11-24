@@ -6,15 +6,9 @@
 #include "bytecode.h"
 #include "mathlib.h"
 
-#if USE_JIT
-#include "jit/compiler.h"
-#endif  /* USE_JIT */
-
 #include <time.h>
 
 // ----Script Loading --------------------------------------------------------------------
-
-#define EXEC_FILE_EXT			    ".xse"	    // Executable file extension
 
 #define XSE_ID_STRING               "XSE0"      // Used to validate an .MAX executable
 #define VERSION_MAJOR               0           // Major version number
@@ -128,11 +122,6 @@ struct ScriptContext							// Encapsulates a full script
     RUNTIME_STACK Stack;                        // The runtime stack
     FUNC_TABLE FuncTable;                        // The function table
     HOST_CALL_TABLE HostCallTable;			// The host API call table
-
-#if USE_JIT
-    JitContext  jit_context;
-#endif
-
 };
 
 // ----Host API --------------------------------------------------------------------------
@@ -148,6 +137,7 @@ struct HOST_API_FUNC                     // Host API function
 
 // ----Scripts ---------------------------------------------------------------------------
 ScriptContext g_Scripts[MAX_THREAD_COUNT];		    // The script array
+ScriptContext **g_pScript;
 
 // ----Threading -------------------------------------------------------------------------
 int g_CurrThreadMode;                          // The current threading mode
@@ -300,8 +290,7 @@ void XVM_ShutDown()
     for (i = 0; i < MAX_THREAD_COUNT; ++i)
         XVM_UnloadScript(i);
 
-	while (g_HostAPIs != NULL)
-	{
+	while (g_HostAPIs != NULL) {
 		HOST_API_FUNC* p = g_HostAPIs;
 		g_HostAPIs = g_HostAPIs->Next;
 		free(p);
@@ -837,15 +826,19 @@ void XVM_ResetScript(int iThreadIndex)
 
     // If the function table is present, set the entry point
 
-    // 	if (g_Scripts[iThreadIndex].FuncTable.Funcs)
-    // 	{
-    // 		if (g_Scripts[iThreadIndex].IsMainFuncPresent)
-    // 		{
-    // 			// 如果主函数存在，那么设置脚本入口地址为主函数入口
-    // 			// 否则脚本从地址0开始执行
-    // 			g_Scripts[iThreadIndex].InstrStream.CurrInstr = g_Scripts[iThreadIndex].FuncTable.Funcs[iMainFuncIndex].EntryPoint;
-    // 		}
-    // 	}
+    if (g_Scripts[iThreadIndex].FuncTable.Funcs)
+    {
+        // 如果主函数存在，那么设置脚本入口地址为主函数入口
+        // 否则脚本从地址0开始执行
+     	if (g_Scripts[iThreadIndex].IsMainFuncPresent)
+     	{
+     		g_Scripts[iThreadIndex].InstrStream.CurrInstr = g_Scripts[iThreadIndex].FuncTable.Funcs[iMainFuncIndex].EntryPoint;
+     	}
+        else
+        {
+            g_Scripts[iThreadIndex].InstrStream.CurrInstr = 0;
+        }
+    }
 
     // Clear the stack
     g_Scripts[iThreadIndex].Stack.TopIndex = 0;
@@ -1151,14 +1144,16 @@ void XVM_RunScript(int iTimesliceDur)
                 {
 				case INSTR_THISCALL:
 					{
-						Value& val = allocate_object(g_Scripts[g_CurrThread]._ThisVal);
-						Push(g_CurrThread, val);
+						//Value& val = allocate_object(g_Scripts[g_CurrThread]._ThisVal);
+						//Push(g_CurrThread, val);
 					}
 					break;
 
                 case INSTR_SQRT:
-                    // FIXME 类型检查
-                    Dest.Realnum = sqrtf(Dest.Realnum);
+                    if (Dest.Type == OP_TYPE_INT)
+                        Dest.Realnum = sqrtf((float)Dest.Fixnum);
+                    else
+                        Dest.Realnum = sqrtf(Dest.Realnum);
                     break;
 
                 case INSTR_NEG:
@@ -1335,8 +1330,8 @@ void XVM_RunScript(int iTimesliceDur)
         case INSTR_JGE:
         case INSTR_JLE:
             {
-                Value Op0 = ResolveOpValue(0);
-                Value Op1 = ResolveOpValue(1);
+                Value Op0 = ResolveOpValue(0);  // 条件1
+                Value Op1 = ResolveOpValue(1);  // 条件2
 
                 // Get the index of the target instruction (opcode index 2)
 
@@ -1623,7 +1618,7 @@ void XVM_RunScript(int iTimesliceDur)
                     printf("%i\n", val.Register);
                     break;
                 default:
-                    printf("\n");	// unexcepted!!
+                    printf("INSTR_PRINT: %d unexcepted data type.\n", val.Type);
                 }
                 break;
             }
@@ -1744,12 +1739,12 @@ void XVM_PauseScript(int iThreadIndex, int iDur)
 
 /******************************************************************************************
 *
-*	XVM_UnpauseScript()
+*	XVM_ResumeScript()
 *
 *  Unpauses a script.
 */
 
-void XVM_UnpauseScript(int iThreadIndex)
+void XVM_ResumeScript(int iThreadIndex)
 {
     // Make sure the thread index is valid and active
 
@@ -1825,7 +1820,7 @@ char* XVM_GetReturnValueAsString(int iThreadIndex)
 *  Copies a value structure to another, taking strings into account.
 */
 
-void CopyValue(Value* pDest, Value Source)
+void CopyValue(Value *pDest, Value Source)
 {
     // If the destination already contains a string, make sure to free it first
 
@@ -2201,7 +2196,7 @@ inline char*ResolveOpAsHostAPICall(int iOpIndex)
 *  Resolves an operand and returns a pointer to its Value structure.
 */
 
-inline Value*ResolveOpPntr(int iOpIndex)
+inline Value* ResolveOpPntr(int iOpIndex)
 {
     // Get the method of indirection
 
@@ -2225,7 +2220,6 @@ inline Value*ResolveOpPntr(int iOpIndex)
     case OP_TYPE_REG:
         return &g_Scripts[g_CurrThread]._RetVal;
 
-        //return NULL; // 返回空代表寄存器
     }
 
     // Return NULL for anything else

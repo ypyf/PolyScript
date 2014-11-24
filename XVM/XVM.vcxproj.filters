@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="JIT">
-      <UniqueIdentifier>{820410ec-d9b9-49d2-aa3a-4fe34dd2ae2f}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bytecode.h">
@@ -30,16 +27,10 @@
     <ClInclude Include="xvm.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="jit\compiler.h">
-      <Filter>JIT</Filter>
-    </ClInclude>
-    <ClInclude Include="jit\dyn_array.h">
-      <Filter>JIT</Filter>
-    </ClInclude>
-    <ClInclude Include="jit\types.h">
-      <Filter>JIT</Filter>
-    </ClInclude>
     <ClInclude Include="xvm-internal.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="xqueue.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -55,9 +46,6 @@
     </ClCompile>
     <ClCompile Include="xvm.cpp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="jit\dyn_array.c">
-      <Filter>JIT</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
