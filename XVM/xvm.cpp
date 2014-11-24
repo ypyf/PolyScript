@@ -253,7 +253,7 @@ void CallFunc(int iThreadIndex, int iIndex);
 *	Initializes the runtime environment.
 */
 
-void init_xvm()
+void XVM_Init()
 {
     int i;
     // ----Initialize the script array

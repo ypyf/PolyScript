@@ -72,7 +72,7 @@ static void average(int iThreadIndex)
 int RunScript(const char* filename)
 {
     // Initialize the runtime environment
-    init_xvm();
+    XVM_Init();
 
     // 注册宿主api
     if (!XVM_RegisterCFunction(XVM_GLOBAL_FUNC, "average", average))
@@ -152,13 +152,10 @@ int main(int argc, char* argv[])
         strcat(ExecFileName, EXEC_FILE_EXT);
     }
 
-    // 生成字节码文件
-   
-
     // 运行脚本并返回
-    printf("退出代码 (%i)\n", RunScript(SrcFileName));
+    int iExitCode = RunScript(SrcFileName);
 
-    return 0;
+    printf("退出代码 (%i)\n", iExitCode);
 }
 
 #endif // 0

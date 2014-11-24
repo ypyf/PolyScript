@@ -99,7 +99,7 @@ struct Value
 
 // ----Main ------------------------------------------------------------------------------
 
-XVM_API void init_xvm();
+XVM_API void XVM_Init();
 XVM_API void XVM_ShutDown();
 
 // ----Script Interface ------------------------------------------------------------------
