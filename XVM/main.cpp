@@ -69,9 +69,8 @@ static void average(int iThreadIndex)
 }
 
 // ----XVM Entry Main ----------------------------------------------------------------------------------
-int XVM_RunScript(const char* filename)
+int RunScript(const char* filename)
 {
-	
     // Initialize the runtime environment
     init_xvm();
 
@@ -157,7 +156,7 @@ int main(int argc, char* argv[])
    
 
     // 运行脚本并返回
-    printf("退出代码 (%i)\n", XVM_RunScript(SrcFileName));
+    printf("退出代码 (%i)\n", RunScript(SrcFileName));
 
     return 0;
 }

@@ -3,6 +3,8 @@
 #ifndef TYPES_H_
 #define TYPES_H_
 
+#include <stdint.h>
+
 typedef unsigned char Byte;
 
 typedef unsigned char  U8;
