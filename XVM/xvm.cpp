@@ -99,8 +99,8 @@ struct ScriptContext                            // Encapsulates a full script
 
     // Header data
     int GlobalDataSize;                        // The size of the script's global data
-    int IsMainFuncPresent;                     // Is _Main() present?
-    int MainFuncIndex;                            // _Main()'s function index
+    int IsMainFuncPresent;                     // Is Main() present?
+    int MainFuncIndex;                            // Main()'s function index
 
     int IsRunning;                                // Is the script running?
     int IsPaused;                                // Is the script currently paused?
@@ -145,6 +145,7 @@ int g_CurrThreadActiveTime;                    // The time at which the current 
 
 // ----The Host API ----------------------------------------------------------------------
 HOST_API_FUNC* g_HostAPIs = NULL;    // The host API
+
 
 /******************************************************************************************
 *
@@ -391,11 +392,11 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
 
     fread(&g_Scripts[iThreadIndex].GlobalDataSize, 4, 1, pScriptFile);
 
-    // Check for presence of _Main() (1 byte)
+    // Check for presence of Main() (1 byte)
 
     fread(&g_Scripts[iThreadIndex].IsMainFuncPresent, 1, 1, pScriptFile);
 
-    // Read _Main()'s function index (4 bytes)
+    // Read Main()'s function index (4 bytes)
 
     fread(&g_Scripts[iThreadIndex].MainFuncIndex, 4, 1, pScriptFile);
 
@@ -819,7 +820,7 @@ void XVM_UnloadScript(int iThreadIndex)
 
 void XVM_ResetScript(int iThreadIndex)
 {
-    // Get _Main()'s function index in case we need it
+    // Get Main()'s function index in case we need it
 
     int iMainFuncIndex = g_Scripts[iThreadIndex].MainFuncIndex;
 
@@ -855,20 +856,16 @@ void XVM_ResetScript(int iThreadIndex)
     // Allocate space for the globals
 
     PushFrame(iThreadIndex, g_Scripts[iThreadIndex].GlobalDataSize);
-
-    // 调用主函数
-    if (g_Scripts[iThreadIndex].FuncTable.Size)
-        CallFunc(iThreadIndex, iMainFuncIndex);
 }
 
 /******************************************************************************************
 *
-*    XVM_RunScripts()
+*    XVM_ExecuteScript()
 *
 *    Runs the currenty loaded script array for a given timeslice duration.
 */
 
-void XVM_RunScript(int iTimesliceDur)
+static void XVM_ExecuteScript(int iTimesliceDur)
 {
     // Begin a loop that runs until a keypress. The instruction pointer has already been
     // initialized with a prior call to ResetScripts(), so execution can begin
@@ -886,7 +883,7 @@ void XVM_RunScript(int iTimesliceDur)
 
     while (TRUE)
     {
-        // 当所有线程已经终结，则退出执行循环
+        // 检查所有线程是否已经终结，则退出执行循环
         int iIsStillActive = FALSE;
         for (int i = 0; i < MAX_THREAD_COUNT; ++i)
         {
@@ -1669,6 +1666,19 @@ void XVM_RunScript(int iTimesliceDur)
 
 /******************************************************************************************
 *
+*    XVM_RunScript()
+*
+*    Runs the specified script from Main() for a given timeslice duration.
+*/
+
+void XVM_RunScript(int iThreadIndex, int iTimesliceDur)
+{
+    XVM_StartScript(iThreadIndex);
+    XVM_CallScriptFunc(iThreadIndex, "Main");
+}
+
+/******************************************************************************************
+*
 *    XVM_StartScript()
 *
 *  Starts the execution of a script.
@@ -1680,6 +1690,12 @@ void XVM_StartScript(int iThreadIndex)
 
     if (!IsThreadActive(iThreadIndex))
         return;
+
+    // 调用主函数
+    //if (g_Scripts[iThreadIndex].IsMainFuncPresent)
+    //    CallFunc(iThreadIndex, g_Scripts[iThreadIndex].MainFuncIndex);
+    //else
+    //    ExitOnError(ERROR_MSSG_MISSING_MAIN);
 
     // Set the thread's execution flag
 
@@ -2498,11 +2514,11 @@ int GetFuncIndexByName(int iThreadIndex, char *pstrName)
 *  Calls a script function from the host application.
 */
 
-void XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
+int XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
 {
     // Make sure the thread index is valid and active
     if (!IsThreadActive(iThreadIndex))
-        return;
+        return FALSE;
 
     // ----Calling the function
 
@@ -2521,7 +2537,7 @@ void XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
 
     // Make sure the function name was valid
     if (iFuncIndex == -1)
-        return;
+        return FALSE;
 
     // Call the function
     CallFunc(iThreadIndex, iFuncIndex);
@@ -2532,13 +2548,15 @@ void XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
     SetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - 1, StackBase);
 
     // Allow the script code to execute uninterrupted until the function returns
-    XVM_RunScript(XVM_INFINITE_TIMESLICE);
+    XVM_ExecuteScript(XVM_INFINITE_TIMESLICE);
 
     // ----Handling the function return
 
     // Restore the VM state
     g_CurrThreadMode = iPrevThreadMode;
     g_CurrThread = iPrevThread;
+
+    return TRUE;
 }
 
 /******************************************************************************************

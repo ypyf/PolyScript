@@ -102,8 +102,11 @@ int RunScript(const char* filename)
     // 开始由线程索引指定的脚本
     XVM_StartScript(iThreadIndex);
 
+    // 调用主函数
+    XVM_CallScriptFunc(iThreadIndex, "Main");
+
     // 运行脚本
-    XVM_RunScript(XVM_INFINITE_TIMESLICE);
+    //XVM_ExecuteScript(XVM_INFINITE_TIMESLICE);
 
     int iExitCode = XVM_GetExitCode(iThreadIndex);
 

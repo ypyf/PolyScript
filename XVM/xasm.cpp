@@ -182,7 +182,7 @@
     "Parameters can only appear inside functions"
 
 #define ERROR_MSSG_MAIN_PARAM    \
-    "_Main() function cannot accept parameters"
+    "Main() function cannot accept parameters"
 
 #define ERROR_MSSG_GLOBAL_LINE_LABEL    \
     "Line labels can only appear inside functions"
@@ -255,8 +255,8 @@ struct ScriptHeader                    // Script header data
     int StackSize;                             // Requested stack size
     int GlobalDataSize;                        // The size of the script's global data
 
-    int IsMainFuncPresent;                     // Is _Main() present?
-    int MainFuncIndex;                            // _Main()'s function index
+    int IsMainFuncPresent;                     // Is Main() present?
+    int MainFuncIndex;                            // Main()'s function index
 
     int PriorityType;                          // The thread priority type
     int UserPriority;                          // The user-defined priority(if any)
@@ -2226,6 +2226,7 @@ SymbolNode *GetSymbolByLevel(char *pstrIdent, int iLevel, int iFuncIndex)
     LinkedListNode *pCurrNode = g_SymbolTable.head;
 
     // Traverse the list until the matching structure is found
+
     SymbolNode *pSymbol = NULL;
 
     for (int iCurrNode = 0; iCurrNode < g_SymbolTable.NodeCount; ++iCurrNode)
@@ -2243,7 +2244,8 @@ SymbolNode *GetSymbolByLevel(char *pstrIdent, int iLevel, int iFuncIndex)
                 pSymbol = pCurrSymbol;
 
             // 局部变量
-            if (pCurrSymbol->iFuncIndex == iFuncIndex && pCurrSymbol->iLevel <= iLevel)
+            if (pCurrSymbol->iFuncIndex == iFuncIndex && 
+                pCurrSymbol->iLevel <= iLevel)
                 pSymbol = pCurrSymbol;
         }
 
@@ -2285,14 +2287,14 @@ SymbolNode *GetSymbolByFuncIndex(char *pstrIdent, int iFuncIndex)
         SymbolNode *pCurrSymbol = (SymbolNode *) pCurrNode->Data;
 
         // See if the names match
-
-        if (strcmp(pCurrSymbol->pstrIdent, pstrIdent) == 0)
+        if (pCurrSymbol->iFuncIndex == iFuncIndex)
         {
-            // If the functions match, or if the existing symbol is global, they match.
-            // Return the symbol.
-
-            if (pCurrSymbol->iFuncIndex == iFuncIndex)
+            if (strcmp(pCurrSymbol->pstrIdent, pstrIdent) == 0)
+            {
+                // If the functions match, or if the existing symbol is global, they match.
+                // Return the symbol.
                 return pCurrSymbol;
+            }
         }
 
         // Otherwise move to the next node
@@ -2348,7 +2350,7 @@ int AddSymbol(char *pstrIdent, int iSize, int iLevel, int iStackIndex, int iFunc
 {
     // If a label already exists
 
-    // 重复定义符号错误
+    // 检查符号是否已经在当前函数被定义
     if (GetSymbolByFuncIndex(pstrIdent, iFuncIndex))
         return -1;
 
@@ -2725,7 +2727,7 @@ void AssmblSourceFile()
                 if (!iIsFuncActive)
                     ExitOnCodeError(ERROR_MSSG_GLOBAL_PARAM);
 
-                // _Main() can't accept parameters, so make sure we aren't in it
+                // Main() can't accept parameters, so make sure we aren't in it
 
                 if (strcmp(pstrCurrFuncName, MAIN_FUNC_NAME) == 0)
                     ExitOnCodeError(ERROR_MSSG_MAIN_PARAM);
@@ -2891,7 +2893,7 @@ void AssmblSourceFile()
 
                 iIsFuncActive = FALSE;
                 /*
-                // If the ending function is _Main(), append an Exit instruction
+                // If the ending function is Main(), append an Exit instruction
                 // FIXME 检查重复的退出指令
                 if (!hasRetInstr)
                 {
@@ -3431,7 +3433,7 @@ void PrintAssmblStats()
     printf("        Host API Calls: %d\n", g_HostAPICallTable.NodeCount);
     printf("             Functions: %d\n", g_FuncTable.NodeCount);
 
-    printf("      _Main() Present: ");
+    printf("      Main() Present: ");
     if (g_ScriptHeader.IsMainFuncPresent)
         printf("Yes(Index %d)\n", g_ScriptHeader.MainFuncIndex);
     else
@@ -3480,14 +3482,14 @@ void BuildXSE(const char* file)
 
     fwrite(&g_ScriptHeader.GlobalDataSize, 4, 1, pExecFile);
 
-    // Write the _Main() flag(1 byte)
+    // Write the Main() flag(1 byte)
 
     char cIsMainPresent = 0;
     if (g_ScriptHeader.IsMainFuncPresent)
         cIsMainPresent = 1;
     fwrite(& cIsMainPresent, 1, 1, pExecFile);
 
-    // Write the _Main() function index(4 bytes)
+    // Write the Main() function index(4 bytes)
 
     fwrite(&g_ScriptHeader.MainFuncIndex, 4, 1, pExecFile);
 
