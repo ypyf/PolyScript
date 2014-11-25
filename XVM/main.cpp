@@ -77,7 +77,7 @@ int RunScript(const char* filename)
     XVM_Init();
 
     // 注册宿主api
-    if (!XVM_RegisterCFunction(XVM_GLOBAL_FUNC, "average", average))
+    if (!XVM_RegisterHostFunction(XVM_GLOBAL_FUNC, "average", average))
     {
         printf("Register Host API Failed!");
         ExitProcess(1);

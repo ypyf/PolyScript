@@ -2565,7 +2565,7 @@ void XVM_CallScriptFuncSync(int iThreadIndex, char *pstrName)
 *  Registers a function with the host API.
 */
 
-int XVM_RegisterCFunction(int iThreadIndex, char *pstrName, XVM_HOST_FUNCTION fnFunc)
+int XVM_RegisterHostFunction(int iThreadIndex, char *pstrName, XVM_HOST_FUNCTION fnFunc)
 {
     HOST_API_FUNC** pCFuncTable = &g_HostAPIs;
 

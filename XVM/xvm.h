@@ -123,7 +123,7 @@ XVM_API char *XVM_GetReturnValueAsString(int iThreadIndex);
 
 // ----Host API Interface ----------------------------------------------------------------
 
-XVM_API int XVM_RegisterCFunction(int iThreadIndex, char *pstrName, XVM_HOST_FUNCTION fnFunc);
+XVM_API int XVM_RegisterHostFunction(int iThreadIndex, char *pstrName, XVM_HOST_FUNCTION fnFunc);
 XVM_API int XVM_GetParamAsInt(int iThreadIndex, int iParamIndex);
 XVM_API float XVM_GetParamAsFloat(int iThreadIndex, int iParamIndex);
 XVM_API char *XVM_GetParamAsString(int iThreadIndex, int iParamIndex);
