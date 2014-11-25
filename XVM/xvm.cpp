@@ -21,7 +21,7 @@
 
 // ----Stack -----------------------------------------------------------------------------
 
-#define DEF_STACK_SIZE                1024        // The default stack size
+#define DEF_STACK_SIZE              1024        // The default stack size
 
 // ----Coercion --------------------------------------------------------------------------
 
@@ -128,8 +128,8 @@ struct ScriptContext                            // Encapsulates a full script
 struct HOST_API_FUNC                     // Host API function
 {
     int ThreadIndex;                     // The thread to which this function is visible
-    char Name[MAX_FUNC_NAME_SIZE+1];     // The function name
-    HOST_FUNC_PTR FuncPtr;               // Pointer to the function definition
+    char Name[MAX_FUNC_NAME_SIZE];       // The function name
+    XVM_HOST_FUNCTION FuncPtr;           // Pointer to the function definition
     HOST_API_FUNC* Next;                 // The next record
 };
 
@@ -141,7 +141,7 @@ ScriptContext **g_pScript;
 
 // ----Threading -------------------------------------------------------------------------
 int g_CurrThreadMode;                          // The current threading mode
-int g_CurrThread;                                // The currently running thread
+int g_CurrThread;                              // The currently running thread
 int g_CurrThreadActiveTime;                    // The time at which the current thread was activated
 
 // ----The Host API ----------------------------------------------------------------------
@@ -205,7 +205,7 @@ int CoerceValueToInt(Value Val);
 float CoerceValueToFloat(Value Val);
 char *CoerceValueToString(Value Val);
 
-void CopyValue(Value*pDest, Value Source);
+void CopyValue(Value *pDest, Value Source);
 
 int GetOpType(int OpIndex);
 int ResolveOpStackIndex(int OpIndex);
@@ -461,7 +461,7 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
 
         // Allocate space for the operand list in a temporary pointer
 
-        Value*pOpList;
+        Value *pOpList;
         if (!(pOpList = (Value *)malloc(iOpCount*sizeof(Value))))
             return XVM_LOAD_ERROR_OUT_OF_MEMORY;
 
@@ -596,7 +596,7 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
             // Get the instruction's operand count and a copy of it's operand list
 
             int iOpCount = g_Scripts[iThreadIndex].InstrStream.Instrs[i].OpCount;
-            Value*pOpList = g_Scripts[iThreadIndex].InstrStream.Instrs[i].pOpList;
+            Value *pOpList = g_Scripts[iThreadIndex].InstrStream.Instrs[i].pOpList;
 
             for (int j = 0; j < iOpCount; ++j)
             {
@@ -764,7 +764,7 @@ void XVM_UnloadScript(int iThreadIndex)
         // Make a local copy of the operand count and operand list
 
         int iOpCount = g_Scripts[iThreadIndex].InstrStream.Instrs[i].OpCount;
-        Value*pOpList = g_Scripts[iThreadIndex].InstrStream.Instrs[i].pOpList;
+        Value *pOpList = g_Scripts[iThreadIndex].InstrStream.Instrs[i].pOpList;
 
         // Loop through each operand and free its string pointer
 
@@ -2565,7 +2565,7 @@ void XVM_InvokeScriptFunc(int iThreadIndex, char *pstrName)
 *  Registers a function with the host API.
 */
 
-int XVM_RegisterCFunction(int iThreadIndex, char *pstrName, HOST_FUNC_PTR fnFunc)
+int XVM_RegisterCFunction(int iThreadIndex, char *pstrName, XVM_HOST_FUNCTION fnFunc)
 {
     HOST_API_FUNC** pCFuncTable = &g_HostAPIs;
 

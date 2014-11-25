@@ -62,7 +62,7 @@ extern "C" {
 
 // ----Data Structures -----------------------------------------------------------------------
 
-typedef void(*HOST_FUNC_PTR)(int iThreadIndex);  // Host API function pointer alias
+typedef void (*XVM_HOST_FUNCTION)(int iThreadIndex);  // Host API function pointer alias
 
 typedef int index_t;    // index(address,pointer)
 
@@ -119,14 +119,14 @@ XVM_API void XVM_CallScriptFunc(int iThreadIndex, char *pstrName);
 XVM_API void XVM_InvokeScriptFunc(int iThreadIndex, char *pstrName);
 XVM_API int XVM_GetReturnValueAsInt(int iThreadIndex);
 XVM_API float XVM_GetReturnValueAsFloat(int iThreadIndex);
-XVM_API char*XVM_GetReturnValueAsString(int iThreadIndex);
+XVM_API char *XVM_GetReturnValueAsString(int iThreadIndex);
 
 // ----Host API Interface ----------------------------------------------------------------
 
-XVM_API int XVM_RegisterCFunction(int iThreadIndex, char *pstrName, HOST_FUNC_PTR fnFunc);
+XVM_API int XVM_RegisterCFunction(int iThreadIndex, char *pstrName, XVM_HOST_FUNCTION fnFunc);
 XVM_API int XVM_GetParamAsInt(int iThreadIndex, int iParamIndex);
 XVM_API float XVM_GetParamAsFloat(int iThreadIndex, int iParamIndex);
-XVM_API char* XVM_GetParamAsString(int iThreadIndex, int iParamIndex);
+XVM_API char *XVM_GetParamAsString(int iThreadIndex, int iParamIndex);
 XVM_API Value XVM_GetParam(int iThreadIndex, int iParamIndex);
 
 XVM_API void XVM_ReturnFromHost(int iThreadIndex);
