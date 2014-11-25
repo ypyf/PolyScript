@@ -116,7 +116,7 @@ XVM_API void XVM_PassIntParam(int iThreadIndex, int iInt);
 XVM_API void XVM_PassFloatParam(int iThreadIndex, float fFloat);
 XVM_API void XVM_PassStringParam(int iThreadIndex, char *pstrString);
 XVM_API void XVM_CallScriptFunc(int iThreadIndex, char *pstrName);
-XVM_API void XVM_InvokeScriptFunc(int iThreadIndex, char *pstrName);
+XVM_API void XVM_CallScriptFuncSync(int iThreadIndex, char *pstrName);
 XVM_API int XVM_GetReturnValueAsInt(int iThreadIndex);
 XVM_API float XVM_GetReturnValueAsFloat(int iThreadIndex);
 XVM_API char *XVM_GetReturnValueAsString(int iThreadIndex);

@@ -2535,13 +2535,13 @@ void XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
 
 /******************************************************************************************
 *
-*  XVM_InvokeScriptFunc()
+*  XVM_CallScriptFuncSync()
 *
 *  Invokes a script function from the host application, meaning the call executes in sync
 *  with the script.
 */
 
-void XVM_InvokeScriptFunc(int iThreadIndex, char *pstrName)
+void XVM_CallScriptFuncSync(int iThreadIndex, char *pstrName)
 {
     // Make sure the thread index is valid and active
     if (!IsThreadActive(iThreadIndex))

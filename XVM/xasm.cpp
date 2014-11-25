@@ -77,7 +77,7 @@
 #define TOKEN_TYPE_LOCAL            18          // The Locals directives
 #define TOKEN_TYPE_REG_RETVAL       19          // The _RetVal register
 #define TOKEN_TYPE_REG_THISVAL      20          // The _ThisVal register
-//#define TOKEN_TYPE_NAMESPACE        20        // 命名空间
+//#define TOKEN_TYPE_NAMESPACE      20          // 命名空间
 #define END_OF_TOKEN_STREAM         21          // The end of the stream has been reached
 
 #define MAX_IDENT_SIZE              256        // Maximum identifier size
@@ -240,8 +240,8 @@ struct Lexer                            // The lexical analyzer/tokenizer
 {
     int CurrSourceLine;                 // Current line in the source
 
-    size_t Index0,                      // Indices into the string
-        Index1;
+    size_t Index0;                      // Indices into the string
+    size_t Index1;
 
     Token CurrToken;                    // Current token
     char CurrLexeme[MAX_LEXEME_SIZE];   // Current lexeme
@@ -970,9 +970,7 @@ static void PrintUsage()
 *   Loads the source file into memory.
 */
 
-// Windows 换行符 \r\n
-// UNIX 换行符 \n
-// MAC 换行符 \r
+
 // 注意这里简化了Windows的换行符,使之和unix相同,并不影响我们统计文件行数
 
 #if defined(_MAC)
@@ -994,9 +992,7 @@ void LoadSourceFile(const char* file)
             ++g_iSourceCodeSize;
     }
 
-    // 原先的程序假定文件不以newline结束
-    // ++g_iSourceCodeSize;
-    // 现在通过判断文件最后一个字节来确定文件是否以newline结尾
+    // 通过判断文件最后一个字节来确定文件是否以newline结尾
     // 并据此修正行数
     fseek(g_pSourceFile, -1, SEEK_END);
     if (fgetc(g_pSourceFile) != NEWLINE)
