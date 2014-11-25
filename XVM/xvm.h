@@ -65,35 +65,29 @@ extern "C" {
 
 typedef void (*XVM_HOST_FUNCTION)(int iThreadIndex);  // Host API function pointer alias
 
-typedef int index_t;    // index(address,pointer)
-
-struct  PolarObject
-{
-    long RefCount;
-    PolarObject* Type;
-    char* Name;
-
-};
+struct _XObject;
+typedef struct _XObject *XObject;
 
 // ----Runtime Value ---------------------------------------------------------------------
 struct Value
 {
-    int Type;                           // Type
-    union                               // The value
+    int Type;                      // Type
+    union                          // The value
     {
-        PolarObject* Object;
-        int Fixnum;                     // Integer literal
-        float Realnum;                  // Float literal
-        char* StringLiteral;            // String literal
-        index_t StackIndex;             // Stack Index
-        index_t InstrIndex;             // Instruction index
-        index_t FuncIndex;              // Function index
-        index_t CFuncIndex;             // Host API Call index
-        int Register;                   // Register code
+        XObject     This;          // Object Reference
+        int         Fixnum;        // Integer literal
+        float       Realnum;       // Float literal
+        char*       String;        // String literal
+        int         StackIndex;    // Stack Index
+        int         InstrIndex;    // Instruction index
+        int         FuncIndex;     // Function index
+        int         HostFuncIndex; // Host API Call index
+        int         Register;      // Register code
     };
+
     // 对于OP_TYPE_REL_STACK_INDEX，该字段保存的是偏移值的地址(偏移值是一个变量)
     // 对于OP_TYPE_FUNC_INDEX，该字段保存的是前一个栈帧的地址(FP)
-    index_t OffsetIndex;                  // Index of the offset
+    int OffsetIndex;               // Index of the offset
 };
 
 // ----Function Prototypes -------------------------------------------------------------------

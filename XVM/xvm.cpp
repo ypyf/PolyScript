@@ -187,18 +187,6 @@ inline int IsThreadActive(int Index)
 
 // ----Function Prototypes -------------------------------------------------------------------
 
-// -------- Object Interface ----------------------
-Value allocate_object(Value val)
-{
-    Value newobj;
-    newobj.Type = val.Type;
-    newobj.Object = (PolarObject*)malloc(sizeof(PolarObject));
-    newobj.Object->RefCount = 1;
-    newobj.Object->Type = val.Object;
-    //newobj.Reference->Name = val.Reference->Name;
-    return newobj;
-}
-
 // ----Operand Interface -----------------------------------------------------------------
 
 int CoerceValueToInt(Value Val);
@@ -530,7 +518,7 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
                 // Host API call index
 
             case OP_TYPE_HOST_API_CALL_INDEX:
-                fread(&pOpList[iCurrOpIndex].CFuncIndex, sizeof(int), 1, pScriptFile);
+                fread(&pOpList[iCurrOpIndex].HostFuncIndex, sizeof(int), 1, pScriptFile);
                 break;
 
                 // Register
@@ -620,7 +608,7 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
 
                     // Save the string pointer in the operand list
 
-                    pOpList[j].StringLiteral = pstrStringCopy;
+                    pOpList[j].String = pstrStringCopy;
                 }
             }
         }
@@ -769,8 +757,8 @@ void XVM_UnloadScript(int iThreadIndex)
         // Loop through each operand and free its string pointer
 
         for (int j = 0; j < iOpCount; ++j)
-            if (pOpList[j].StringLiteral)
-                pOpList[j].StringLiteral;
+            if (pOpList[j].String)
+                pOpList[j].String;
     }
 
     // Now free the stream itself
@@ -784,7 +772,7 @@ void XVM_UnloadScript(int iThreadIndex)
 
     for (int i = 0; i < g_Scripts[iThreadIndex].Stack.Size; ++i)
         if (g_Scripts[iThreadIndex].Stack.Elmnts[i].Type == OP_TYPE_STRING)
-            free(g_Scripts[iThreadIndex].Stack.Elmnts[i].StringLiteral);
+            free(g_Scripts[iThreadIndex].Stack.Elmnts[i].String);
 
     // Now free the stack itself
 
@@ -865,7 +853,7 @@ void XVM_ResetScript(int iThreadIndex)
 *    Runs the currenty loaded script array for a given timeslice duration.
 */
 
-static void XVM_ExecuteScript(int iTimesliceDur)
+static void ExecuteScript(int iTimesliceDur)
 {
     // Begin a loop that runs until a keypress. The instruction pointer has already been
     // initialized with a prior call to ResetScripts(), so execution can begin
@@ -1213,12 +1201,12 @@ static void XVM_ExecuteScript(int iTimesliceDur)
                 // Determine the length of the new string and allocate space for it (with a
                 // null terminator)
 
-                int iNewStringLength = strlen(Dest.StringLiteral) + strlen(pstrSourceString);
+                int iNewStringLength = strlen(Dest.String) + strlen(pstrSourceString);
                 char *pstrNewString = (char *)malloc(iNewStringLength + 1);
 
                 // Copy the old string to the new one
 
-                strcpy(pstrNewString, Dest.StringLiteral);
+                strcpy(pstrNewString, Dest.String);
 
                 // Concatenate the destination with the source
 
@@ -1227,8 +1215,8 @@ static void XVM_ExecuteScript(int iTimesliceDur)
                 // Free the existing string in the destination structure and replace it
                 // with the new string
 
-                free(Dest.StringLiteral);
-                Dest.StringLiteral = pstrNewString;
+                free(Dest.String);
+                Dest.String = pstrNewString;
 
                 // Copy the concatenated string pointer to its destination
 
@@ -1255,13 +1243,13 @@ static void XVM_ExecuteScript(int iTimesliceDur)
                     // If it is, we can use it's existing string buffer as long as it's at
                     // least 1 character
 
-                    if (strlen(Dest.StringLiteral) >= 1)
+                    if (strlen(Dest.String) >= 1)
                     {
-                        pstrNewString = Dest.StringLiteral;
+                        pstrNewString = Dest.String;
                     }
                     else
                     {
-                        free(Dest.StringLiteral);
+                        free(Dest.String);
                         pstrNewString = (char *)malloc(2);
                     }
                 }
@@ -1280,7 +1268,7 @@ static void XVM_ExecuteScript(int iTimesliceDur)
                 pstrNewString[1] = '\0';
 
                 // Set the string pointer in the destination Value structure
-                Dest.StringLiteral = pstrNewString;
+                Dest.String = pstrNewString;
 
                 // Copy the concatenated string pointer to its destination
                 *ResolveOpPntr(0) = Dest;
@@ -1301,7 +1289,7 @@ static void XVM_ExecuteScript(int iTimesliceDur)
                 char *pstrSourceString = ResolveOpAsString(2);
 
                 // Set the specified character in the destination (operand index 0)
-                ResolveOpPntr(0)->StringLiteral[iDestIndex] = pstrSourceString[0];
+                ResolveOpPntr(0)->String[iDestIndex] = pstrSourceString[0];
 
                 break;
             }
@@ -1355,7 +1343,7 @@ static void XVM_ExecuteScript(int iTimesliceDur)
                             break;
 
                         case OP_TYPE_STRING:
-                            if (strcmp(Op0.StringLiteral, Op1.StringLiteral) == 0)
+                            if (strcmp(Op0.String, Op1.String) == 0)
                                 iJump = TRUE;
                             break;
                         }
@@ -1378,7 +1366,7 @@ static void XVM_ExecuteScript(int iTimesliceDur)
                             break;
 
                         case OP_TYPE_STRING:
-                            if (strcmp(Op0.StringLiteral, Op1.StringLiteral) != 0)
+                            if (strcmp(Op0.String, Op1.String) != 0)
                                 iJump = TRUE;
                             break;
                         }
@@ -1505,7 +1493,7 @@ static void XVM_ExecuteScript(int iTimesliceDur)
                     // host API function name
 
                     Value HostAPICall = ResolveOpValue(0);
-                    int iHostAPICallIndex = HostAPICall.CFuncIndex;
+                    int iHostAPICallIndex = HostAPICall.HostFuncIndex;
 
                     // Get the name of the host API function
 
@@ -1608,7 +1596,7 @@ static void XVM_ExecuteScript(int iTimesliceDur)
                     printf("%.16g\n", val.Realnum);
                     break;
                 case OP_TYPE_STRING:
-                    printf("%s\n", val.StringLiteral);
+                    printf("%s\n", val.String);
                     break;
                 case OP_TYPE_REG:
                     printf("%i\n", val.Register);
@@ -1825,7 +1813,7 @@ char* XVM_GetReturnValueAsString(int iThreadIndex)
 
     // Return _RetVal's string field
 
-    return g_Scripts[iThreadIndex]._RetVal.StringLiteral;
+    return g_Scripts[iThreadIndex]._RetVal.String;
 }
 
 /******************************************************************************************
@@ -1840,7 +1828,7 @@ void CopyValue(Value *pDest, Value Source)
     // If the destination already contains a string, make sure to free it first
 
     if (pDest->Type == OP_TYPE_STRING)
-        free(pDest->StringLiteral);
+        free(pDest->String);
 
     // Copy the object
 
@@ -1850,8 +1838,8 @@ void CopyValue(Value *pDest, Value Source)
 
     if (Source.Type == OP_TYPE_STRING)
     {
-        pDest->StringLiteral = (char *)malloc(strlen(Source.StringLiteral) + 1);
-        strcpy(pDest->StringLiteral, Source.StringLiteral);
+        pDest->String = (char *)malloc(strlen(Source.String) + 1);
+        strcpy(pDest->String, Source.String);
     }
 }
 
@@ -1881,7 +1869,7 @@ int CoerceValueToInt(Value Val)
         // It's a string, so convert it to an integer
 
     case OP_TYPE_STRING:
-        return atoi(Val.StringLiteral);
+        return atoi(Val.String);
 
         // Anything else is invalid
 
@@ -1916,7 +1904,7 @@ float CoerceValueToFloat(Value Val)
         // It's a string, so convert it to an float
 
     case OP_TYPE_STRING:
-        return(float) atof(Val.StringLiteral);
+        return(float) atof(Val.String);
 
         // Anything else is invalid
 
@@ -1959,7 +1947,7 @@ char *CoerceValueToString(Value Val)
         // It's a string, so return it as-is
 
     case OP_TYPE_STRING:
-        return Val.StringLiteral;
+        return Val.String;
 
         // Anything else is invalid
 
@@ -2197,7 +2185,7 @@ inline char*ResolveOpAsHostAPICall(int iOpIndex)
 
     // Get the value's host API call index
 
-    int iHostAPICallIndex = OpValue.CFuncIndex;
+    int iHostAPICallIndex = OpValue.HostFuncIndex;
 
     // Return the host API call
 
@@ -2479,8 +2467,8 @@ void XVM_PassStringParam(int iThreadIndex, char *pstrString)
     // Create a Value structure to encapsulate the parameter
     Value Param;
     Param.Type = OP_TYPE_STRING;
-    Param.StringLiteral = (char *)malloc(strlen(pstrString) + 1);
-    strcpy(Param.StringLiteral, pstrString);
+    Param.String = (char *)malloc(strlen(pstrString) + 1);
+    strcpy(Param.String, pstrString);
 
     // Push the parameter onto the stack
     Push(iThreadIndex, Param);
@@ -2548,7 +2536,7 @@ int XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
     SetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - 1, StackBase);
 
     // Allow the script code to execute uninterrupted until the function returns
-    XVM_ExecuteScript(XVM_INFINITE_TIMESLICE);
+    ExecuteScript(XVM_INFINITE_TIMESLICE);
 
     // ----Handling the function return
 
@@ -2746,7 +2734,7 @@ void XVM_ReturnStringFromHost(int iThreadIndex, char *pstrString)
     // Put the return value and type in _RetVal
     Value ReturnValue;
     ReturnValue.Type = OP_TYPE_STRING;
-    ReturnValue.StringLiteral = pstrString;
+    ReturnValue.String = pstrString;
     CopyValue(&g_Scripts[iThreadIndex]._RetVal, ReturnValue);
 
     // Clear the parameters off the stack

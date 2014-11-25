@@ -85,6 +85,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mathlib.cpp" />
     <ClCompile Include="xasm.cpp" />
+    <ClCompile Include="xoo.cpp" />
     <ClCompile Include="xvm.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

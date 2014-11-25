@@ -47,5 +47,8 @@
     <ClCompile Include="xvm.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="xoo.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
