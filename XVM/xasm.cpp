@@ -822,6 +822,9 @@ int IsStringIdent(char *pstrString)
 
 int IsStringInteger(char *pstrString)
 {
+    // Reset numeric state to base-10
+    g_Lexer.CurrBase = 10;
+
     // If the string is NULL, it's not an integer
 
     if (!pstrString)
