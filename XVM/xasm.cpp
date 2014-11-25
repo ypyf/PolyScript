@@ -71,7 +71,7 @@
 #define TOKEN_TYPE_INSTR            12          // An instruction
 #define TOKEN_TYPE_SETSTACKSIZE     13          // The SetStackSize directive
 #define TOKEN_TYPE_SETPRIORITY      14          // The SetPriority directive
-#define TOKEN_TYPE_VAR              15          // The Var/Var [] directives
+#define TOKEN_TYPE_GLOBAL           15          // The Global Var/Var [] directives
 #define TOKEN_TYPE_FUNC             16          // The Func directives
 #define TOKEN_TYPE_PARAM            17          // The Param directives
 #define TOKEN_TYPE_LOCAL            18          // The Locals directives
@@ -1871,9 +1871,9 @@ Token GetNextToken()
     //if (_stricmp(g_Lexer.CurrLexeme, "NAMESPACE") == 0)
     //    g_Lexer.CurrToken = TOKEN_TYPE_NAMESPACE;
 
-    // Is it Var/Var []?
-    if (_stricmp(g_Lexer.CurrLexeme, "VAR") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_VAR;
+    // Is it Global Var/Var []?
+    if (_stricmp(g_Lexer.CurrLexeme, "GLOBAL") == 0)
+        g_Lexer.CurrToken = TOKEN_TYPE_GLOBAL;
 
     // Is it Func?
     if (_stricmp(g_Lexer.CurrLexeme, "PROC") == 0)
@@ -2547,10 +2547,10 @@ void AssmblSourceFile()
 
             // Var/Var []
 
-        case TOKEN_TYPE_VAR:    // 全局变量
+        case TOKEN_TYPE_GLOBAL:    // 全局变量
         case TOKEN_TYPE_LOCAL:  // 本地变量
             {
-                if (iIsFuncActive && g_Lexer.CurrToken == TOKEN_TYPE_VAR ||
+                if (iIsFuncActive && g_Lexer.CurrToken == TOKEN_TYPE_GLOBAL ||
                     !iIsFuncActive && g_Lexer.CurrToken == TOKEN_TYPE_LOCAL)
                     ExitOnCodeError(ERROR_MSSG_INVALID_SCOPE_KIND);
 
