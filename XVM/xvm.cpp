@@ -1,10 +1,11 @@
 ﻿#define _XVM_SOURCE
 
-#include "xasm.h"
 #include "xvm-internal.h"
-#include "xvm.h"
 #include "bytecode.h"
+#include "xasm.h"
+#include "xvm.h"
 #include "mathlib.h"
+
 
 #include <time.h>
 
@@ -2369,9 +2370,13 @@ inline char* GetHostFunc(int iIndex)
 
 inline int GetCurrTime()
 {
-    // This function is currently implemented with the WinAPI function GetTickCount().
-    // Change this line to make it compatible with other systems.
+#if defined(WIN32_PLATFORM)
     return GetTickCount();
+#else
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    return unsigned((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+#endif
 }
 
 /******************************************************************************************

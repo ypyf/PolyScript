@@ -5,13 +5,14 @@
 extern "C" {
 #endif
 
+/* Dynamic Link */
 #if !defined(_MSC_VER) || defined(STANDALONE)
-# define XVM_API
+#   define XVM_API
 #else
 # ifdef _XVM_SOURCE
-#  define XVM_API __declspec(dllexport)
+#   define XVM_API __declspec(dllexport)
 # else
-#  define XVM_API __declspec(dllimport)
+#   define XVM_API __declspec(dllimport)
 # endif
 #endif
 

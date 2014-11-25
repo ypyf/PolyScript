@@ -1,10 +1,23 @@
 ﻿#ifndef XVM_INTERNAL_H_
 #define XVM_INTERNAL_H_
 
-
-// ----Include Files -------------------------------------------------------------------------
+// ----Platform Detection -----------------------------------------------------
 
 #if defined(WIN32) || defined(_WIN32)
+#	define WIN32_PLATFORM 1
+#endif
+
+#if defined(linux) || defined(__linux) || defined(__linux__)
+#	define LINUX_PLATFORM 1
+#endif
+
+#if defined(__APPLE__)
+#	define MAC_PLATFORM 1
+#endif
+
+// ----Include Files ----------------------------------------------------------
+
+#if defined(WIN32_PLATFORM)
 # define WIN32_LEAN_AND_MEAN
 # define _CRT_SECURE_NO_WARNINGS
 # include <windows.h>
@@ -17,7 +30,7 @@
 #include <stdarg.h>
 #include <assert.h>
 
-// ----Operand/Value Types ---------------------------------------------------------------
+// ----Operand/Value Types ----------------------------------------------------
 
 #define OP_TYPE_NULL                        -1          // Uninitialized/Null data
 #define OP_TYPE_INT                         0           // Integer literal value
