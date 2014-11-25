@@ -71,7 +71,7 @@
 #define TOKEN_TYPE_INSTR            12          // An instruction
 #define TOKEN_TYPE_SETSTACKSIZE     13          // The SetStackSize directive
 #define TOKEN_TYPE_SETPRIORITY      14          // The SetPriority directive
-#define TOKEN_TYPE_GLOBAL           15          // The global/global [] directives
+#define TOKEN_TYPE_VAR              15          // The Var/Var [] directives
 #define TOKEN_TYPE_FUNC             16          // The Func directives
 #define TOKEN_TYPE_PARAM            17          // The Param directives
 #define TOKEN_TYPE_LOCAL            18          // The Locals directives
@@ -318,21 +318,25 @@ struct FuncNode                        // A function table node
 
 typedef struct _LabelNode                       // A label table node
 {
-    int iIndex;                                    // Index
-    char pstrIdent[MAX_IDENT_SIZE];          // Identifier
+    int iIndex;                                 // Index
+    char pstrIdent[MAX_IDENT_SIZE];             // Identifier
     int iTargetIndex;                           // Index of the target instruction
     int iFuncIndex;                             // Function in which the label resides
 } LabelNode;
 
 // ----Symbol Table ----------------------------------------------------------------------
 
+// Symbol Level
+enum { CONSTANTS = 1, GLOBAL, PARAM, LOCAL };
+
 typedef struct _SymbolNode                      // A symbol table node
 {
-    int iIndex;                                    // Index
-    char pstrIdent[MAX_IDENT_SIZE];          // Identifier
-    int iSize;                                  // Size(1 for ( variables, N for ( arrays)
+    int iIndex;                                 // Index
+    char pstrIdent[MAX_IDENT_SIZE];             // Identifier
+    int iSize;                                  // Size(1 for variables, N for arrays)
     int iStackIndex;                            // The stack index to which the symbol points
     int iFuncIndex;                             // Function in which the symbol resides
+    int iLevel;                                 // Scope level
     int iNameSpaceIndex;
 } SymbolNode;
 
@@ -465,10 +469,14 @@ void SetFuncInfo(char *pstrName, int iParamCount, int iLocalDataSize);
 int AddLabel(char *pstrIdent, int iTargetIndex, int iFuncIndex);
 LabelNode *GetLabelByIdent(char *pstrIdent, int iFuncIndex);
 
-int AddSymbol(char *pstrIdent, int iSize, int iStackIndex, int iFuncIndex);
-SymbolNode *GetSymbolByIdent(char *pstrIdent, int iFuncIndex);
-int GetStackIndexByIdent(char *pstrIdent, int iFuncIndex);
-int GetSizeByIdent(char *pstrIdent, int iFuncIndex);
+// 定义符号
+int AddSymbol(char *pstrIdent, int iSize, int iLevel, int iStackIndex, int iFuncIndex);
+SymbolNode *GetSymbolByFuncIndex(char *pstrIdent, int iFuncIndex);
+
+// 使用符号
+SymbolNode *GetSymbolByLevel(char *pstrIdent, int iLevel, int iFuncIndex);
+int GetStackIndexByIdent(char *pstrIdent, int iLevel, int iFuncIndex);
+int GetSizeByIdent(char *pstrIdent, int iLevel, int iFuncIndex);
 
 // ----Functions -----------------------------------------------------------------------------
 
@@ -1864,11 +1872,11 @@ Token GetNextToken()
     //    g_Lexer.CurrToken = TOKEN_TYPE_NAMESPACE;
 
     // Is it Var/Var []?
-    if (_stricmp(g_Lexer.CurrLexeme, "global") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_GLOBAL;
+    if (_stricmp(g_Lexer.CurrLexeme, "VAR") == 0)
+        g_Lexer.CurrToken = TOKEN_TYPE_VAR;
 
     // Is it Func?
-    if (_stricmp(g_Lexer.CurrLexeme, "proc") == 0)
+    if (_stricmp(g_Lexer.CurrLexeme, "PROC") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_FUNC;
 
     //// 结构体
@@ -2200,13 +2208,64 @@ int AddLabel(char *pstrIdent, int iTargetIndex, int iFuncIndex)
 
 /******************************************************************************************
 *
-*   GetSymbolByIdent()
+*   GetSymbolByFuncIndex()
 *
 *   Returns a pointer to the symbol structure corresponding to the identifier and function
 *   index.
 */
 
-SymbolNode *GetSymbolByIdent(char *pstrIdent, int iFuncIndex)
+SymbolNode *GetSymbolByLevel(char *pstrIdent, int iLevel, int iFuncIndex)
+{
+    // If the table is empty, return a NULL pointer
+
+    if (!g_SymbolTable.NodeCount)
+        return NULL;
+
+    // Create a pointer to traverse the list
+
+    LinkedListNode *pCurrNode = g_SymbolTable.head;
+
+    // Traverse the list until the matching structure is found
+    SymbolNode *pSymbol = NULL;
+
+    for (int iCurrNode = 0; iCurrNode < g_SymbolTable.NodeCount; ++iCurrNode)
+    {
+        // Create a pointer to the current symbol structure
+
+        SymbolNode *pCurrSymbol = (SymbolNode *) pCurrNode->Data;
+
+        // See if the names match
+
+        if (strcmp(pCurrSymbol->pstrIdent, pstrIdent) == 0)
+        {
+            // 全局变量
+            if (pCurrSymbol->iLevel <= GLOBAL)
+                pSymbol = pCurrSymbol;
+
+            // 局部变量
+            if (pCurrSymbol->iFuncIndex == iFuncIndex && pCurrSymbol->iLevel <= iLevel)
+                pSymbol = pCurrSymbol;
+        }
+
+        // Otherwise move to the next node
+
+        pCurrNode = pCurrNode->Next;
+    }
+
+    // The structure was not found, so return a NULL pointer
+
+    return pSymbol;
+}
+
+/******************************************************************************************
+*
+*   GetSymbolByFuncIndex()
+*
+*   Returns a pointer to the symbol structure corresponding to the identifier and function
+*   index.
+*/
+
+SymbolNode *GetSymbolByFuncIndex(char *pstrIdent, int iFuncIndex)
 {
     // If the table is empty, return a NULL pointer
 
@@ -2228,12 +2287,13 @@ SymbolNode *GetSymbolByIdent(char *pstrIdent, int iFuncIndex)
         // See if the names match
 
         if (strcmp(pCurrSymbol->pstrIdent, pstrIdent) == 0)
-
+        {
             // If the functions match, or if the existing symbol is global, they match.
             // Return the symbol.
 
-            if (pCurrSymbol->iFuncIndex == iFuncIndex || pCurrSymbol->iStackIndex >= 0)
+            if (pCurrSymbol->iFuncIndex == iFuncIndex)
                 return pCurrSymbol;
+        }
 
         // Otherwise move to the next node
 
@@ -2252,10 +2312,10 @@ SymbolNode *GetSymbolByIdent(char *pstrIdent, int iFuncIndex)
 *    Returns a symbol's stack index based on its identifier and function index.
 */
 
-inline int GetStackIndexByIdent(char *pstrIdent, int iFuncIndex)
+inline int GetStackIndexByIdent(char *pstrIdent, int iLevel, int iFuncIndex)
 {
     // Get the symbol's information
-    SymbolNode *pSymbol = GetSymbolByIdent(pstrIdent, iFuncIndex);
+    SymbolNode *pSymbol = GetSymbolByLevel(pstrIdent, iLevel, iFuncIndex);
 
     // Return its stack index
     return pSymbol->iStackIndex;
@@ -2268,10 +2328,10 @@ inline int GetStackIndexByIdent(char *pstrIdent, int iFuncIndex)
 *    Returns a variable's size based on its identifier.
 */
 
-static inline int GetSizeByIdent(char *pstrIdent, int iFuncIndex)
+static inline int GetSizeByIdent(char *pstrIdent, int iLevel, int iFuncIndex)
 {
     // Get the symbol's information
-    SymbolNode *pSymbol = GetSymbolByIdent(pstrIdent, iFuncIndex);
+    SymbolNode *pSymbol = GetSymbolByLevel(pstrIdent, iLevel, iFuncIndex);
 
     // Return its size
     return pSymbol->iSize;
@@ -2284,11 +2344,12 @@ static inline int GetSizeByIdent(char *pstrIdent, int iFuncIndex)
 *   Adds a symbol to the symbol table.
 */
 
-int AddSymbol(char *pstrIdent, int iSize, int iStackIndex, int iFuncIndex)
+int AddSymbol(char *pstrIdent, int iSize, int iLevel, int iStackIndex, int iFuncIndex)
 {
     // If a label already exists
 
-    if (GetSymbolByIdent(pstrIdent, iFuncIndex))
+    // 重复定义符号错误
+    if (GetSymbolByFuncIndex(pstrIdent, iFuncIndex))
         return -1;
 
     // Create a new symbol node
@@ -2299,6 +2360,7 @@ int AddSymbol(char *pstrIdent, int iSize, int iStackIndex, int iFuncIndex)
 
     strcpy(pNewSymbol->pstrIdent, pstrIdent);
     pNewSymbol->iSize = iSize;
+    pNewSymbol->iLevel = iLevel;
     pNewSymbol->iStackIndex = iStackIndex;
     pNewSymbol->iFuncIndex = iFuncIndex;
 
@@ -2340,7 +2402,7 @@ void AssmblSourceFile()
 
     int iIsFuncActive = FALSE;
     FuncNode *pCurrFunc;
-    int iCurrFuncIndex = 0;
+    int iCurrFuncIndex = -1;    // 全局作用域
     char pstrCurrFuncName[MAX_IDENT_SIZE];
     int iCurrFuncParamCount = 0;
     int iCurrFuncLocalDataSize = 0;
@@ -2350,7 +2412,7 @@ void AssmblSourceFile()
 
     InstrLookup CurrInstr;
 
-    // ----Perfor (m first pass over the source
+    // ----Perforom first pass over the source
 
     // Reset the lexer
 
@@ -2483,10 +2545,10 @@ void AssmblSourceFile()
 
             // Var/Var []
 
-        case TOKEN_TYPE_GLOBAL:
-        case TOKEN_TYPE_LOCAL:
+        case TOKEN_TYPE_VAR:    // 全局变量
+        case TOKEN_TYPE_LOCAL:  // 本地变量
             {
-                if (iIsFuncActive && g_Lexer.CurrToken == TOKEN_TYPE_GLOBAL ||
+                if (iIsFuncActive && g_Lexer.CurrToken == TOKEN_TYPE_VAR ||
                     !iIsFuncActive && g_Lexer.CurrToken == TOKEN_TYPE_LOCAL)
                     ExitOnCodeError(ERROR_MSSG_INVALID_SCOPE_KIND);
 
@@ -2538,18 +2600,25 @@ void AssmblSourceFile()
                 // If the variable is local, then its stack index is always the local data size + 2 subtracted from zero
 
                 int iStackIndex;
+                int iLevel;
 
                 if (iIsFuncActive)
+                {
+                    iLevel = LOCAL;
                     iStackIndex = - (iCurrFuncLocalDataSize + 2);
+                }
 
                 // Otherwise it's global, so it's equal to the current global data size
 
                 else
+                {
+                    iLevel = GLOBAL;
                     iStackIndex = g_ScriptHeader.GlobalDataSize;
+                }
 
                 // Attempt to add the symbol to the table
 
-                if (AddSymbol(pstrIdent, iSize, iStackIndex, iCurrFuncIndex) == -1)
+                if (AddSymbol(pstrIdent, iSize, iLevel, iStackIndex, iCurrFuncIndex) == -1)
                     ExitOnCodeError(ERROR_MSSG_IDENT_REDEFINITION);
 
                 // Depending on the scope, increment either the local or global data size
@@ -2860,7 +2929,7 @@ void AssmblSourceFile()
 
                 // Add the parameter to the symbol table
 
-                if (AddSymbol(pstrIdent, 1, iStackIndex, iCurrFuncIndex) == -1)
+                if (AddSymbol(pstrIdent, 1, PARAM, iStackIndex, iCurrFuncIndex) == -1)
                     ExitOnCodeError(ERROR_MSSG_IDENT_REDEFINITION);
 
                 // Increment the current parameter count
@@ -3057,13 +3126,13 @@ void AssmblSourceFile()
 
                                 // Make sure the variable/array has been defined
 
-                                if (!GetSymbolByIdent(pstrIdent, iCurrFuncIndex))
+                                if (!GetSymbolByLevel(pstrIdent, LOCAL, iCurrFuncIndex))
                                     ExitOnCodeError(ERROR_MSSG_UNDEFINED_IDENT);
 
                                 // Get the identifier's index as well; it may either be
                                 // an absolute index or a base index
 
-                                int iBaseIndex = GetStackIndexByIdent(pstrIdent, iCurrFuncIndex);
+                                int iBaseIndex = GetStackIndexByIdent(pstrIdent, LOCAL, iCurrFuncIndex);
 
                                 // Use the lookahead character to find out whether or not
                                 // we're parsing an array
@@ -3075,7 +3144,7 @@ void AssmblSourceFile()
 
                                     // Make sure the variable isn't an array
 
-                                    if (GetSizeByIdent(pstrIdent, iCurrFuncIndex) > 1)
+                                    if (GetSizeByIdent(pstrIdent, LOCAL, iCurrFuncIndex) > 1)
                                         ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY_NOT_INDEXED);
 
                                     // Set the operand type to stack index and set the data
@@ -3089,7 +3158,7 @@ void AssmblSourceFile()
                                     // It's an array, so lets verify that the identifier is
                                     // an actual array
 
-                                    if (GetSizeByIdent(pstrIdent, iCurrFuncIndex) == 1)
+                                    if (GetSizeByIdent(pstrIdent, LOCAL, iCurrFuncIndex) == 1)
                                         ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY);
 
                                     // First make sure the open brace is valid
@@ -3126,16 +3195,16 @@ void AssmblSourceFile()
                                         // that the identifier represents a single variable
                                         // as opposed to another array
 
-                                        if (!GetSymbolByIdent(pstrIndexIdent, iCurrFuncIndex))
+                                        if (!GetSymbolByLevel(pstrIndexIdent, LOCAL, iCurrFuncIndex))
                                             ExitOnCodeError(ERROR_MSSG_UNDEFINED_IDENT);
 
-                                        if (GetSizeByIdent(pstrIndexIdent, iCurrFuncIndex) > 1)
+                                        if (GetSizeByIdent(pstrIndexIdent, LOCAL, iCurrFuncIndex) > 1)
                                             ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY_INDEX);
 
                                         // Get the variable's stack index and set the operand
                                         // type to relative stack index
 
-                                        int iOffsetIndex = GetStackIndexByIdent(pstrIndexIdent, iCurrFuncIndex);
+                                        int iOffsetIndex = GetStackIndexByIdent(pstrIndexIdent, LOCAL, iCurrFuncIndex);
 
                                         pOpList[iCurrOpIndex].Type = OP_TYPE_REL_STACK_INDEX;
                                         pOpList[iCurrOpIndex].StackIndex = iBaseIndex;
