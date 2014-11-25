@@ -230,7 +230,7 @@ void PopFrame(Value FuncIndex);
 
 // ----Function Table Interface ----------------------------------------------------------
 
-FUNC GetFunc(int iThreadIndex, int iIndex);
+FUNC *GetFunc(int iThreadIndex, int iIndex);
 
 // ----Host API Call Table Interface -----------------------------------------------------
 
@@ -1585,11 +1585,11 @@ void XVM_RunScript(int iTimesliceDur)
                 }
 
                 // Get the previous function index
-                FUNC CurrFunc = GetFunc(g_CurrThread, FuncIndex.FuncIndex);
+                FUNC *CurrFunc = GetFunc(g_CurrThread, FuncIndex.FuncIndex);
 
                 // Read the return address structure from the stack, which is stored one
                 // index below the local data
-                Value ReturnAddr = GetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - (CurrFunc.LocalDataSize + 1));
+                Value ReturnAddr = GetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - (CurrFunc->LocalDataSize + 1));
 
                 // Pop the stack frame along with the return address
                 PopFrame(FuncIndex);
@@ -2342,9 +2342,9 @@ inline void PopFrame(Value funcIndex)
 *    Returns the function corresponding to the specified index.
 */
 
-inline FUNC GetFunc(int iThreadIndex, int iIndex)
+inline FUNC *GetFunc(int iThreadIndex, int iIndex)
 {
-    return g_Scripts[iThreadIndex].FuncTable.Funcs[iIndex];
+    return &g_Scripts[iThreadIndex].FuncTable.Funcs[iIndex];
 }
 
 /******************************************************************************************
@@ -2383,7 +2383,7 @@ inline int GetCurrTime()
 
 void CallFunc(int iThreadIndex, int iIndex)
 {
-    FUNC DestFunc = GetFunc(iThreadIndex, iIndex);
+    FUNC *DestFunc = GetFunc(iThreadIndex, iIndex);
 
     // Save the current stack frame index
     int iFrameIndex = g_Scripts[iThreadIndex].Stack.FrameIndex;
@@ -2395,7 +2395,7 @@ void CallFunc(int iThreadIndex, int iIndex)
 
     // Push the stack frame + 1 (the extra space is for the function index
     // we'll put on the stack after it
-    PushFrame(iThreadIndex, DestFunc.LocalDataSize + 1);
+    PushFrame(iThreadIndex, DestFunc->LocalDataSize + 1);
 
     // Write the function index and old stack frame to the top of the stack
     Value FuncIndex;
@@ -2404,7 +2404,7 @@ void CallFunc(int iThreadIndex, int iIndex)
     SetStackValue(iThreadIndex, g_Scripts[iThreadIndex].Stack.TopIndex - 1, FuncIndex);
 
     // Let the caller make the jump to the entry point
-    g_Scripts[iThreadIndex].InstrStream.CurrInstr = DestFunc.EntryPoint;
+    g_Scripts[iThreadIndex].InstrStream.CurrInstr = DestFunc->EntryPoint;
 }
 
 /******************************************************************************************

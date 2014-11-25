@@ -2468,8 +2468,8 @@ void AssmblSourceFile()
         case TOKEN_TYPE_GLOBAL:
         case TOKEN_TYPE_LOCAL:
             {
-                if (iIsFuncActive &&g_Lexer.CurrToken == TOKEN_TYPE_GLOBAL ||
-                    !iIsFuncActive &&g_Lexer.CurrToken == TOKEN_TYPE_LOCAL)
+                if (iIsFuncActive && g_Lexer.CurrToken == TOKEN_TYPE_GLOBAL ||
+                    !iIsFuncActive && g_Lexer.CurrToken == TOKEN_TYPE_LOCAL)
                     ExitOnCodeError(ERROR_MSSG_INVALID_SCOPE_KIND);
 
                 // Get the variable's identifier
