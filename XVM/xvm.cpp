@@ -2370,13 +2370,18 @@ inline char* GetHostFunc(int iIndex)
 
 inline int GetCurrTime()
 {
+    unsigned theTick;
+
 #if defined(WIN32_PLATFORM)
-    return GetTickCount();
+    theTick = GetTickCount();
 #else
-    struct timeval tv;
-    gettimeofday(&tv, 0);
-    return unsigned((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC,&ts);
+    // 讲纳秒和秒转换为毫秒
+    theTick  = ts.tv_nsec / 1000000;
+    theTick += ts.tv_sec * 1000;
 #endif
+    return theTick;
 }
 
 /******************************************************************************************
