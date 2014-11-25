@@ -5,8 +5,6 @@
 #include "xasm.h"
 #include "xvm.h"
 #include "mathlib.h"
-
-
 #include <time.h>
 
 // ----Script Loading --------------------------------------------------------------------
@@ -2376,8 +2374,8 @@ inline int GetCurrTime()
     theTick = GetTickCount();
 #else
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC,&ts);
-    // 讲纳秒和秒转换为毫秒
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    // 将纳秒和秒转换为毫秒
     theTick  = ts.tv_nsec / 1000000;
     theTick += ts.tv_sec * 1000;
 #endif
