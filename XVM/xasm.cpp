@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <time.h>
 
 // ----Constants -----------------------------------------------------------------------------
@@ -233,19 +234,19 @@ struct LinkedList                      // A linked list
 
 // ----Lexical Analysis ------------------------------------------------------------------
 
-typedef int Token;                       // Tokenizer alias type
+typedef int Token;                      // Tokenizer alias type
 
-struct Lexer                           // The lexical analyzer/tokenizer
+struct Lexer                            // The lexical analyzer/tokenizer
 {
-    int CurrSourceLine;                        // Current line in the source
+    int CurrSourceLine;                 // Current line in the source
 
-    size_t Index0,                       // Indices into the string
+    size_t Index0,                      // Indices into the string
         Index1;
 
-    Token CurrToken;                            // Current token
-    char CurrLexeme[MAX_LEXEME_SIZE];    // Current lexeme
-
-    int CurrLexState;                          // The current lex state
+    Token CurrToken;                    // Current token
+    char CurrLexeme[MAX_LEXEME_SIZE];   // Current lexeme
+    int CurrBase;                       // 进制
+    int CurrLexState;                   // The current lex state
 };
 
 // ----Script ----------------------------------------------------------------------------
@@ -413,7 +414,6 @@ int AddNode(LinkedList *pList, void *pData);
 // ----String Processing -----------------------------------------------------------------
 void StripComments(char *pstrSourceLine);
 int IsCharWhitespace(char cChar);
-int IsCharNumeric(char cChar);
 int IsIdentStart(char cChar);
 int IsCharDelimiter(char cChar);
 void TrimWhitespace(char *pstrString);
@@ -659,23 +659,6 @@ int IsCharWhitespace(char cChar)
 
 /******************************************************************************************
 *
-*    IsCharNumeric()
-*
-*    Returns a nonzero if the given character is numeric, or zero otherwise.
-*/
-
-int IsCharNumeric(char cChar)
-{
-    // Return true if the character is between 0 and 9 inclusive.
-
-    if (cChar >= '0' && cChar <= '9')
-        return TRUE;
-    else
-        return FALSE;
-}
-
-/******************************************************************************************
-*
 *    IsCharIdentifier()
 *
 *    Returns a nonzero if the given character is part of a valid identifier, meaning it's an
@@ -849,20 +832,55 @@ int IsStringInteger(char *pstrString)
     if (strlen(pstrString) == 0)
         return FALSE;
 
-    size_t iCurrCharIndex;
+    size_t iCurrCharIndex = 0;
 
     // Loop through the string and make sure each character is a valid number or minus sign
 
-    for (iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
-        if (!IsCharNumeric(pstrString[iCurrCharIndex]) && !(pstrString[iCurrCharIndex] == '-'))
+    if (pstrString[iCurrCharIndex] == '-')
+    {
+        iCurrCharIndex++;
+        if (pstrString[iCurrCharIndex] == 0)
             return FALSE;
+    }
 
-    // Make sure the minus sign only occured at the first character
+    if (pstrString[iCurrCharIndex] == '0')
+    {
+        iCurrCharIndex++;
+        if (pstrString[iCurrCharIndex] != 0)
+        {
+            if (pstrString[iCurrCharIndex] == 'x' || pstrString[iCurrCharIndex] == 'X')
+            {
+                // 16进制数
+                g_Lexer.CurrBase = 16;
 
-    for (iCurrCharIndex = 1; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
-        if (pstrString[iCurrCharIndex] == '-')
-            return FALSE;
-
+                iCurrCharIndex++;
+                for (; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
+                {
+                    if (!isxdigit(pstrString[iCurrCharIndex]))
+                        return FALSE;
+                }
+            }
+            else
+            {
+                // 8进制数
+                g_Lexer.CurrBase = 8;
+                for (; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
+                {
+                    if ('0' > pstrString[iCurrCharIndex] || pstrString[iCurrCharIndex] > '7')
+                        return FALSE;
+                }
+            }
+        }
+    }
+    else
+    {
+        // 10进制数
+        for (; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
+        {
+            if (!isdigit(pstrString[iCurrCharIndex]))
+                return FALSE;
+        }
+    }
     return TRUE;
 }
 
@@ -887,7 +905,7 @@ int IsStringFloat( char *pstrString)
     size_t iCurrCharIndex;
 
     for (iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
-        if (!IsCharNumeric(pstrString[iCurrCharIndex]) && !(pstrString[iCurrCharIndex] == '.') && !(pstrString[iCurrCharIndex] == '-'))
+        if (!isdigit(pstrString[iCurrCharIndex]) && !(pstrString[iCurrCharIndex] == '.') && !(pstrString[iCurrCharIndex] == '-'))
             return FALSE;
 
     // Make sure only one radix point is present
@@ -1601,6 +1619,7 @@ void ResetLexer()
 
     // Set the token type to invalid, since a token hasn't been read yet
     g_Lexer.CurrToken = TOKEN_TYPE_INVALID;
+    g_Lexer.CurrBase = 10;
 
     // Set the lexing state to no strings
     g_Lexer.CurrLexState = LEX_STATE_NO_STRING;
@@ -2376,7 +2395,7 @@ void AssmblSourceFile()
             // Convert the lexeme to an integer value from its string
             // representation and store it in the script header
 
-            g_ScriptHeader.StackSize = atoi(GetCurrLexeme());
+            g_ScriptHeader.StackSize = strtol(GetCurrLexeme(), 0, g_Lexer.CurrBase);
 
             // Mark the presence of SetStackSize for ( future encounters
 
@@ -2425,7 +2444,7 @@ void AssmblSourceFile()
                 // Convert the lexeme to an integer value from its string
                 // representation and store it in the script header
 
-                g_ScriptHeader.UserPriority = atoi(GetCurrLexeme());
+                g_ScriptHeader.UserPriority = strtol(GetCurrLexeme(), 0, g_Lexer.CurrBase);
 
                 // Set the user priority flag
 
@@ -2502,7 +2521,7 @@ void AssmblSourceFile()
 
                     // Convert the size lexeme to an integer value
 
-                    iSize = atoi(GetCurrLexeme());
+                    iSize = strtol(GetCurrLexeme(), 0, g_Lexer.CurrBase);
 
                     // Make sure the size is valid, in that it's greater than zero
 
@@ -2901,7 +2920,7 @@ void AssmblSourceFile()
                             // Copy the value into the operand list from the current
                             // lexeme
 
-                            pOpList[iCurrOpIndex].Fixnum = atoi(GetCurrLexeme());
+                            pOpList[iCurrOpIndex].Fixnum = strtol(GetCurrLexeme(), 0, g_Lexer.CurrBase);
                         }
                         else
                             ExitOnCodeError(ERROR_MSSG_INVALID_OP);
@@ -2923,7 +2942,7 @@ void AssmblSourceFile()
                             // Copy the value into the operand list from the current
                             // lexeme
 
-                            pOpList[iCurrOpIndex].FloatLiteral = (float) atof(GetCurrLexeme());
+                            pOpList[iCurrOpIndex].FloatLiteral = (float)atof(GetCurrLexeme());
                         }
                         else
                             ExitOnCodeError(ERROR_MSSG_INVALID_OP);
@@ -3089,7 +3108,7 @@ void AssmblSourceFile()
                                         // It's an integer, so determine its value by
                                         // converting the current lexeme to an integer
 
-                                        int iOffsetIndex = atoi(GetCurrLexeme());
+                                        int iOffsetIndex = strtol(GetCurrLexeme(), 0, g_Lexer.CurrBase);
 
                                         // Add the index to the base index to find the offset
                                         // index and set the operand type to absolute stack
