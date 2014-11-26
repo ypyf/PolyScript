@@ -65,8 +65,9 @@ extern "C" {
 
 typedef void (*XVM_HOST_FUNCTION)(int iThreadIndex);  // Host API function pointer alias
 
-struct _XObject;
-typedef struct _XObject *XObject;
+//struct _XObject;
+//typedef struct _XObject *XObject;
+struct _MetaObject;
 
 // ----Runtime Value ---------------------------------------------------------------------
 struct Value
@@ -74,7 +75,7 @@ struct Value
     int Type;                      // Type
     union                          // The value
     {
-        XObject     This;          // Object Reference
+        _MetaObject *This;         // Object Reference
         int         Fixnum;        // Integer literal
         float       Realnum;       // Float literal
         char*       String;        // String literal

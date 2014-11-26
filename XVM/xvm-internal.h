@@ -30,6 +30,8 @@
 #include <stdarg.h>
 #include <assert.h>
 
+#include "xvm.h"
+
 // ----Operand/Value Types ----------------------------------------------------
 
 #define OP_TYPE_NULL                        -1          // Uninitialized/Null data
@@ -45,5 +47,24 @@
 #define OP_TYPE_STACK_BASE_MARKER           9           // 从C函数调用脚本中的函数，返回时这个标志被检测到
 #define OP_TYPE_OBJECT                      10          // Object type
 
+
+// 位于对象实际数据前部的元数据记录信息
+typedef struct _MetaObject
+{
+    long RefCount;
+    unsigned char marked;
+    //Reference* Type;
+    //char* Name;     
+    Value *Mem;      // 对象数据
+    size_t Size;     // 数据大小
+    struct _MetaObject *NextObject; // 指向下一个元对象
+} MetaObject;
+
+// -------- Object Interface ----------------------
+
+Value GC_AllocObject(int iSize, MetaObject **ppPrevious);
+void GC_Mark(Value val);
+int GC_Sweep(MetaObject **ppObjects);
+void GC_FreeAllObjects(MetaObject *pObjects);
 
 #endif /* XVM_INTERNAL_H_ */

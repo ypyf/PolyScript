@@ -18,6 +18,9 @@
 // to support more or less.
 #define MAX_THREAD_COUNT            1024
 
+// 启动GC过程的临界对象数
+#define INITIAL_GC_THRESHOLD        1024
+
 // ----Stack -----------------------------------------------------------------------------
 
 #define DEF_STACK_SIZE              1024        // The default stack size
@@ -121,6 +124,11 @@ struct ScriptContext                            // Encapsulates a full script
     RUNTIME_STACK Stack;                        // The runtime stack
     FUNC_TABLE FuncTable;                        // The function table
     HOST_CALL_TABLE HostCallTable;            // The host API call table
+
+    // 动态内存分配
+    MetaObject *pLastObject;        // 指向最近一个已分配的对象
+    int iNumberOfObjects;           // 当前已分配的对象个数
+    int iMaxObjects;                // 最大对象数，用于启动GC过程
 };
 
 // ----Host API --------------------------------------------------------------------------
@@ -153,6 +161,7 @@ HOST_API_FUNC* g_HostAPIs = NULL;    // The host API
 *
 *    Resolves a stack index by translating negative indices relative to the top of the
 *    stack, to positive ones relative to the bottom.
+*    将一个负(相对于栈顶)的堆栈索引转为正的（即相对于栈底）
 */
 
 inline int ResolveStackIndex(int Index)
@@ -186,6 +195,9 @@ inline int IsThreadActive(int Index)
 }
 
 // ----Function Prototypes -------------------------------------------------------------------
+
+// GC
+void RunGC(ScriptContext *pScript);
 
 // ----Operand Interface -----------------------------------------------------------------
 
@@ -257,6 +269,10 @@ void XVM_Init()
         g_Scripts[i].Stack.Elmnts = NULL;
         g_Scripts[i].FuncTable.Funcs = NULL;
         g_Scripts[i].HostCallTable.Calls = NULL;
+
+        g_Scripts[i].pLastObject = NULL;
+        g_Scripts[i].iNumberOfObjects = 0;
+        g_Scripts[i].iMaxObjects = INITIAL_GC_THRESHOLD;
     }
 
     // ----Set up the threads
@@ -836,6 +852,18 @@ void XVM_ResetScript(int iThreadIndex)
 
     for (int i = 0; i < g_Scripts[iThreadIndex].Stack.Size; ++i)
         g_Scripts[iThreadIndex].Stack.Elmnts[i].Type = OP_TYPE_NULL;
+
+    // Free all created objects
+    GC_FreeAllObjects(g_Scripts[iThreadIndex].pLastObject);
+
+    // Reset GC state
+    g_Scripts[iThreadIndex].pLastObject = NULL;
+    g_Scripts[iThreadIndex].iNumberOfObjects = 0;
+    g_Scripts[iThreadIndex].iMaxObjects = INITIAL_GC_THRESHOLD;
+
+    /*g_Scripts[iThreadIndex].pLastObject = NULL;
+    g_Scripts[iThreadIndex].iNumberOfObjects = 0;
+    g_Scripts[iThreadIndex].iMaxObjects = INITIAL_GC_THRESHOLD;*/
 
     // Unpause the script
 
@@ -1554,7 +1582,7 @@ static void ExecuteScript(int iTimesliceDur)
                 // Get the current function index off the top of the stack and use it to get
                 // the corresponding function structure
                 Value FuncIndex = Pop(g_CurrThread);
-
+                
                 // Check for the presence of a stack base marker
                 if (FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER)
                     iExitExecLoop = TRUE;
@@ -1589,6 +1617,9 @@ static void ExecuteScript(int iTimesliceDur)
                 Value val = ResolveOpValue(0);
                 switch (val.Type)
                 {
+                case OP_TYPE_NULL:
+                    printf("<null>\n");
+                    break;
                 case OP_TYPE_INT:
                     printf("%d\n", val.Fixnum);
                     break;
@@ -1601,9 +1632,25 @@ static void ExecuteScript(int iTimesliceDur)
                 case OP_TYPE_REG:
                     printf("%i\n", val.Register);
                     break;
+                case OP_TYPE_OBJECT:
+                    printf("<object at %p>\n", val.This);
+                    break;
                 default:
+                    // TODO 索引和其他调试信息
                     printf("INSTR_PRINT: %d unexcepted data type.\n", val.Type);
                 }
+                break;
+            }
+
+        case INSTR_NEW:
+            {
+                int iSize = ResolveOpAsInt(0);
+                //printf("已分配 %d 个对象\n", g_Scripts[g_CurrThread].iNumberOfObjects);
+                if (g_Scripts[g_CurrThread].iNumberOfObjects >= g_Scripts[g_CurrThread].iMaxObjects)
+                    RunGC(&g_Scripts[g_CurrThread]);
+                Value val = GC_AllocObject(iSize, &g_Scripts[g_CurrThread].pLastObject);
+                g_Scripts[g_CurrThread].iNumberOfObjects++;
+                Push(g_CurrThread, val);
                 break;
             }
 
@@ -1816,6 +1863,28 @@ char* XVM_GetReturnValueAsString(int iThreadIndex)
     return g_Scripts[iThreadIndex]._RetVal.String;
 }
 
+void RunGC(ScriptContext *pScript)
+{
+    int numObjects = pScript->iNumberOfObjects;
+
+    // mark all reachable objects
+    // 标记堆栈
+    for (int i = 0; i < pScript->Stack.Size; i++) {
+        GC_Mark(pScript->Stack.Elmnts[i]);
+    }
+    // 标记寄存器
+    GC_Mark(pScript->_RetVal);
+    // 标记全局
+    // ...
+
+    pScript->iNumberOfObjects -= GC_Sweep(&pScript->pLastObject);
+
+    pScript->iMaxObjects = pScript->iNumberOfObjects * 2;
+
+    printf("Collected %d objects, %d remaining.\n", numObjects - pScript->iNumberOfObjects,
+        pScript->iNumberOfObjects);
+}
+
 /******************************************************************************************
 *
 *  CopyValue()
@@ -2004,6 +2073,8 @@ inline int ResolveOpStackIndex(int iOpIndex)
 
             // Get the variable's value
             Value sv = GetStackValue(g_CurrThread, iOffsetIndex);
+
+            assert(sv.Type == OP_TYPE_INT);
 
             // 绝对地址 = 基址 + 偏移
             return iBaseIndex + sv.Fixnum;
@@ -2302,8 +2373,6 @@ inline Value Pop(int iThreadIndex)
     Value Val;
     CopyValue(&Val, g_Scripts[iThreadIndex].Stack.Elmnts[iTopIndex]);
 
-    // Return the value to the caller
-
     return Val;
 }
 
@@ -2347,6 +2416,7 @@ inline void PopFrame(Value funcIndex)
 
 inline FUNC *GetFunc(int iThreadIndex, int iIndex)
 {
+    assert(iIndex < g_Scripts[iThreadIndex].FuncTable.Size);
     return &g_Scripts[iThreadIndex].FuncTable.Funcs[iIndex];
 }
 
