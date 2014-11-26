@@ -1,4 +1,4 @@
-#ifndef XVM_H_
+ï»¿#ifndef XVM_H_
 #define XVM_H_
 
 #ifdef __cplusplus
@@ -86,8 +86,8 @@ struct Value
         int         Register;      // Register code
     };
 
-    // ¶ÔÓÚOP_TYPE_REL_STACK_INDEX£¬¸Ã×Ö¶Î±£´æµÄÊÇÆ«ÒÆÖµµÄµØÖ·(Æ«ÒÆÖµÊÇÒ»¸ö±äÁ¿)
-    // ¶ÔÓÚOP_TYPE_FUNC_INDEX£¬¸Ã×Ö¶Î±£´æÁËµ÷ÓÃÕß(caller)µÄÕ»Ö¡Ë÷Òı(FP)
+    // å¯¹äºOP_TYPE_REL_STACK_INDEXï¼Œè¯¥å­—æ®µä¿å­˜çš„æ˜¯åç§»å€¼çš„åœ°å€(åç§»å€¼æ˜¯ä¸€ä¸ªå˜é‡)
+    // å¯¹äºOP_TYPE_FUNC_INDEXï¼Œè¯¥å­—æ®µä¿å­˜äº†è°ƒç”¨è€…(caller)çš„æ ˆå¸§ç´¢å¼•(FP)
     int OffsetIndex;               // Index of the offset
 };
 
@@ -130,9 +130,9 @@ XVM_API void XVM_ReturnIntFromHost(int iThreadIndex, int iInt);
 XVM_API void XVM_ReturnFloatFromHost(int iThreadIndex, float iFloat);
 XVM_API void XVM_ReturnStringFromHost(int iThreadIndex, char *pstrString);
 
-XVM_API int XVM_GetParamCount(int iThreadIndex);       // »ñÈ¡´«µİ¸øº¯ÊıµÄ²ÎÊı¸öÊı
-XVM_API int XVM_IsScriptStop(int iThreadIndex);        // ½Å±¾ÊÇ·ñÒÑ¾­Í£Ö¹
-XVM_API int XVM_GetExitCode(int iThreadIndex);         // ½Å±¾ÍË³ö´úÂë
+XVM_API int XVM_GetParamCount(int iThreadIndex);       // è·å–ä¼ é€’ç»™å‡½æ•°çš„å‚æ•°ä¸ªæ•°
+XVM_API int XVM_IsScriptStop(int iThreadIndex);        // è„šæœ¬æ˜¯å¦å·²ç»åœæ­¢
+XVM_API int XVM_GetExitCode(int iThreadIndex);         // è„šæœ¬é€€å‡ºä»£ç 
 
 #ifdef __cplusplus
 }
