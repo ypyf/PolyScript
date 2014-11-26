@@ -47,7 +47,7 @@
     <ClCompile Include="xvm.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="gc.cpp">
+    <ClCompile Include="xvm-gc.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

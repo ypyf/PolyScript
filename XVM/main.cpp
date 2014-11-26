@@ -118,8 +118,6 @@ int main(int argc, char* argv[])
     char SrcFileName[MAX_PATH] = {0};
     char ExecFileName[MAX_PATH] = {0};
 
-    SetCurrentDirectory(TEXT("../Debug"));
-
     if (argc < 2)
     {
         PrintUsage();

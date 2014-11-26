@@ -19,7 +19,7 @@
 #define MAX_THREAD_COUNT            1024
 
 // 启动GC过程的临界对象数
-#define INITIAL_GC_THRESHOLD        1024
+#define INITIAL_GC_THRESHOLD        25
 
 // ----Stack -----------------------------------------------------------------------------
 

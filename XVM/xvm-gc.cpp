@@ -1,14 +1,20 @@
 #include "xvm-internal.h"
 
 
-
 // 分配一个有n个字段的新对象
 // ppPrevious指向上一次分配的对象的地址
 Value GC_AllocObject(int iSize, MetaObject **ppPrevious)
 {
     Value r;
+    size_t byteCount;
+    
+    assert (iSize > 0);
 
-    r.This = (_MetaObject *)malloc(sizeof(_MetaObject) + iSize*sizeof(Value));
+    // allocate memory
+    byteCount = sizeof(_MetaObject) + iSize*sizeof(Value);
+    r.This = (_MetaObject *)malloc(byteCount);
+    memset(r.This, 0, byteCount);
+
     r.Type = OP_TYPE_OBJECT;
     r.This->marked = 0;
     r.This->RefCount = 1;
@@ -24,16 +30,17 @@ Value GC_AllocObject(int iSize, MetaObject **ppPrevious)
 // 标记对象
 void GC_Mark(Value val) 
 {
-    if (val.Type == OP_TYPE_OBJECT) 
+    Value myval = val;
+    size_t count = 1;
+    while (myval.Type == OP_TYPE_OBJECT && count > 0) 
     {
+        count--;
         // 检查循环
-        if (val.This->marked)
+        if (myval.This->marked)
             return; 
 
-        val.This->marked = 1;
-
-        for (size_t i = 0; i < val.This->Size; i++)
-            GC_Mark(val.This->Mem[i]);
+        myval.This->marked = 1;
+        count = myval.This->Size;
     }
 }
 
