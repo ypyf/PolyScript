@@ -834,10 +834,10 @@ void XVM_ResetScript(int iThreadIndex)
     {
         // 如果主函数存在，那么设置脚本入口地址为主函数入口
         // 否则脚本从地址0开始执行
-         if (g_Scripts[iThreadIndex].IsMainFuncPresent)
-         {
-             g_Scripts[iThreadIndex].InstrStream.CurrInstr = g_Scripts[iThreadIndex].FuncTable.Funcs[iMainFuncIndex].EntryPoint;
-         }
+        if (g_Scripts[iThreadIndex].IsMainFuncPresent)
+        {
+            g_Scripts[iThreadIndex].InstrStream.CurrInstr = g_Scripts[iThreadIndex].FuncTable.Funcs[iMainFuncIndex].EntryPoint;
+        }
         else
         {
             g_Scripts[iThreadIndex].InstrStream.CurrInstr = 0;
@@ -1582,7 +1582,7 @@ static void ExecuteScript(int iTimesliceDur)
                 // Get the current function index off the top of the stack and use it to get
                 // the corresponding function structure
                 Value FuncIndex = Pop(g_CurrThread);
-                
+
                 // Check for the presence of a stack base marker
                 if (FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER)
                     iExitExecLoop = TRUE;
@@ -2077,7 +2077,12 @@ inline int ResolveOpStackIndex(int iOpIndex)
             assert(sv.Type == OP_TYPE_INT);
 
             // 绝对地址 = 基址 + 偏移
-            return iBaseIndex + sv.Fixnum;
+            // 全局变量基址是正数，从0开始增大
+            if (iBaseIndex >= 0)
+                return iBaseIndex + sv.Fixnum;
+            else
+                // 局部变量基址是负数，从-1开始减小
+                return iBaseIndex - sv.Fixnum;
         }
     default:
         return -1;    // unexpected
@@ -2113,19 +2118,16 @@ inline Value ResolveOpValue(int iOpIndex)
             // Resolve the index and use it to return the corresponding stack element
 
             int iAbsIndex = ResolveOpStackIndex(iOpIndex);
-            return GetStackValue(g_CurrThread, iAbsIndex);
+            OpValue = GetStackValue(g_CurrThread, iAbsIndex);
         }
-
-        // It's in _RetVal
+        break;
 
     case OP_TYPE_REG:
-        return g_Scripts[g_CurrThread]._RetVal;
-
-        // Anything else can be returned as-is
-
-    default:
-        return OpValue;
+        OpValue = g_Scripts[g_CurrThread]._RetVal;
+        break;
     }
+
+    return OpValue;
 }
 
 /******************************************************************************************
