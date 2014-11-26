@@ -1,8 +1,8 @@
-#include "xvm-internal.h"
+ï»¿#include "xvm-internal.h"
 
 
-// ·ÖÅäÒ»¸öÓÐn¸ö×Ö¶ÎµÄÐÂ¶ÔÏó
-// ppPreviousÖ¸ÏòÉÏÒ»´Î·ÖÅäµÄ¶ÔÏóµÄµØÖ·
+// åˆ†é…ä¸€ä¸ªæœ‰nä¸ªå­—æ®µçš„æ–°å¯¹è±¡
+// ppPreviousæŒ‡å‘ä¸Šä¸€æ¬¡åˆ†é…çš„å¯¹è±¡çš„åœ°å€
 Value GC_AllocObject(int iSize, MetaObject **ppPrevious)
 {
     Value r;
@@ -10,7 +10,7 @@ Value GC_AllocObject(int iSize, MetaObject **ppPrevious)
     
     assert (iSize > 0);
 
-    // allocate memory
+    // Allocate memory
     byteCount = sizeof(_MetaObject) + iSize*sizeof(Value);
     r.This = (_MetaObject *)malloc(byteCount);
     memset(r.This, 0, byteCount);
@@ -21,32 +21,31 @@ Value GC_AllocObject(int iSize, MetaObject **ppPrevious)
     r.This->NextObject = *ppPrevious;
     r.This->Size = iSize;
     r.This->Mem = (Value *)(((char *)r.This) + sizeof(_MetaObject));
-    // Ö¸ÏòÐÂ·ÖÅäµÄ¶ÔÏó
+
+    // æŒ‡å‘æ–°åˆ†é…çš„å¯¹è±¡
     *ppPrevious = r.This;
 
     return r;
 }
 
-// ±ê¼Ç¶ÔÏó
+// æ ‡è®°å¯¹è±¡
 void GC_Mark(Value val) 
 {
-    Value myval = val;
-    size_t count = 1;
-    while (myval.Type == OP_TYPE_OBJECT && count > 0) 
+    if (val.Type == OP_TYPE_OBJECT) 
     {
-        count--;
-        // ¼ì²éÑ­»·
-        if (myval.This->marked)
+        // æ£€æŸ¥å¾ªçŽ¯
+        if (val.This->marked)
             return; 
 
-        myval.This->marked = 1;
-        count = myval.This->Size;
+        val.This->marked = 1;
+
+        for (size_t i = 0; i < val.This->Size; i++)
+            GC_Mark(val.This->Mem[i]);
     }
 }
 
-
-// Çå³ý¶ÔÏó
-// ·µ»Ø±»Çå³ýµÄ¶ÔÏó¸öÊý
+// æ¸…é™¤å¯¹è±¡
+// è¿”å›žè¢«æ¸…é™¤çš„å¯¹è±¡ä¸ªæ•°
 int GC_Sweep(MetaObject **ppObjects)
 {
     int iNumObject = 0;
@@ -54,7 +53,7 @@ int GC_Sweep(MetaObject **ppObjects)
     while (*ppObjectList) {
         if (!(*ppObjectList)->marked) 
         {
-            // É¾³ý²»¿É´ï¶ÔÏó
+            // åˆ é™¤ä¸å¯è¾¾å¯¹è±¡
             MetaObject *unreached = *ppObjectList;
             *ppObjectList = unreached->NextObject;
             free(unreached);
@@ -62,7 +61,7 @@ int GC_Sweep(MetaObject **ppObjects)
         }
         else
         {
-            // ÖØÖÃ¿É´ï¶ÔÏóµÄ±ê¼Ç
+            // é‡ç½®å¯è¾¾å¯¹è±¡çš„æ ‡è®°
             (*ppObjectList)->marked = 0;
             ppObjectList = &(*ppObjectList)->NextObject;
         }
