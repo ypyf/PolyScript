@@ -100,7 +100,7 @@ int RunScript(const char* filename)
     }
 
     // 开始由线程索引指定的脚本
-    XVM_StartScript(iThreadIndex);
+    //XVM_StartScript(iThreadIndex);
 
     // Run we're loaded script from Main()
     XVM_RunScript(iThreadIndex, XVM_INFINITE_TIMESLICE);

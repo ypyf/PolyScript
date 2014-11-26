@@ -96,7 +96,7 @@ struct HOST_CALL_TABLE                // A host API call table
 };
 
 // ----Scripts ---------------------------------------------------------------------------
-struct ScriptContext                            // Encapsulates a full script
+struct Script                            // Encapsulates a full script
 {
     int IsActive;                                // Is this script structure in use?
 
@@ -143,8 +143,8 @@ struct HOST_API_FUNC                     // Host API function
 // ----Globals -------------------------------------------------------------------------------
 
 // ----Scripts ---------------------------------------------------------------------------
-ScriptContext g_Scripts[MAX_THREAD_COUNT];            // The script array
-ScriptContext **g_pScript;
+Script g_Scripts[MAX_THREAD_COUNT];            // The script array
+Script **g_pScript;
 
 // ----Threading -------------------------------------------------------------------------
 int g_CurrThreadMode;                          // The current threading mode
@@ -197,7 +197,7 @@ inline int IsThreadActive(int Index)
 // ----Function Prototypes -------------------------------------------------------------------
 
 // GC
-void RunGC(ScriptContext *pScript);
+void RunGC(Script *pScript);
 
 // ----Operand Interface -----------------------------------------------------------------
 
@@ -226,7 +226,7 @@ void SetStackValue(int iThreadIndex, int iIndex, Value Val);
 void Push(int iThreadIndex, Value Val);
 Value Pop(int iThreadIndex);
 void PushFrame(int iThreadIndex, int iSize);
-void PopFrame(Value FuncIndex);
+void PopFrame(int iSize);
 
 // ----Function Table Interface ----------------------------------------------------------
 
@@ -1583,6 +1583,8 @@ static void ExecuteScript(int iTimesliceDur)
                 // the corresponding function structure
                 Value FuncIndex = Pop(g_CurrThread);
 
+                assert(FuncIndex.Type == OP_TYPE_FUNC_INDEX);
+
                 // Check for the presence of a stack base marker
                 if (FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER)
                     iExitExecLoop = TRUE;
@@ -1601,10 +1603,13 @@ static void ExecuteScript(int iTimesliceDur)
 
                 // Read the return address structure from the stack, which is stored one
                 // index below the local data
-                Value ReturnAddr = GetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - (CurrFunc->LocalDataSize + 1));
+                int iIndexOfRA = g_Scripts[g_CurrThread].Stack.TopIndex - (CurrFunc->LocalDataSize + 1);
+                Value ReturnAddr = GetStackValue(g_CurrThread, iIndexOfRA);
+                //printf("OffsetIndex %d\n", FuncIndex.OffsetIndex);
+                assert(ReturnAddr.Type == OP_TYPE_INSTR_INDEX);
 
                 // Pop the stack frame along with the return address
-                PopFrame(FuncIndex);
+                PopFrame(CurrFunc->StackFrameSize);
 
                 // Make the jump to the return address
                 g_Scripts[g_CurrThread].InstrStream.CurrInstr = ReturnAddr.InstrIndex;
@@ -1863,26 +1868,35 @@ char* XVM_GetReturnValueAsString(int iThreadIndex)
     return g_Scripts[iThreadIndex]._RetVal.String;
 }
 
-void RunGC(ScriptContext *pScript)
+static void MarkAll(Script *pScript)
+{
+    // 标记堆栈
+    for (int i = 0; i < pScript->Stack.TopIndex; i++) 
+    {
+        GC_Mark(pScript->Stack.Elmnts[i]);
+    }
+
+    // 标记寄存器
+    GC_Mark(pScript->_RetVal);
+}
+
+static void RunGC(Script *pScript)
 {
     int numObjects = pScript->iNumberOfObjects;
 
     // mark all reachable objects
-    // 标记堆栈
-    for (int i = 0; i < pScript->Stack.TopIndex; i++) {
-        GC_Mark(pScript->Stack.Elmnts[i]);
-    }
-    // 标记寄存器
-    GC_Mark(pScript->_RetVal);
-    // 标记全局
-    // ...
+    MarkAll(pScript);
 
+    // 清除对象
     pScript->iNumberOfObjects -= GC_Sweep(&pScript->pLastObject);
 
-    //pScript->iMaxObjects = pScript->iNumberOfObjects * 2;
+    // 调整回收临界上限
+    pScript->iMaxObjects = pScript->iNumberOfObjects * 2;
 
+#if 1
     printf("Collected %d objects, %d remaining.\n", numObjects - pScript->iNumberOfObjects,
         pScript->iNumberOfObjects);
+#endif
 }
 
 /******************************************************************************************
@@ -2403,10 +2417,9 @@ inline void PushFrame(int iThreadIndex, int iSize)
 *    Pops a stack frame.
 */
 
-inline void PopFrame(Value funcIndex)
+inline void PopFrame(int iSize)
 {
-    g_Scripts[g_CurrThread].Stack.TopIndex = funcIndex.OffsetIndex;
-    g_Scripts[g_CurrThread].Stack.FrameIndex = funcIndex.OffsetIndex;
+    g_Scripts[g_CurrThread].Stack.TopIndex -= iSize;
 }
 
 /******************************************************************************************
@@ -2472,19 +2485,24 @@ void CallFunc(int iThreadIndex, int iIndex)
     // Save the current stack frame index
     int iFrameIndex = g_Scripts[iThreadIndex].Stack.FrameIndex;
 
-    // 保存返回地址（即当前指令指针）
+    // 保存返回地址（RA）
     Value ReturnAddr;
+    ReturnAddr.Type = OP_TYPE_INSTR_INDEX;
     ReturnAddr.InstrIndex = g_Scripts[iThreadIndex].InstrStream.CurrInstr;
     Push(iThreadIndex, ReturnAddr);
 
+    // 调用者函数信息块
+    Value FuncIndex;
+    FuncIndex.Type = OP_TYPE_FUNC_INDEX;
+    FuncIndex.FuncIndex = iIndex;
+    FuncIndex.OffsetIndex = iFrameIndex;
+   
     // Push the stack frame + 1 (the extra space is for the function index
     // we'll put on the stack after it
     PushFrame(iThreadIndex, DestFunc->LocalDataSize + 1);
 
     // Write the function index and old stack frame to the top of the stack
-    Value FuncIndex;
-    FuncIndex.FuncIndex = iIndex;
-    FuncIndex.OffsetIndex = iFrameIndex;
+
     SetStackValue(iThreadIndex, g_Scripts[iThreadIndex].Stack.TopIndex - 1, FuncIndex);
 
     // Let the caller make the jump to the entry point
@@ -2604,7 +2622,7 @@ int XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
 
     // Set the stack base
     Value StackBase = GetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - 1);
-    StackBase.Type = OP_TYPE_STACK_BASE_MARKER;
+    StackBase.Type = OP_TYPE_STACK_BASE_MARKER; // 指明这个调用将返回到宿主
     SetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - 1, StackBase);
 
     // Allow the script code to execute uninterrupted until the function returns
