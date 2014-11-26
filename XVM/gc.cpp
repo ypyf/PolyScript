@@ -16,7 +16,7 @@ Value GC_AllocObject(int iSize, MetaObject **ppPrevious)
     r.This->Size = iSize;
     r.This->Mem = (Value *)(((char *)r.This) + sizeof(_MetaObject));
     // 指向新分配的对象
-    *ppPrevious = r.This->NextObject;
+    *ppPrevious = r.This;
 
     return r;
 }

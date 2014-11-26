@@ -1869,7 +1869,7 @@ void RunGC(ScriptContext *pScript)
 
     // mark all reachable objects
     // 标记堆栈
-    for (int i = 0; i < pScript->Stack.Size; i++) {
+    for (int i = 0; i < pScript->Stack.TopIndex; i++) {
         GC_Mark(pScript->Stack.Elmnts[i]);
     }
     // 标记寄存器
@@ -1879,7 +1879,7 @@ void RunGC(ScriptContext *pScript)
 
     pScript->iNumberOfObjects -= GC_Sweep(&pScript->pLastObject);
 
-    pScript->iMaxObjects = pScript->iNumberOfObjects * 2;
+    //pScript->iMaxObjects = pScript->iNumberOfObjects * 2;
 
     printf("Collected %d objects, %d remaining.\n", numObjects - pScript->iNumberOfObjects,
         pScript->iNumberOfObjects);
