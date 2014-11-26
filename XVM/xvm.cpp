@@ -1583,7 +1583,8 @@ static void ExecuteScript(int iTimesliceDur)
                 // the corresponding function structure
                 Value FuncIndex = Pop(g_CurrThread);
 
-                assert(FuncIndex.Type == OP_TYPE_FUNC_INDEX);
+                assert(FuncIndex.Type == OP_TYPE_FUNC_INDEX ||
+                       FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER);
 
                 // Check for the presence of a stack base marker
                 if (FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER)
