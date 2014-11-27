@@ -2327,8 +2327,8 @@ inline Value* ResolveOpPntr(int iOpIndex)
 
 inline Value GetStackValue(int iThreadIndex, int iIndex)
 {
-    // Use ResolveStackIndex() to return the element at the specified index
-
+    int iActualIndex = ResolveStackIndex(iIndex);
+    assert(iActualIndex < g_Scripts[iThreadIndex].Stack.Size);
     return g_Scripts[iThreadIndex].Stack.Elmnts[ResolveStackIndex(iIndex)];
 }
 
@@ -2341,9 +2341,9 @@ inline Value GetStackValue(int iThreadIndex, int iIndex)
 
 inline void SetStackValue(int iThreadIndex, int iIndex, Value Val)
 {
-    // Use ResolveStackIndex() to set the element at the specified index
-
-    g_Scripts[iThreadIndex].Stack.Elmnts[ResolveStackIndex(iIndex)] = Val;
+    int iActualIndex = ResolveStackIndex(iIndex);
+    assert(iActualIndex < g_Scripts[iThreadIndex].Stack.Size);
+    g_Scripts[iThreadIndex].Stack.Elmnts[iActualIndex] = Val;
 }
 
 /******************************************************************************************
