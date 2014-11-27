@@ -39,6 +39,7 @@ void GC_Mark(Value val)
 
         val.This->marked = 1;
 
+        // FIXME 嵌套过深会溢出
         for (size_t i = 0; i < val.This->Size; i++)
             GC_Mark(val.This->Mem[i]);
     }
@@ -51,7 +52,7 @@ int GC_Sweep(MetaObject **ppObjects)
     int iNumObject = 0;
     MetaObject **ppObjectList = ppObjects;
     while (*ppObjectList) {
-        if (!(*ppObjectList)->marked) 
+        if (!(*ppObjectList)->marked)
         {
             // 删除不可达对象
             MetaObject *unreached = *ppObjectList;
