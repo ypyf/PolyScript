@@ -2414,6 +2414,7 @@ inline void PushFrame(int iThreadIndex, int iSize)
 inline void PopFrame(int iSize)
 {
     g_Scripts[g_CurrThread].Stack.TopIndex -= iSize;
+    g_Scripts[g_CurrThread].Stack.FrameIndex = g_Scripts[g_CurrThread].Stack.TopIndex;
 }
 
 /******************************************************************************************
@@ -2642,6 +2643,7 @@ int XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
 *
 *  Invokes a script function from the host application, meaning the call executes in sync
 *  with the script.
+*  用于在宿主函数中同步地调用脚本函数。单独使用没有效果。
 */
 
 void XVM_CallScriptFuncSync(int iThreadIndex, char *pstrName)
