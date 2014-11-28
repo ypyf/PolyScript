@@ -133,6 +133,7 @@ XVM_API void XVM_ReturnStringFromHost(int iThreadIndex, char *pstrString);
 XVM_API int XVM_GetParamCount(int iThreadIndex);       // 获取传递给函数的参数个数
 XVM_API int XVM_IsScriptStop(int iThreadIndex);        // 脚本是否已经停止
 XVM_API int XVM_GetExitCode(int iThreadIndex);         // 脚本退出代码
+XVM_API void XVM_Assembly(char* pstrFilename, char* pstrExecFilename);
 
 #ifdef __cplusplus
 }

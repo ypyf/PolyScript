@@ -3,6 +3,7 @@
 #include "xvm-internal.h"
 #include "bytecode.h"
 #include "xvm.h"
+#include "xasm.h"
 #include "mathlib.h"
 #include <time.h>
 
@@ -2773,6 +2774,10 @@ char* XVM_GetParamAsString(int iThreadIndex, int iParamIndex)
 
 void XVM_ReturnFromHost(int iThreadIndex)
 {
+    // 默认返回0
+    g_Scripts[iThreadIndex]._RetVal.Type = OP_TYPE_INT;
+    g_Scripts[iThreadIndex]._RetVal.Fixnum = 0;
+
     // Clear the parameters off the stack
     g_Scripts[iThreadIndex].Stack.TopIndex = g_Scripts[iThreadIndex].Stack.FrameIndex;
 }
@@ -2845,4 +2850,9 @@ int XVM_IsScriptStop(int iThreadIndex)
 int XVM_GetExitCode(int iThreadIndex)
 {
     return g_Scripts[iThreadIndex].ExitCode;
+}
+
+void XVM_Assembly(char* pstrFilename, char* pstrExecFilename)
+{
+    XASM_Assembly(pstrFilename, pstrExecFilename);
 }

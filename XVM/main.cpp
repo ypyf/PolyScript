@@ -13,7 +13,6 @@
 #include <windows.h>
 #include <imagehlp.h>
 
-#include "xasm.h"
 #include "xvm.h"
 
 
@@ -77,7 +76,7 @@ int RunScript(char* pstrFilename)
         strcat(ExecFileName, XVM_EXEC_FILE_EXT);
 
         // 编译
-        XASM_Assembly(pstrFilename, ExecFileName);
+        XVM_Assembly(pstrFilename, ExecFileName);
     }
     else if (strstr(pstrFilename, XVM_EXEC_FILE_EXT))
     {
@@ -96,7 +95,7 @@ int RunScript(char* pstrFilename)
     if (!XVM_RegisterHostFunction(XVM_GLOBAL_FUNC, "average", average))
     {
         printf("Register Host API Failed!");
-        ExitProcess(1);
+        exit(1);
     }
 
     // Declare the thread indices
