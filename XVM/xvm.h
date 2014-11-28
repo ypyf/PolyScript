@@ -58,8 +58,8 @@ extern "C" {
 
 #define XVM_GLOBAL_FUNC              1          // Flags a host API function as being global
 
-#define SOURCE_FILE_EXT              ".xasm"
-#define EXEC_FILE_EXT                ".xse"      // Executable file extension
+#define XASM_SRC_FILE_EXT            ".xasm"
+#define XVM_EXEC_FILE_EXT            ".xse"
 
 // ----Data Structures -----------------------------------------------------------------------
 

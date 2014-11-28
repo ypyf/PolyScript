@@ -30,8 +30,8 @@
 
 #define MAX_FILENAME_SIZE           2048        // Maximum filename length
 
-#define SOURCE_FILE_EXT             ".xasm"       // Extension of a source code file
-#define EXEC_FILE_EXT               ".xse"      // Extension of an executable code file
+#define XASM_SRC_FILE_EXT             ".xasm"     // Extension of a source code file
+#define XVM_EXEC_FILE_EXT             ".xse"      // Extension of an executable code file
 
 // ----Source Code -----------------------------------------------------------------------
 
@@ -3344,12 +3344,12 @@ void AssmblSourceFile()
 }
 
 /* Assembly .XASM to .XSE */
-void XASM_Assembly(const char* filename, const char* execFileName)
+void XASM_Assembly(char* pstrFilename, char* pstrExecFilename)
 {
     Init();
-    LoadSourceFile(filename);
+    LoadSourceFile(pstrFilename);
     AssmblSourceFile();
-    BuildXSE(execFileName);
+    BuildXSE(pstrExecFilename);
     ShutDown();
 }
 

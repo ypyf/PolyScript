@@ -2,7 +2,6 @@
 
 #include "xvm-internal.h"
 #include "bytecode.h"
-#include "xasm.h"
 #include "xvm.h"
 #include "mathlib.h"
 #include <time.h>
@@ -310,15 +309,6 @@ void XVM_ShutDown()
 
 int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimeslice)
 {
-    char ExecFileName[MAX_PATH] = {0};    // 编译后的文件名
-    int ExtOffset = strrchr(pstrFilename, '.') - pstrFilename;
-    strncpy(ExecFileName, pstrFilename, ExtOffset);
-    ExecFileName[ExtOffset] = '\0';
-    strcat(ExecFileName, EXEC_FILE_EXT);
-
-    // 编译
-    XASM_Assembly(pstrFilename, ExecFileName);
-
     // ----Find the next free script index
     int iFreeThreadFound = FALSE;
     int i;
@@ -342,7 +332,7 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
     // ----Open the input file
 
     FILE *pScriptFile;
-    if (!(pScriptFile = fopen(ExecFileName, "rb")))
+    if (!(pScriptFile = fopen(pstrFilename, "rb")))
         return XVM_LOAD_ERROR_FILE_IO;
 
     //fseek(pScriptFile, offset, SEEK_SET);    // .xvm节文件偏移

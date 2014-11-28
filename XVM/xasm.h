@@ -9,6 +9,6 @@ struct AssemblyInfo
 };
 #endif
 
-void XASM_Assembly(const char* filename, const char* execFileName);
+void XASM_Assembly(char* pstrFilename, char* pstrExecFilename);
 
 #endif /* XASM_H_ */

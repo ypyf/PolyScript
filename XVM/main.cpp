@@ -13,6 +13,7 @@
 #include <windows.h>
 #include <imagehlp.h>
 
+#include "xasm.h"
 #include "xvm.h"
 
 
@@ -63,8 +64,31 @@ static void average(int iThreadIndex)
 
 // ----XVM Entry Main ----------------------------------------------------------------------------------
 
-int RunScript(const char* filename)
+int RunScript(char* pstrFilename)
 {
+    char ExecFileName[MAX_PATH];
+
+    // 构造 .XSE 文件名
+    if (strstr(pstrFilename, XASM_SRC_FILE_EXT))
+    {
+        int ExtOffset = strrchr(pstrFilename, '.') - pstrFilename;
+        strncpy(ExecFileName, pstrFilename, ExtOffset);
+        ExecFileName[ExtOffset] = '\0';
+        strcat(ExecFileName, XVM_EXEC_FILE_EXT);
+
+        // 编译
+        XASM_Assembly(pstrFilename, ExecFileName);
+    }
+    else if (strstr(pstrFilename, XVM_EXEC_FILE_EXT))
+    {
+        strcpy(ExecFileName, pstrFilename);
+    }
+    else
+    {
+        printf("unexpected script file name.\n");
+        return FALSE;
+    }
+
     // Initialize the runtime environment
     XVM_Init();
 
@@ -82,7 +106,7 @@ int RunScript(const char* filename)
     int iErrorCode;
 
     // Load the demo script
-    iErrorCode = XVM_LoadScript(filename, iThreadIndex, XVM_THREAD_PRIORITY_USER);
+    iErrorCode = XVM_LoadScript(ExecFileName, iThreadIndex, XVM_THREAD_PRIORITY_USER);
 
     // Check for an error
     if (iErrorCode != XVM_LOAD_OK)
@@ -107,8 +131,7 @@ int RunScript(const char* filename)
 
 int main(int argc, char* argv[])
 {
-    char SrcFileName[MAX_PATH] = {0};
-    char ExecFileName[MAX_PATH] = {0};
+    int iExitCode;
 
     if (argc < 2)
     {
@@ -116,15 +139,8 @@ int main(int argc, char* argv[])
         exit(0);
     }
 
-    // 根据参数构造源文件名
-    strcpy(SrcFileName, argv[1]);
-    if (!strstr(SrcFileName, SOURCE_FILE_EXT))
-    {
-        strcat(SrcFileName, SOURCE_FILE_EXT);
-    }
-
     // 运行脚本并返回
-    int iExitCode = RunScript(SrcFileName);
+    iExitCode = RunScript(argv[1]);
 
     printf("退出代码 (%i)\n", iExitCode);
 
