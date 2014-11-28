@@ -127,6 +127,9 @@ int main(int argc, char* argv[])
     int iExitCode = RunScript(SrcFileName);
 
     printf("退出代码 (%i)\n", iExitCode);
+
+    // keep window open
+    getchar();
 }
 
 #endif
