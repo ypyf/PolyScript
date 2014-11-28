@@ -46,13 +46,13 @@
 // ----Data Structures -----------------------------------------------------------------------
 
 // ----Runtime Stack ---------------------------------------------------------------------
-struct RUNTIME_STACK        // A runtime stack
+struct RUNTIME_STACK         // A runtime stack
 {
-    Value *Elmnts;            // The stack elements
+    Value *Elmnts;           // The stack elements
     int Size;                // The number of elements in the stack
 
     int TopIndex;            // 栈顶指针
-    int FrameIndex;         // 当前帧指针
+    int FrameIndex;          // 总是指向当前栈帧
 };
 
 // ----Functions -------------------------------------------------------------------------
@@ -1498,84 +1498,86 @@ static void ExecuteScript(int iTimesliceDur)
         case INSTR_CALL:
             {
                 Value oprand = ResolveOpValue(0);
-                if (oprand.Type == OP_TYPE_FUNC_INDEX)
+
+                assert (oprand.Type == OP_TYPE_FUNC_INDEX ||
+                        oprand.Type == OP_TYPE_HOST_API_CALL_INDEX);
+
+                switch (oprand.Type)
                 {
-                    // 调用函数
+                     // 调用脚本函数
+                case OP_TYPE_FUNC_INDEX:
+                    {
+                        // Get a local copy of the function index
+                        int iFuncIndex = ResolveOpAsFuncIndex(0);
 
-                    // Get a local copy of the function index
-                    int iFuncIndex = ResolveOpAsFuncIndex(0);
+                        // Call the function
+                        CallFunc(g_CurrThread, iFuncIndex);
+                    }
 
-                    // Advance the instruction pointer so it points to the instruction
-                    // immediately following the call
+                    break;
 
-                    ++g_Scripts[g_CurrThread].InstrStream.CurrInstr;
-
-                    // Call the function
-                    CallFunc(g_CurrThread, iFuncIndex);
-                }
-                else if (oprand.Type == OP_TYPE_HOST_API_CALL_INDEX)
-                {
                     // 调用宿主函数
-
-                    // Use operand zero to index into the host API call table and get the
-                    // host API function name
-
-                    Value HostAPICall = ResolveOpValue(0);
-                    int iHostAPICallIndex = HostAPICall.HostFuncIndex;
-
-                    // Get the name of the host API function
-
-                    char *pstrFuncName = GetHostFunc(iHostAPICallIndex);
-
-                    // Search through the host API until the matching function is found
-
-                    int iMatchFound = FALSE;
-                    HOST_API_FUNC* pCFunction = g_HostAPIs;
-                    while (pCFunction != NULL)
+                case OP_TYPE_HOST_API_CALL_INDEX:
                     {
-                        // Get a pointer to the name of the current host API function
+                        // Use operand zero to index into the host API call table and get the
+                        // host API function name
 
-                        char *pstrCurrHostAPIFunc = pCFunction->Name;
+                        Value HostAPICall = ResolveOpValue(0);
+                        int iHostAPICallIndex = HostAPICall.HostFuncIndex;
 
-                        // If it equals the requested name, it might be a match
+                        // Get the name of the host API function
 
-                        if (strcmp(pstrFuncName, pstrCurrHostAPIFunc) == 0)
+                        char *pstrFuncName = GetHostFunc(iHostAPICallIndex);
+
+                        // Search through the host API until the matching function is found
+
+                        int iMatchFound = FALSE;
+                        HOST_API_FUNC* pCFunction = g_HostAPIs;
+                        while (pCFunction != NULL)
                         {
-                            // Make sure the function is visible to the current thread
+                            // Get a pointer to the name of the current host API function
 
-                            int iThreadIndex = pCFunction->ThreadIndex;
-                            if (iThreadIndex == g_CurrThread || iThreadIndex == XVM_GLOBAL_FUNC)
+                            char *pstrCurrHostAPIFunc = pCFunction->Name;
+
+                            // If it equals the requested name, it might be a match
+
+                            if (strcmp(pstrFuncName, pstrCurrHostAPIFunc) == 0)
                             {
-                                iMatchFound = TRUE;
-                                break;
+                                // Make sure the function is visible to the current thread
+
+                                int iThreadIndex = pCFunction->ThreadIndex;
+                                if (iThreadIndex == g_CurrThread || iThreadIndex == XVM_GLOBAL_FUNC)
+                                {
+                                    iMatchFound = TRUE;
+                                    break;
+                                }
                             }
+                            pCFunction = pCFunction->Next;
                         }
-                        pCFunction = pCFunction->Next;
+
+                        // If a match was found, call the host API funcfion and pass the current
+                        // thread index
+
+                        if (iMatchFound)
+                        {
+                            pCFunction->FuncPtr(g_CurrThread);
+                        }
+                        else
+                        {
+                            printf("未定义的host api%s\n", pstrFuncName);
+                            exit(1);
+                        }
                     }
 
-                    // If a match was found, call the host API funcfion and pass the current
-                    // thread index
+                    break;
 
-                    if (iMatchFound)
-                    {
-                        pCFunction->FuncPtr(g_CurrThread);
-                    }
-                    else
-                    {
-                        printf("未定义的host api%s\n", pstrFuncName);
-                        exit(1);
-                    }
-                }
-                else
-                {
-                    printf("shouldn't get here\n");
-                    /* shouldn't get here */
+                default:
                     assert(1 && "shouldn't get here");
                     exit(1);
                 }
-
-                break;
             }
+
+            break;
 
         case INSTR_RET:
             {
@@ -1584,7 +1586,7 @@ static void ExecuteScript(int iTimesliceDur)
                 Value FuncIndex = Pop(g_CurrThread);
 
                 assert(FuncIndex.Type == OP_TYPE_FUNC_INDEX ||
-                       FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER);
+                    FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER);
 
                 // Check for the presence of a stack base marker
                 if (FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER)
@@ -2481,6 +2483,11 @@ inline int GetCurrTime()
 
 void CallFunc(int iThreadIndex, int iIndex)
 {
+    // Advance the instruction pointer so it points to the instruction
+    // immediately following the call
+
+    ++g_Scripts[g_CurrThread].InstrStream.CurrInstr;
+
     FUNC *DestFunc = GetFunc(iThreadIndex, iIndex);
 
     // Save the current stack frame index
@@ -2497,7 +2504,7 @@ void CallFunc(int iThreadIndex, int iIndex)
     FuncIndex.Type = OP_TYPE_FUNC_INDEX;
     FuncIndex.FuncIndex = iIndex;
     FuncIndex.OffsetIndex = iFrameIndex;
-   
+
     // Push the stack frame + 1 (the extra space is for the function index
     // we'll put on the stack after it
     PushFrame(iThreadIndex, DestFunc->LocalDataSize + 1);
