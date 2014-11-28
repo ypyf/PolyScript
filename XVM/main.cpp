@@ -131,21 +131,13 @@ int RunScript(char* pstrFilename)
 
 int main(int argc, char* argv[])
 {
-    int iExitCode;
-
-    if (argc < 2)
-    {
+    if (argc < 2) {
         printf("XVM: No input files\n");
         exit(0);
     }
 
     // 运行脚本并返回
-    iExitCode = RunScript(argv[1]);
-
-    printf("退出代码 (%i)\n", iExitCode);
-
-    // keep window open
-    getchar();
+    RunScript(argv[1]);
 }
 
 #endif
