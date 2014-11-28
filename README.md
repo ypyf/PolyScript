@@ -11,14 +11,15 @@ A game script virtual machine.
 	{
 		local s
 		local i
-
-		mov i, 1
+	
+		mov i, 0
 		mov s, "Hello world!"
 	L0:
-		jg i, 10, L1
+		jg i, 12, L1
 		print s
 		setchar s, i, "."
 		inc i
+		pause 50
 		jmp L0
 	L1:
 		mov _RetVal, 0
