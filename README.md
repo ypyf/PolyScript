@@ -13,13 +13,12 @@ A game script virtual machine.
 		local i
 	
 		mov i, 0
-		mov s, "Hello world!"
+		mov s, "Hello XVM!"
 	L0:
-		jg i, 12, L1
+		jg i, 10, L1
 		print s
 		setchar s, i, "."
 		inc i
-		pause 50
 		jmp L0
 	L1:
 		mov _RetVal, 0
@@ -28,13 +27,14 @@ A game script virtual machine.
 
 Program output:
 
-	Hello world!
-	H.llo world!
-	H..lo world!
-	H...o world!
-	H.... world!
-	H.....world!
-	H......orld!
-	H.......rld!
-	H........ld!
-	H.........d!
+	Hello XVM!
+	.ello XVM!
+	..llo XVM!
+	...lo XVM!
+	....o XVM!
+	..... XVM!
+	......XVM!
+	.......VM!
+	........M!
+	.........!
+	..........
