@@ -123,27 +123,6 @@ int main(int argc, char* argv[])
         strcat(SrcFileName, SOURCE_FILE_EXT);
     }
 
-    // 如果指定了输出文件名（字节码文件）
-    if (argv[2])
-    {
-        strcpy(ExecFileName, argv[2]);
-
-        // Check for ( the presence of the .MP extension and add it if it's not there
-        if (!strstr(ExecFileName, EXEC_FILE_EXT))
-        {
-            strcat(ExecFileName, EXEC_FILE_EXT);
-        }
-    }
-    else
-    {
-        // 如果没有指定输出文件名，则根据输入文件名进行构造
-        // 将扩展名前的部分作为输出文件名并添加后缀
-        int ExtOffset = strrchr(SrcFileName, '.') - SrcFileName;
-        strncpy(ExecFileName, SrcFileName, ExtOffset);
-        ExecFileName[ExtOffset] = '\0';
-        strcat(ExecFileName, EXEC_FILE_EXT);
-    }
-
     // 运行脚本并返回
     int iExitCode = RunScript(SrcFileName);
 
