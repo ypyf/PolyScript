@@ -21,9 +21,6 @@
     <ClInclude Include="mathlib.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="xasm.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="xvm.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -33,12 +30,12 @@
     <ClInclude Include="xqueue.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="xasm.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mathlib.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="xasm.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
@@ -48,6 +45,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="xvm-gc.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="xasm.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

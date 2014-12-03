@@ -1,4 +1,4 @@
-﻿// 汇编器
+﻿/* 汇编器 */
 #include "xasm.h"
 #include "bytecode.h"
 
@@ -26,12 +26,20 @@
 #define FALSE                   0           // False
 #endif
 
+// ----Newline 
+// 注意这里简化了Windows的换行符,使之和unix相同,并不影响我们统计文件行数
+#if defined(__APPLE__)
+# define NEWLINE '\r'
+#elif defined(_WIN32) || defined(__linux__)
+# define NEWLINE '\n'
+#endif /* __APPLE__ */
+
 // ----Filename --------------------------------------------------------------------------
 
 #define MAX_FILENAME_SIZE           2048        // Maximum filename length
 
-#define XASM_SRC_FILE_EXT             ".xasm"     // Extension of a source code file
-#define XVM_EXEC_FILE_EXT             ".xse"      // Extension of an executable code file
+#define XASM_SRC_FILE_EXT           ".xasm"     // Extension of a source code file
+#define XVM_EXEC_FILE_EXT           ".xse"      // Extension of an executable code file
 
 // ----Source Code -----------------------------------------------------------------------
 
@@ -41,8 +49,7 @@
 
 // ----,XSE Header -----------------------------------------------------------------------
 
-#define XSE_ID_STRING               "XSE0"      // Written to the file to state it's
-// validity
+#define XSE_ID_STRING               "XSE0"      // Written to the file to state it's validity
 
 #define VERSION_MAJOR               0           // Major version number
 #define VERSION_MINOR               8           // Minor version number
@@ -77,7 +84,6 @@
 #define TOKEN_TYPE_LOCAL            18          // The Locals directives
 #define TOKEN_TYPE_REG_RETVAL       19          // The _RetVal register
 #define TOKEN_TYPE_REG_THISVAL      20          // The _ThisVal register
-//#define TOKEN_TYPE_NAMESPACE      20          // 命名空间
 #define END_OF_TOKEN_STREAM         21          // The end of the stream has been reached
 
 #define MAX_IDENT_SIZE              256        // Maximum identifier size
@@ -99,7 +105,6 @@
 #define OP_FLAG_TYPE_LINE_LABEL       16          // Line label(used for jumps)
 #define OP_FLAG_TYPE_FUNC_NAME        32          // Function table index(used for Call)
 #define OP_FLAG_TYPE_ATTR_NAME        64          // 对象属性名
-//#define OP_FLAG_TYPE_HOST_API_CALL  64          // Host API Call table index(used for CallHost)
 #define OP_FLAG_TYPE_REG              128         // Register
 
 // ----Assembled Instruction Stream ------------------------------------------------------
@@ -859,13 +864,11 @@ int IsStringInteger(char *pstrString)
         iCurrCharIndex++;
         if (pstrString[iCurrCharIndex] != 0)
         {
+			// 16进制数
             if (pstrString[iCurrCharIndex] == 'x' || pstrString[iCurrCharIndex] == 'X')
             {
-                // 16进制数
-                g_Lexer.CurrBase = 16;
-
                 iCurrCharIndex++;
-                for (; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
+				for (g_Lexer.CurrBase = 16; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
                 {
                     if (!isxdigit(pstrString[iCurrCharIndex]))
                         return FALSE;
@@ -873,9 +876,8 @@ int IsStringInteger(char *pstrString)
             }
             else
             {
-                // 8进制数
-                g_Lexer.CurrBase = 8;
-                for (; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
+				// 8进制数
+				for (g_Lexer.CurrBase = 8; iCurrCharIndex < strlen(pstrString); ++iCurrCharIndex)
                 {
                     if ('0' > pstrString[iCurrCharIndex] || pstrString[iCurrCharIndex] > '7')
                         return FALSE;
@@ -892,6 +894,7 @@ int IsStringInteger(char *pstrString)
                 return FALSE;
         }
     }
+
     return TRUE;
 }
 
@@ -938,10 +941,7 @@ int IsStringFloat( char *pstrString)
 
     // If a radix point was found, return true; otherwise, it must be an integer so return false
 
-    if (iRadixPointFound)
-        return TRUE;
-    else
-        return FALSE;
+	return (iRadixPointFound ? TRUE : FALSE);
 }
 
 /******************************************************************************************
@@ -980,15 +980,6 @@ static void PrintUsage()
 *
 *   Loads the source file into memory.
 */
-
-
-// 注意这里简化了Windows的换行符,使之和unix相同,并不影响我们统计文件行数
-
-#if defined(_MAC)
-#define NEWLINE '\r'
-#elif defined(_WIN32) || defined(_UNIX) || defined(_LINUX)
-#define NEWLINE '\n'
-#endif /* _MAC */
 
 void LoadSourceFile(const char* file)
 {

@@ -186,9 +186,9 @@ static int stricmp(const char *s1, const char *s2)
 *    将一个负(相对于栈顶)的堆栈索引转为正的（即相对于栈底）
 */
 
-inline int ResolveStackIndex(int Index)
+inline int ResolveStackIndex(int iIndex)
 {
-    return (Index < 0 ? Index += g_Scripts[g_CurrThread].Stack.FrameIndex : Index);
+	return (iIndex < 0 ? iIndex += g_Scripts[g_CurrThread].Stack.FrameIndex : iIndex);
 }
 
 /******************************************************************************************
@@ -199,9 +199,9 @@ inline int ResolveStackIndex(int Index)
 *  otherwise.
 */
 
-inline int IsValidThreadIndex(int Index)
+inline int IsValidThreadIndex(int iIndex)
 {
-    return (Index < 0 || Index > MAX_THREAD_COUNT ? FALSE : TRUE);
+	return (iIndex < 0 || iIndex > MAX_THREAD_COUNT ? FALSE : TRUE);
 }
 
 /******************************************************************************************
@@ -211,9 +211,9 @@ inline int IsValidThreadIndex(int Index)
 *  Returns TRUE if the specified thread is both a valid index and active, FALSE otherwise.
 */
 
-inline int IsThreadActive(int Index)
+inline int IsThreadActive(int iIndex)
 {
-    return (IsValidThreadIndex(Index) && g_Scripts[Index].IsActive ? TRUE : FALSE);
+	return (IsValidThreadIndex(iIndex) && g_Scripts[iIndex].IsActive ? TRUE : FALSE);
 }
 
 // ----Function Prototypes -------------------------------------------------------------------
@@ -245,7 +245,7 @@ Value* ResolveOpPntr(int iOpIndex);
 
 Value GetStackValue(int iThreadIndex, int iIndex);
 void SetStackValue(int iThreadIndex, int iIndex, Value Val);
-void Push(int iThreadIndex, Value Val);
+void Push(int iThreadIndex, Value& Val);
 Value Pop(int iThreadIndex);
 void PushFrame(int iThreadIndex, int iSize);
 void PopFrame(int iSize);
@@ -1090,7 +1090,7 @@ static void ExecuteScript(int iTimesliceDur)
                     break;
 
                 case INSTR_EXP:
-                    // CRT函数pow只针对浮点数。对于整数我们调用自定义的函数
+
                     if (Dest.Type == OP_TYPE_INT)
                         Dest.Fixnum = math::IntPow(Dest.Fixnum, ResolveOpAsInt(1));
                     else
@@ -1175,6 +1175,7 @@ static void ExecuteScript(int iTimesliceDur)
                     break;
 
                 case INSTR_SQRT:
+
                     if (Dest.Type == OP_TYPE_INT)
                         Dest.Realnum = sqrtf((float)Dest.Fixnum);
                     else
@@ -1585,7 +1586,7 @@ static void ExecuteScript(int iTimesliceDur)
                     break;
 
                 default:
-                    assert(1 && "shouldn't get here");
+                    assert("shouldn't get here");
                     exit(1);
                 }
             }
@@ -2368,7 +2369,7 @@ inline void SetStackValue(int iThreadIndex, int iIndex, Value Val)
 *    Pushes an element onto the stack.
 */
 
-inline void Push(int iThreadIndex, Value Val)
+inline void Push(int iThreadIndex, Value& Val)
 {
     // Get the current top element
 
@@ -2687,7 +2688,7 @@ void XVM_CallScriptFuncSync(int iThreadIndex, char *pstrName)
 
 /******************************************************************************************
 *
-*  XVM_RegisterCFunction()
+*  XVM_RegisterHostFunction()
 *
 *  Registers a function with the host API.
 */
