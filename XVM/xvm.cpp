@@ -156,7 +156,11 @@ int g_CurrThreadActiveTime;                    // The time at which the current 
 HOST_API_FUNC* g_HostAPIs = NULL;    // The host API
 
 
-// stricmp
+# if defined(WIN32_PLATFORM)
+#  define stricmp _stricmp
+# endif
+
+#ifdef __APPLE__
 static int stricmp(const char *s1, const char *s2)
 {
     unsigned char c1, c2;
@@ -171,7 +175,7 @@ static int stricmp(const char *s1, const char *s2)
     } while (c1 != 0);
     return 0;
 }
-
+#endif	/* __APPLE__ */
 
 /******************************************************************************************
 *
