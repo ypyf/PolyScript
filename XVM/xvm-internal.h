@@ -38,8 +38,8 @@
 #define OP_TYPE_INT                         0           // Integer literal value
 #define OP_TYPE_FLOAT                       1           // Floating-point literal value
 #define OP_TYPE_STRING                      2           // String literal value
-#define OP_TYPE_ABS_STACK_INDEX             3           // Absolute array index
-#define OP_TYPE_REL_STACK_INDEX             4           // Relative array index
+#define OP_TYPE_ABS_STACK_INDEX             3           // Absolute stack index
+#define OP_TYPE_REL_STACK_INDEX             4           // Relative stack index
 #define OP_TYPE_INSTR_INDEX                 5           // Instruction index
 #define OP_TYPE_FUNC_INDEX                  6           // Function index
 #define OP_TYPE_HOST_API_CALL_INDEX         7           // Host API call index
@@ -49,7 +49,7 @@
 
 
 // 位于对象实际数据前部的元数据记录信息
-typedef struct _MetaObject
+struct MetaObject
 {
     long RefCount;
     unsigned char marked;
@@ -57,8 +57,8 @@ typedef struct _MetaObject
     //char* Name;     
     Value *Mem;      // 对象数据
     size_t Size;     // 数据大小
-    struct _MetaObject *NextObject; // 指向下一个元对象
-} MetaObject;
+    struct MetaObject *NextObject; // 指向下一个元对象
+};
 
 // -------- Object Interface ----------------------
 

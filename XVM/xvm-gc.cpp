@@ -11,8 +11,8 @@ Value GC_AllocObject(int iSize, MetaObject **ppPrevious)
     assert (iSize > 0);
 
     // Allocate memory
-    byteCount = sizeof(_MetaObject) + iSize*sizeof(Value);
-    r.This = (_MetaObject *)malloc(byteCount);
+    byteCount = sizeof(MetaObject) + iSize*sizeof(Value);
+    r.This = (MetaObject *)malloc(byteCount);
     memset(r.This, 0, byteCount);
 
     r.Type = OP_TYPE_OBJECT;
@@ -20,7 +20,7 @@ Value GC_AllocObject(int iSize, MetaObject **ppPrevious)
     r.This->RefCount = 1;
     r.This->NextObject = *ppPrevious;
     r.This->Size = iSize;
-    r.This->Mem = (Value *)(((char *)r.This) + sizeof(_MetaObject));
+    r.This->Mem = (Value *)(((char *)r.This) + sizeof(MetaObject));
 
     // 指向新分配的对象
     *ppPrevious = r.This;

@@ -1584,10 +1584,6 @@ static void ExecuteScript(int iTimesliceDur)
                     }
 
                     break;
-
-                default:
-                    assert("shouldn't get here");
-                    exit(1);
                 }
             }
 
@@ -1600,7 +1596,7 @@ static void ExecuteScript(int iTimesliceDur)
                 Value FuncIndex = Pop(g_CurrThread);
 
                 assert(FuncIndex.Type == OP_TYPE_FUNC_INDEX ||
-                    FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER);
+                       FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER);
 
                 // Check for the presence of a stack base marker
                 if (FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER)
@@ -2799,10 +2795,6 @@ char* XVM_GetParamAsString(int iThreadIndex, int iParamIndex)
 
 void XVM_ReturnFromHost(int iThreadIndex)
 {
-    // 默认返回0
-    g_Scripts[iThreadIndex]._RetVal.Type = OP_TYPE_INT;
-    g_Scripts[iThreadIndex]._RetVal.Fixnum = 0;
-
     // Clear the parameters off the stack
     g_Scripts[iThreadIndex].Stack.TopIndex = g_Scripts[iThreadIndex].Stack.FrameIndex;
 }
@@ -2876,6 +2868,7 @@ int XVM_GetExitCode(int iThreadIndex)
 {
     return g_Scripts[iThreadIndex].ExitCode;
 }
+
 
 void XVM_Assembly(char* pstrFilename, char* pstrExecFilename)
 {

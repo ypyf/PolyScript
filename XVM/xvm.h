@@ -65,25 +65,25 @@ extern "C" {
 
 typedef void (*XVM_HOST_FUNCTION)(int iThreadIndex);  // Host API function pointer alias
 
-//struct _XObject;
-//typedef struct _XObject *XObject;
-struct _MetaObject;
 
 // ----Runtime Value ---------------------------------------------------------------------
+
+struct MetaObject;
+
 struct Value
 {
-    int Type;                      // Type
-    union                          // The value
+    int Type;							// The type
+    union								// The value
     {
-        _MetaObject *This;         // Object Reference
-        int         Fixnum;        // Integer literal
-        float       Realnum;       // Float literal
-        char*       String;        // String literal
-        int         StackIndex;    // Stack Index
-        int         InstrIndex;    // Instruction index
-        int         FuncIndex;     // Function index
-        int         HostFuncIndex; // Host API Call index
-        int         Register;      // Register code
+        MetaObject *This;				// Object Reference
+        int         Fixnum;				// Integer literal
+        float       Realnum;			// Float literal
+        char*       String;				// String literal
+        int         StackIndex;			// Stack Index
+        int         InstrIndex;			// Instruction index
+        int         FuncIndex;			// Function index
+        int         HostFuncIndex;		// Host API Call index
+        int         Register;			// Register encode
     };
 
     // 对于OP_TYPE_REL_STACK_INDEX，该字段保存的是偏移值的地址(偏移值是一个变量)
