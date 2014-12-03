@@ -5,6 +5,7 @@
 #include "xvm.h"
 #include "xasm.h"
 #include "mathlib.h"
+#include <ctype.h>
 #include <time.h>
 
 // ----Script Loading --------------------------------------------------------------------
@@ -155,6 +156,23 @@ int g_CurrThreadActiveTime;                    // The time at which the current 
 HOST_API_FUNC* g_HostAPIs = NULL;    // The host API
 
 
+// stricmp
+static int stricmp(const char *s1, const char *s2)
+{
+    unsigned char c1, c2;
+    do {
+        c1 = tolower(*s1);
+        c2 = tolower(*s2);
+        if (c1 < c2)
+            return -1;
+        else if (c1 > c2)
+            return 1;
+        s1++, s2++;
+    } while (c1 != 0);
+    return 0;
+}
+
+
 /******************************************************************************************
 *
 *    ResolveStackIndex()
@@ -197,7 +215,7 @@ inline int IsThreadActive(int Index)
 // ----Function Prototypes -------------------------------------------------------------------
 
 // GC
-void RunGC(Script *pScript);
+static void RunGC(Script *pScript);
 
 // ----Operand Interface -----------------------------------------------------------------
 
@@ -1999,8 +2017,8 @@ float CoerceValueToFloat(Value Val)
 
 char *CoerceValueToString(Value Val)
 {
-
     char *pstrCoercion;
+
     if (Val.Type != OP_TYPE_STRING)
         pstrCoercion = (char *)malloc(MAX_COERCION_STRING_SIZE + 1);
 
@@ -2011,7 +2029,7 @@ char *CoerceValueToString(Value Val)
         // It's an integer, so convert it to a string
 
     case OP_TYPE_INT:
-        _itoa(Val.Fixnum, pstrCoercion, 10);
+        sprintf(pstrCoercion, "%d", Val.Fixnum);
         return pstrCoercion;
 
         // It's a float, so use sprintf() to convert it since there's no built-in function
@@ -2577,7 +2595,7 @@ int GetFuncIndexByName(int iThreadIndex, char *pstrName)
     for (int i = 0; i < g_Scripts[iThreadIndex].FuncTable.Size; ++i)
     {
         // If the names match, return the index
-        if (_stricmp(pstrName, g_Scripts[iThreadIndex].FuncTable.Funcs[i].Name) == 0)
+        if (stricmp(pstrName, g_Scripts[iThreadIndex].FuncTable.Funcs[i].Name) == 0)
             return i;
     }
 

@@ -4,17 +4,14 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 // ----Include Files -------------------------------------------------------------------------
+
 #include <stdio.h>
-#include <iostream>
-#include <string>
-#include <functional>
-#include <algorithm>
-#include <conio.h>
-#include <windows.h>
-#include <imagehlp.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "xvm.h"
 
+#define MAX_PATH    260
 
 void print_error_message(int iErrorCode)
 {
