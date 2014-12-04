@@ -2104,7 +2104,12 @@ inline int ResolveOpStackIndex(int iOpIndex)
             assert(sv.Type == OP_TYPE_INT);
 
             // 绝对地址 = 基址 + 偏移
-            return iBaseIndex + sv.Fixnum;
+            // 全局变量基址是正数，从0开始增大
+            if (iBaseIndex >= 0)
+                return iBaseIndex + sv.Fixnum;
+            else
+                // 局部变量基址是负数，从-1开始减小
+                return iBaseIndex - sv.Fixnum;
         }
     default:
         return -1;    // unexpected
