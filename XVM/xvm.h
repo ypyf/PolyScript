@@ -34,7 +34,7 @@ extern "C" {
 #endif
 
 // ---- Script Exit Code
-#define XVM_EXIT_OK                0
+#define XVM_EXIT_OK             0
 
 // ----Script Loading Error Codes --------------------------------------------------------
 
@@ -100,7 +100,7 @@ XVM_API void XVM_ShutDown();
 
 // ----Script Interface ------------------------------------------------------------------
 
-XVM_API void XVM_Assembly(char* pstrFilename, char* pstrExecFilename);
+XVM_API void XVM_Assembly(char *pstrFilename, char *pstrExecFilename);
 XVM_API int XVM_LoadScript(const char *pstrFilename, int& iScriptIndex, int iThreadTimeslice);
 XVM_API void XVM_UnloadScript(int iThreadIndex);
 XVM_API void XVM_ResetScript(int iThreadIndex);

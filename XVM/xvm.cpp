@@ -2456,7 +2456,7 @@ inline FUNC *GetFunc(int iThreadIndex, int iIndex)
 *    Returns the host API call corresponding to the specified index.
 */
 
-inline char* GetHostFunc(int iIndex)
+inline char *GetHostFunc(int iIndex)
 {
     return g_Scripts[g_CurrThread].HostCallTable.Calls[iIndex];
 }
@@ -2706,7 +2706,7 @@ int XVM_RegisterHostFunction(int iThreadIndex, char *pstrName, XVM_HOST_FUNCTION
     }
 
     // 添加新的节点到函数列表
-    HOST_API_FUNC* node = (HOST_API_FUNC*)malloc(sizeof(HOST_API_FUNC));
+    HOST_API_FUNC *node = (HOST_API_FUNC *)malloc(sizeof(HOST_API_FUNC));
     *pCFuncTable = node;
     memset(node, 0, sizeof(HOST_API_FUNC));
     strcpy(node->Name, pstrName);
@@ -2870,7 +2870,7 @@ int XVM_GetExitCode(int iThreadIndex)
 }
 
 
-void XVM_Assembly(char* pstrFilename, char* pstrExecFilename)
+void XVM_Assembly(char *pstrFilename, char *pstrExecFilename)
 {
     XASM_Assembly(pstrFilename, pstrExecFilename);
 }
