@@ -3187,10 +3187,7 @@ void AssmblSourceFile()
 
                                         pOpList[iCurrOpIndex].Type = OP_TYPE_ABS_STACK_INDEX;
 
-                                        if (iBaseIndex >= 0)
-                                            pOpList[iCurrOpIndex].StackIndex = iBaseIndex + iOffsetIndex;
-                                        else
-                                            pOpList[iCurrOpIndex].StackIndex = iBaseIndex - iOffsetIndex;
+                                        pOpList[iCurrOpIndex].StackIndex = iBaseIndex + iOffsetIndex;
                                     }
                                     else if (IndexToken == TOKEN_TYPE_IDENT)
                                     {

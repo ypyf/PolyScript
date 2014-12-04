@@ -28,7 +28,7 @@
 
 // ----Coercion --------------------------------------------------------------------------
 
-#define MAX_COERCION_STRING_SIZE    64          // The maximum allocated space for a
+#define MAX_COERCION_STRING_SIZE    256         // The maximum allocated space for a
 // string coercion
 
 // ----Multithreading --------------------------------------------------------------------
@@ -1960,7 +1960,7 @@ int CoerceValueToInt(Value Val)
         // It's a float, so cast it to an integer
 
     case OP_TYPE_FLOAT:
-        return(int) Val.Realnum;
+        return (int)Val.Realnum;
 
         // It's a string, so convert it to an integer
 
@@ -1990,7 +1990,7 @@ float CoerceValueToFloat(Value Val)
         // It's an integer, so cast it to a float
 
     case OP_TYPE_INT:
-        return(float) Val.Fixnum;
+        return (float)Val.Fixnum;
 
         // It's a float, so return it as-is
 
@@ -2000,7 +2000,7 @@ float CoerceValueToFloat(Value Val)
         // It's a string, so convert it to an float
 
     case OP_TYPE_STRING:
-        return(float) atof(Val.String);
+        return (float)atof(Val.String);
 
         // Anything else is invalid
 
@@ -2104,12 +2104,7 @@ inline int ResolveOpStackIndex(int iOpIndex)
             assert(sv.Type == OP_TYPE_INT);
 
             // 绝对地址 = 基址 + 偏移
-            // 全局变量基址是正数，从0开始增大
-            if (iBaseIndex >= 0)
-                return iBaseIndex + sv.Fixnum;
-            else
-                // 局部变量基址是负数，从-1开始减小
-                return iBaseIndex - sv.Fixnum;
+            return iBaseIndex + sv.Fixnum;
         }
     default:
         return -1;    // unexpected
