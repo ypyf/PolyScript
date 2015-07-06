@@ -80,11 +80,12 @@
 #define TOKEN_TYPE_SETPRIORITY      14          // The SetPriority directive
 #define TOKEN_TYPE_GLOBAL           15          // The Global Var/Var [] directives
 #define TOKEN_TYPE_FUNC             16          // The Func directives
-#define TOKEN_TYPE_PARAM            17          // The Param directives
-#define TOKEN_TYPE_LOCAL            18          // The Locals directives
-#define TOKEN_TYPE_REG_RETVAL       19          // The _RetVal register
-#define TOKEN_TYPE_REG_THISVAL      20          // The _ThisVal register
-#define END_OF_TOKEN_STREAM         21          // The end of the stream has been reached
+#define TOKEN_TYPE_ENDP             17			// The Endp keyword
+#define TOKEN_TYPE_PARAM            18          // The Param directives
+#define TOKEN_TYPE_LOCAL            19          // The Locals directives
+#define TOKEN_TYPE_REG_RETVAL       20          // The _RetVal register
+#define TOKEN_TYPE_REG_THISVAL      21          // The _ThisVal register
+#define END_OF_TOKEN_STREAM         22          // The end of the stream has been reached
 
 #define MAX_IDENT_SIZE              256        // Maximum identifier size
 
@@ -182,6 +183,9 @@
 
 #define ERROR_MSSG_UNDEFINED_FUNC    \
     "Undefined function"
+
+#define ERROR_MSSG_ENDP		\
+	"Unexpected ENDP"
 
 #define ERROR_MSSG_GLOBAL_PARAM    \
     "Parameters can only appear inside functions"
@@ -1673,10 +1677,10 @@ Token GetNextToken()
         }
     }
 
-    // 更新#1指针，指向词素的开始
+    // 更新#1指针，指向单词的开始
     g_Lexer.Index1 = g_Lexer.Index0;
 
-    // 扫描词素直到遇见定界符
+    // 扫描单词直到遇见定界符
     while (TRUE)
     {
         if (g_Lexer.CurrLexState == LEX_STATE_IN_STRING)
@@ -1724,11 +1728,11 @@ Token GetNextToken()
         }
     }
 
-    // 单字符的词素，如标点符号，#1 - #0 = 0
+    // 单字符的单词，如标点符号，#1 - #0 = 0
     if (g_Lexer.Index1 - g_Lexer.Index0 == 0)
         ++g_Lexer.Index1;
 
-    // 将词素从输入流拷贝到单独的缓冲区中
+    // 将单词从输入流拷贝到单独的缓冲区中
     size_t iCurrDestIndex = 0;
     for (size_t i = g_Lexer.Index0; i < g_Lexer.Index1; ++i)
     {
@@ -1879,6 +1883,9 @@ Token GetNextToken()
     // Is it Func?
     if (_stricmp(g_Lexer.CurrLexeme, "PROC") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_FUNC;
+
+	if (_stricmp(g_Lexer.CurrLexeme, "ENDP") == 0)
+		g_Lexer.CurrToken = TOKEN_TYPE_ENDP;
 
     //// 结构体
     //if (strcmp(g_Lexer.CurrLexeme, "STRUCT") == 0)
@@ -2684,14 +2691,9 @@ void AssmblSourceFile()
 
                 // Read any number of line breaks until the opening brace is found
                 // ignore any newline
-                while (GetNextToken() == TOKEN_TYPE_NEWLINE);
+                //while (GetNextToken() == TOKEN_TYPE_NEWLINE);
 
-                // Make sure the lexeme was an opening brace
-
-                if (g_Lexer.CurrToken != TOKEN_TYPE_OPEN_BRACE)
-                    ExitOnCharExpectedError('{');
-
-                // [-] 我们强制必须写RET指令
+                // [-] 我们的汇编器不自动添加RET指令
                 // All functions are automatically appended with Ret, so increment the
                 // required size of the instruction stream
 
@@ -2702,12 +2704,14 @@ void AssmblSourceFile()
 
             // Closing bracket
 
-        case TOKEN_TYPE_CLOSE_BRACE:
+        case TOKEN_TYPE_ENDP:
 
             // This should be closing a function, so make sure we're in one
 
-            if (!iIsFuncActive)
-                ExitOnCharExpectedError('}');
+            //if (!iIsFuncActive)
+            //    ExitOnCharExpectedError('}');
+			if (!iIsFuncActive)
+				ExitOnCodeError(ERROR_MSSG_ENDP);
 
             // Set the fields we've collected
 
@@ -2876,19 +2880,14 @@ void AssmblSourceFile()
 
                 // Read any number of line breaks until the opening brace is found
 
-                while (GetNextToken() == TOKEN_TYPE_NEWLINE);
-
-                // Make sure the lexeme was an opening brace
-                // 其实下面两行代码是不需要的，因为在第一遍时已经检察过
-                //if (g_Lexer.CurrToken != TOKEN_TYPE_OPEN_BRACE)
-                //    ExitOnCharExpectedError('{');
+                //while (GetNextToken() == TOKEN_TYPE_NEWLINE);
 
                 break;
             }
 
             // Closing brace
 
-        case TOKEN_TYPE_CLOSE_BRACE:
+        case TOKEN_TYPE_ENDP:
             {
                 // Clear the active function flag
 

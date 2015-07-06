@@ -8,7 +8,7 @@ A game script virtual machine.
 ###Example 1
 
 	proc Main
-	{
+ 
 		local s
 		local i
 	
@@ -23,7 +23,8 @@ A game script virtual machine.
 	L1:
 		mov _RetVal, 0
 		ret
-	}
+
+	endp
 
 Program output:
 
