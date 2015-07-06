@@ -7,9 +7,10 @@ A game script virtual machine.
 
 ###Example 1
 
+    global s
+
 	proc Main
  
-		local s
 		local i
 	
 		mov i, 0
