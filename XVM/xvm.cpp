@@ -866,17 +866,13 @@ void XVM_ResetScript(int iThreadIndex)
     for (int i = 0; i < g_Scripts[iThreadIndex].Stack.Size; ++i)
         g_Scripts[iThreadIndex].Stack.Elmnts[i].Type = OP_TYPE_NULL;
 
-    // Free all created objects
+    // Free all allocated objects
     GC_FreeAllObjects(g_Scripts[iThreadIndex].pLastObject);
 
     // Reset GC state
     g_Scripts[iThreadIndex].pLastObject = NULL;
     g_Scripts[iThreadIndex].iNumberOfObjects = 0;
     g_Scripts[iThreadIndex].iMaxObjects = INITIAL_GC_THRESHOLD;
-
-    /*g_Scripts[iThreadIndex].pLastObject = NULL;
-    g_Scripts[iThreadIndex].iNumberOfObjects = 0;
-    g_Scripts[iThreadIndex].iMaxObjects = INITIAL_GC_THRESHOLD;*/
 
     // Unpause the script
 
