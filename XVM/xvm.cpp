@@ -1574,7 +1574,7 @@ static void ExecuteScript(int iTimesliceDur)
                         }
                         else
                         {
-                            printf("未定义的host api%s\n", pstrFuncName);
+                            fprintf(stderr, "VM Error: 未定义的函数 '%s'\n", pstrFuncName);
                             exit(1);
                         }
                     }
@@ -1651,7 +1651,7 @@ static void ExecuteScript(int iTimesliceDur)
                     break;
                 default:
                     // TODO 索引和其他调试信息
-                    printf("INSTR_PRINT: %d unexcepted data type.\n", val.Type);
+                    fprintf(stderr, "VM Error: INSTR_PRINT: %d unexcepted data type.\n", val.Type);
                 }
                 break;
             }
@@ -1917,6 +1917,8 @@ static void RunGC(Script *pScript)
 
 void CopyValue(Value *pDest, Value Source)
 {
+	// 对象浅拷贝
+
     // If the destination already contains a string, make sure to free it first
 
     if (pDest->Type == OP_TYPE_STRING)
