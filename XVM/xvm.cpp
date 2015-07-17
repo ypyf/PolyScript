@@ -1647,7 +1647,7 @@ static void ExecuteScript(int iTimesliceDur)
                     printf("%i\n", val.Register);
                     break;
                 case OP_TYPE_OBJECT:
-                    printf("<object at %p>\n", val.This);
+                    printf("<object at %p>\n", val.ObjectPtr);
                     break;
                 default:
                     // TODO 索引和其他调试信息

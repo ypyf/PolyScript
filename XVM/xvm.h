@@ -75,7 +75,7 @@ struct Value
     int Type;							// The type
     union								// The value
     {
-        MetaObject *This;				// Object Reference
+        MetaObject* ObjectPtr;			// Object Reference
         int         Fixnum;				// Integer literal
         float       Realnum;			// Float literal
         char*       String;				// String literal

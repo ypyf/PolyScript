@@ -12,18 +12,18 @@ Value GC_AllocObject(int iSize, MetaObject **ppPrevious)
 
     // Allocate memory
     byteCount = sizeof(MetaObject) + iSize*sizeof(Value);
-    r.This = (MetaObject *)malloc(byteCount);
-    memset(r.This, 0, byteCount);
+    r.ObjectPtr = (MetaObject *)malloc(byteCount);
+    memset(r.ObjectPtr, 0, byteCount);
 
     r.Type = OP_TYPE_OBJECT;
-    r.This->marked = 0;
-    r.This->RefCount = 1;
-    r.This->NextObject = *ppPrevious;
-    r.This->Size = iSize;
-    r.This->Mem = (Value *)(((char *)r.This) + sizeof(MetaObject));
+    r.ObjectPtr->marked = 0;
+    r.ObjectPtr->RefCount = 1;
+    r.ObjectPtr->NextObject = *ppPrevious;
+    r.ObjectPtr->Size = iSize;
+    r.ObjectPtr->Mem = (Value *)(((char *)r.ObjectPtr) + sizeof(MetaObject));
 
     // 指向新分配的对象
-    *ppPrevious = r.This;
+    *ppPrevious = r.ObjectPtr;
 
     return r;
 }
@@ -34,14 +34,14 @@ void GC_Mark(Value val)
     if (val.Type == OP_TYPE_OBJECT) 
     {
         // 检查循环
-        if (val.This->marked)
+        if (val.ObjectPtr->marked)
             return; 
 
-        val.This->marked = 1;
+        val.ObjectPtr->marked = 1;
 
         // FIXME 嵌套过深会溢出
-        for (size_t i = 0; i < val.This->Size; i++)
-            GC_Mark(val.This->Mem[i]);
+        for (size_t i = 0; i < val.ObjectPtr->Size; i++)
+            GC_Mark(val.ObjectPtr->Mem[i]);
     }
 }
 
