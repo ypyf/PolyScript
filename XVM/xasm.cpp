@@ -7,7 +7,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 // ----Include Files -------------------------------------------------------------------------
-
+#include <sys/stat.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -3467,17 +3467,22 @@ void BuildXSE(const char* file)
 
     fwrite(XSE_ID_STRING, 4, 1, pExecFile);
 
+	// 写入源文件创建时间戳
+	struct stat fs;
+	stat(file, &fs);
+	fwrite(&fs.st_mtime, sizeof(fs.st_mtime), 1, pExecFile);
+
+	// 写入编译时间
+	//time_t now = time(0);
+	//fwrite(&now, sizeof now, 1, pExecFile);
+
     // Write the version(1 byte for ( each component, 2 total)
 
     char cVersionMajor = VERSION_MAJOR,
          cVersionMinor = VERSION_MINOR;
     fwrite(&cVersionMajor, 1, 1, pExecFile);
     fwrite(&cVersionMinor, 1, 1, pExecFile);
-#ifdef USE_TIMESTAMP
-    // 写入编译时间
-    time_t now = time(0);
-    fwrite(&now, sizeof now, 1, pExecFile);
-#endif
+
     // Write the stack size(4 bytes)
 
     fwrite(&g_ScriptHeader.StackSize, 4, 1, pExecFile);

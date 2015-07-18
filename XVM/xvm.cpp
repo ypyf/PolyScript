@@ -201,7 +201,7 @@ inline int ResolveStackIndex(int iIndex)
 
 inline int IsValidThreadIndex(int iIndex)
 {
-	return (iIndex < 0 || iIndex > MAX_THREAD_COUNT ? FALSE : TRUE);
+	return (iIndex >= 0 && iIndex < MAX_THREAD_COUNT);
 }
 
 /******************************************************************************************
@@ -213,7 +213,7 @@ inline int IsValidThreadIndex(int iIndex)
 
 inline int IsThreadActive(int iIndex)
 {
-	return (IsValidThreadIndex(iIndex) && g_Scripts[iIndex].IsActive ? TRUE : FALSE);
+	return (IsValidThreadIndex(iIndex) && g_Scripts[iIndex].IsActive);
 }
 
 // ----Function Prototypes -------------------------------------------------------------------
@@ -264,7 +264,7 @@ int GetCurrTime();
 
 // ----Functions -------------------------------------------------------------------------
 
-void CallFunc(int iThreadIndex, int iIndex);
+void CallFunc(int iThreadIndex, int iIndex, int type);
 
 // ----Functions -----------------------------------------------------------------------------
 
@@ -325,6 +325,36 @@ void XVM_ShutDown()
 
 /******************************************************************************************
 *
+*    XVM_GetSourceTimestamp()
+*
+*    获取源文件修改时间戳
+*/
+
+time_t XVM_GetSourceTimestamp(const char* filename)
+{
+	// 打开文件
+	FILE* pScriptFile = fopen(filename, "rb");
+	if (!pScriptFile)
+		return 0;
+
+	// 验证文件类型
+	char pstrIDString[4];
+	fread(pstrIDString, 4, 1, pScriptFile);
+	if (memcmp(pstrIDString, XSE_ID_STRING, 4) != 0)
+		return 0;
+
+	// 读取源文件修改时间戳字段
+	time_t ts;
+	fread(&ts, sizeof ts, 1, pScriptFile);
+
+	// 关闭文件
+	fclose(pScriptFile);
+
+	return ts;
+}
+
+/******************************************************************************************
+*
 *    XVM_LoadScript()
 *
 *    Loads an .XSE file into memory.
@@ -358,7 +388,6 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
     if (!(pScriptFile = fopen(pstrFilename, "rb")))
         return XVM_LOAD_ERROR_FILE_IO;
 
-    //fseek(pScriptFile, offset, SEEK_SET);    // .xvm节文件偏移
 
     // ----Read the header
 
@@ -372,6 +401,9 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
     if (memcmp(pstrIDString, XSE_ID_STRING, 4) != 0)
         return XVM_LOAD_ERROR_INVALID_XSE;
 
+	// 跳过源文件时间戳字段
+	fseek(pScriptFile, sizeof(time_t), SEEK_CUR);
+
     // Read the script version (2 bytes total)
 
     int iMajorVersion = 0,
@@ -384,11 +416,6 @@ int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimes
 
     if (iMajorVersion != VERSION_MAJOR || iMinorVersion != VERSION_MINOR)
         return XVM_LOAD_ERROR_UNSUPPORTED_VERS;
-
-#ifdef USE_TIMESTAMP
-    // 跳过时间戳
-    fseek(pScriptFile, sizeof(time_t), SEEK_SET);
-#endif
 
     // Read the stack size (4 bytes)
 
@@ -912,8 +939,11 @@ static void ExecuteScript(int iTimesliceDur)
         int iIsStillActive = FALSE;
         for (int i = 0; i < MAX_THREAD_COUNT; ++i)
         {
-            if (g_Scripts[i].IsActive && g_Scripts[i].IsRunning)
+            if (g_Scripts[i].IsActive && g_Scripts[i].IsRunning) 
+			{
                 iIsStillActive = TRUE;
+				break;
+			}
         }
         if (!iIsStillActive)
             break;
@@ -1521,7 +1551,7 @@ static void ExecuteScript(int iTimesliceDur)
                         int iFuncIndex = ResolveOpAsFuncIndex(0);
 
                         // Call the function
-                        CallFunc(g_CurrThread, iFuncIndex);
+						CallFunc(g_CurrThread, iFuncIndex, OP_TYPE_FUNC_INDEX);
                     }
 
                     break;
@@ -1598,13 +1628,11 @@ static void ExecuteScript(int iTimesliceDur)
                 if (FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER)
                     iExitExecLoop = TRUE;
 
-                // 如果是在主函数中 则退出脚本
+                // 如果是主函数返回，记录退出代码
                 if (g_Scripts[g_CurrThread].IsMainFuncPresent &&
                     g_Scripts[g_CurrThread].MainFuncIndex == FuncIndex.FuncIndex)
                 {
                     g_Scripts[g_CurrThread].ExitCode = g_Scripts[g_CurrThread]._RetVal.Fixnum;
-                    g_Scripts[g_CurrThread].IsRunning = FALSE;
-                    break;
                 }
 
                 // Get the previous function index
@@ -2488,9 +2516,12 @@ inline int GetCurrTime()
 *  CallFunc()
 *
 *  Calls a function based on its index.
+*
+*  type: OP_TYPE_STACK_BASE_MARKER 被调函数将返回到宿主
+*		 OP_TYPE_FUNC_INDEX 普通函数
 */
 
-void CallFunc(int iThreadIndex, int iIndex)
+void CallFunc(int iThreadIndex, int iIndex, int type)
 {
     // Advance the instruction pointer so it points to the instruction
     // immediately following the call
@@ -2508,9 +2539,9 @@ void CallFunc(int iThreadIndex, int iIndex)
     ReturnAddr.InstrIndex = g_Scripts[iThreadIndex].InstrStream.CurrInstr;
     Push(iThreadIndex, ReturnAddr);
 
-    // 调用者函数信息块
+    // 函数信息块,保存调用者的栈帧索引
     Value FuncIndex;
-    FuncIndex.Type = OP_TYPE_FUNC_INDEX;
+	FuncIndex.Type = type;
     FuncIndex.FuncIndex = iIndex;
     FuncIndex.OffsetIndex = iFrameIndex;
 
@@ -2615,6 +2646,13 @@ int XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
     if (!IsThreadActive(iThreadIndex))
         return FALSE;
 
+	// 调用脚本函数期间保持脚本运行
+	int iIsRunning = g_Scripts[iThreadIndex].IsRunning;
+	if (!iIsRunning)
+	{
+		g_Scripts[iThreadIndex].IsRunning = TRUE;
+	}
+
     // ----Calling the function
 
     // Preserve the current state of the VM
@@ -2635,21 +2673,20 @@ int XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
         return FALSE;
 
     // Call the function
-    CallFunc(iThreadIndex, iFuncIndex);
-
-    // Set the stack base
-    Value StackBase = GetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - 1);
-    StackBase.Type = OP_TYPE_STACK_BASE_MARKER; // 指明这个调用将返回到宿主
-    SetStackValue(g_CurrThread, g_Scripts[g_CurrThread].Stack.TopIndex - 1, StackBase);
+	CallFunc(iThreadIndex, iFuncIndex, OP_TYPE_STACK_BASE_MARKER);
 
     // Allow the script code to execute uninterrupted until the function returns
     ExecuteScript(XVM_INFINITE_TIMESLICE);
 
     // ----Handling the function return
 
+	// 恢复脚本状态
+	g_Scripts[iThreadIndex].IsRunning = iIsRunning;
+
     // Restore the VM state
     g_CurrThreadMode = iPrevThreadMode;
     g_CurrThread = iPrevThread;
+	
 
     return TRUE;
 }
@@ -2660,7 +2697,7 @@ int XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
 *
 *  Invokes a script function from the host application, meaning the call executes in sync
 *  with the script.
-*  用于在宿主函数中同步地调用脚本函数。单独使用没有效果。
+*  用于在宿主API函数中同步地调用脚本函数。单独使用没有效果。
 */
 
 void XVM_CallScriptFuncSync(int iThreadIndex, char *pstrName)
@@ -2677,7 +2714,7 @@ void XVM_CallScriptFuncSync(int iThreadIndex, char *pstrName)
         return;
 
     // Call the function
-    CallFunc(iThreadIndex, iFuncIndex);
+	CallFunc(iThreadIndex, iFuncIndex, OP_TYPE_FUNC_INDEX);
 }
 
 /******************************************************************************************
