@@ -1750,41 +1750,47 @@ static void ExecuteScript(int iTimesliceDur)
 
 void XVM_RunScript(int iThreadIndex, int iTimesliceDur)
 {
-    XVM_StartScript(iThreadIndex);
+	if (!IsThreadActive(iThreadIndex))
+		return;
+
+	g_Scripts[iThreadIndex].IsRunning = TRUE;
+
+	// Set the current thread to the script
+
+	g_CurrThread = iThreadIndex;
+
+	// Set the activation time for the current thread to get things rolling
+
+	g_CurrThreadActiveTime = GetCurrTime();
+
     XVM_CallScriptFunc(iThreadIndex, "Main");
 }
 
 /******************************************************************************************
 *
-*    XVM_StartScript()
+*	XS_StartScript ()
 *
-*  Starts the execution of a script.
+*   Starts the execution of a script.
 */
 
 void XVM_StartScript(int iThreadIndex)
 {
-    // Make sure the thread index is valid and active
+	// Make sure the thread index is valid and active
 
-    if (!IsThreadActive(iThreadIndex))
-        return;
+	if (!IsThreadActive(iThreadIndex))
+		return;
 
-    // 调用主函数
-    //if (g_Scripts[iThreadIndex].IsMainFuncPresent)
-    //    CallFunc(iThreadIndex, g_Scripts[iThreadIndex].MainFuncIndex);
-    //else
-    //    ExitOnError(ERROR_MSSG_MISSING_MAIN);
+	// Set the thread's execution flag
 
-    // Set the thread's execution flag
+	g_Scripts[iThreadIndex].IsRunning = TRUE;
 
-    g_Scripts[iThreadIndex].IsRunning = TRUE;
+	// Set the current thread to the script
 
-    // Set the current thread to the script
+	g_CurrThread = iThreadIndex;
 
-    g_CurrThread = iThreadIndex;
+	// Set the activation time for the current thread to get things rolling
 
-    // Set the activation time for the current thread to get things rolling
-
-    g_CurrThreadActiveTime = GetCurrTime();
+	g_CurrThreadActiveTime = GetCurrTime();
 }
 
 /******************************************************************************************
@@ -2646,13 +2652,6 @@ int XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
     if (!IsThreadActive(iThreadIndex))
         return FALSE;
 
-	// 调用脚本函数期间保持脚本运行
-	int iIsRunning = g_Scripts[iThreadIndex].IsRunning;
-	if (!iIsRunning)
-	{
-		g_Scripts[iThreadIndex].IsRunning = TRUE;
-	}
-
     // ----Calling the function
 
     // Preserve the current state of the VM
@@ -2679,9 +2678,6 @@ int XVM_CallScriptFunc(int iThreadIndex, char *pstrName)
     ExecuteScript(XVM_INFINITE_TIMESLICE);
 
     // ----Handling the function return
-
-	// 恢复脚本状态
-	g_Scripts[iThreadIndex].IsRunning = iIsRunning;
 
     // Restore the VM state
     g_CurrThreadMode = iPrevThreadMode;
@@ -2719,12 +2715,12 @@ void XVM_CallScriptFuncSync(int iThreadIndex, char *pstrName)
 
 /******************************************************************************************
 *
-*  XVM_RegisterHostFunction()
+*  XVM_RegisterHostFunc()
 *
 *  Registers a function with the host API.
 */
 
-int XVM_RegisterHostFunction(int iThreadIndex, char *pstrName, XVM_HOST_FUNCTION fnFunc)
+int XVM_RegisterHostFunc(int iThreadIndex, char *pstrName, XVM_HOST_FUNCTION fnFunc)
 {
     HOST_API_FUNC** pCFuncTable = &g_HostAPIs;
 
@@ -2905,7 +2901,7 @@ int XVM_GetExitCode(int iThreadIndex)
 }
 
 
-void XVM_Assembly(char *pstrFilename, char *pstrExecFilename)
+void XVM_CompileScript(char *pstrFilename, char *pstrExecFilename)
 {
     XASM_Assembly(pstrFilename, pstrExecFilename);
 }

@@ -73,7 +73,7 @@ int RunScript(char* pstrFilename)
         strcat(ExecFileName, XVM_EXEC_FILE_EXT);
 
         // 编译
-        XVM_Assembly(pstrFilename, ExecFileName);
+		XVM_CompileScript(pstrFilename, ExecFileName);
     }
     else if (strstr(pstrFilename, XVM_EXEC_FILE_EXT))
     {
@@ -89,7 +89,7 @@ int RunScript(char* pstrFilename)
     XVM_Init();
 
     // 注册宿主api
-    if (!XVM_RegisterHostFunction(XVM_GLOBAL_FUNC, "average", average))
+	if (!XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "average", average))
     {
         printf("Register Host API Failed!");
         exit(1);

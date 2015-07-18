@@ -17,7 +17,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v120</PlatformToolset>
@@ -77,6 +77,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="bytecode.h" />
+    <ClInclude Include="Compiler\code_emit.h" />
+    <ClInclude Include="Compiler\error.h" />
+    <ClInclude Include="Compiler\func_table.h" />
+    <ClInclude Include="Compiler\globals.h" />
+    <ClInclude Include="Compiler\i_code.h" />
+    <ClInclude Include="Compiler\lexer.h" />
+    <ClInclude Include="Compiler\linked_list.h" />
+    <ClInclude Include="Compiler\parser.h" />
+    <ClInclude Include="Compiler\preprocessor.h" />
+    <ClInclude Include="Compiler\stack.h" />
+    <ClInclude Include="Compiler\string_table.h" />
+    <ClInclude Include="Compiler\symbol_table.h" />
+    <ClInclude Include="Compiler\xsc.h" />
     <ClInclude Include="mathlib.h" />
     <ClInclude Include="xasm.h" />
     <ClInclude Include="xqueue.h" />
@@ -84,6 +97,17 @@
     <ClInclude Include="xvm-internal.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Compiler\code_emit.cpp" />
+    <ClCompile Include="Compiler\error.cpp" />
+    <ClCompile Include="Compiler\func_table.cpp" />
+    <ClCompile Include="Compiler\i_code.cpp" />
+    <ClCompile Include="Compiler\lexer.cpp" />
+    <ClCompile Include="Compiler\linked_list.cpp" />
+    <ClCompile Include="Compiler\parser.cpp" />
+    <ClCompile Include="Compiler\preprocessor.cpp" />
+    <ClCompile Include="Compiler\stack.cpp" />
+    <ClCompile Include="Compiler\symbol_table.cpp" />
+    <ClCompile Include="Compiler\xsc.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mathlib.cpp" />
     <ClCompile Include="xasm.cpp" />

@@ -80,7 +80,7 @@
 #define TOKEN_TYPE_SETPRIORITY      14          // The SetPriority directive
 #define TOKEN_TYPE_GLOBAL           15          // The Global Var/Var [] directives
 #define TOKEN_TYPE_FUNC             16          // The Func directives
-#define TOKEN_TYPE_ENDP             17			// The Endp keyword
+#define TOKEN_TYPE_END             17			// The Endp keyword
 #define TOKEN_TYPE_PARAM            18          // The Param directives
 #define TOKEN_TYPE_LOCAL            19          // The Locals directives
 #define TOKEN_TYPE_REG_RETVAL       20          // The _RetVal register
@@ -184,8 +184,8 @@
 #define ERROR_MSSG_UNDEFINED_FUNC    \
     "Undefined function"
 
-#define ERROR_MSSG_ENDP		\
-	"Unexpected ENDP"
+#define ERROR_MSSG_END		\
+	"Unexpected END"
 
 #define ERROR_MSSG_GLOBAL_PARAM    \
     "Parameters can only appear inside functions"
@@ -1077,7 +1077,6 @@ void InitInstrTable()
 
     // ----Main
 
-    // -------- XOO
 
     // NEW cnt
     iInstrIndex = AddInstrLookup("NEW", INSTR_NEW, 1);
@@ -1881,11 +1880,11 @@ Token GetNextToken()
         g_Lexer.CurrToken = TOKEN_TYPE_GLOBAL;
 
     // Is it Func?
-    if (_stricmp(g_Lexer.CurrLexeme, "PROC") == 0)
+    if (_stricmp(g_Lexer.CurrLexeme, "FUNC") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_FUNC;
 
-	if (_stricmp(g_Lexer.CurrLexeme, "ENDP") == 0)
-		g_Lexer.CurrToken = TOKEN_TYPE_ENDP;
+	if (_stricmp(g_Lexer.CurrLexeme, "END") == 0)
+		g_Lexer.CurrToken = TOKEN_TYPE_END;
 
     //// 结构体
     //if (strcmp(g_Lexer.CurrLexeme, "STRUCT") == 0)
@@ -2689,29 +2688,26 @@ void AssmblSourceFile()
                 iCurrFuncParamCount = 0;
                 iCurrFuncLocalDataSize = 0;
 
-                // Read any number of line breaks until the opening brace is found
-                // ignore any newline
-                //while (GetNextToken() == TOKEN_TYPE_NEWLINE);
+				// Read any number of line breaks until the opening brace is found
+				// ignore any newline
+				while (GetNextToken() == TOKEN_TYPE_NEWLINE);
 
-                // [-] 我们的汇编器不自动添加RET指令
-                // All functions are automatically appended with Ret, so increment the
-                // required size of the instruction stream
+				// Make sure the lexeme was an opening brace
 
-                //++g_iInstrStreamSize;
+				if (g_Lexer.CurrToken != TOKEN_TYPE_OPEN_BRACE)
+					ExitOnCharExpectedError('{');
 
                 break;
             }
 
             // Closing bracket
 
-        case TOKEN_TYPE_ENDP:
+		case TOKEN_TYPE_CLOSE_BRACE:
 
-            // This should be closing a function, so make sure we're in one
+			// This should be closing a function, so make sure we're in one
 
-            //if (!iIsFuncActive)
-            //    ExitOnCharExpectedError('}');
 			if (!iIsFuncActive)
-				ExitOnCodeError(ERROR_MSSG_ENDP);
+				ExitOnCharExpectedError('}');
 
             // Set the fields we've collected
 
@@ -2853,7 +2849,7 @@ void AssmblSourceFile()
         case TOKEN_TYPE_FUNC:
             {
                 // We've encountered a Func directive, but since we validated the syntax
-                // of all functions in the previous phase, we don't need to perfor (m any
+                // of all functions in the previous phase, we don't need to perform any
                 // error handling here and can assume the syntax is perfect.
 
                 // Read the identifier
@@ -2880,14 +2876,14 @@ void AssmblSourceFile()
 
                 // Read any number of line breaks until the opening brace is found
 
-                //while (GetNextToken() == TOKEN_TYPE_NEWLINE);
+                while (GetNextToken() == TOKEN_TYPE_NEWLINE);
 
                 break;
             }
 
             // Closing brace
 
-        case TOKEN_TYPE_ENDP:
+		case TOKEN_TYPE_CLOSE_BRACE:
             {
                 // Clear the active function flag
 

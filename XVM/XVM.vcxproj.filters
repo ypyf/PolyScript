@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="编译器">
+      <UniqueIdentifier>{ecc0753a-131c-41b9-9fa6-a8ddfd02e19c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bytecode.h">
@@ -33,6 +36,45 @@
     <ClInclude Include="xasm.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Compiler\code_emit.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\error.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\func_table.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\globals.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\i_code.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\lexer.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\linked_list.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\parser.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\preprocessor.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\stack.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\string_table.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\symbol_table.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\xsc.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mathlib.cpp">
@@ -49,6 +91,39 @@
     </ClCompile>
     <ClCompile Include="xasm.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\code_emit.cpp">
+      <Filter>编译器</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\error.cpp">
+      <Filter>编译器</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\func_table.cpp">
+      <Filter>编译器</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\i_code.cpp">
+      <Filter>编译器</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\lexer.cpp">
+      <Filter>编译器</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\linked_list.cpp">
+      <Filter>编译器</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\parser.cpp">
+      <Filter>编译器</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\preprocessor.cpp">
+      <Filter>编译器</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\stack.cpp">
+      <Filter>编译器</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\symbol_table.cpp">
+      <Filter>编译器</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\xsc.cpp">
+      <Filter>编译器</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

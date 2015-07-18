@@ -100,7 +100,7 @@ XVM_API void XVM_ShutDown();
 
 // ----Script Interface ------------------------------------------------------------------
 
-XVM_API void XVM_Assembly(char *pstrFilename, char *pstrExecFilename);
+XVM_API void XVM_CompileScript(char *pstrFilename, char *pstrExecFilename);
 XVM_API int XVM_LoadScript(const char *pstrFilename, int& iScriptIndex, int iThreadTimeslice);
 XVM_API void XVM_UnloadScript(int iThreadIndex);
 XVM_API void XVM_ResetScript(int iThreadIndex);
@@ -120,7 +120,7 @@ XVM_API char *XVM_GetReturnValueAsString(int iThreadIndex);
 
 // ----Host API Interface ----------------------------------------------------------------
 
-XVM_API int XVM_RegisterHostFunction(int iThreadIndex, char *pstrName, XVM_HOST_FUNCTION fnFunc);
+XVM_API int XVM_RegisterHostFunc(int iThreadIndex, char *pstrName, XVM_HOST_FUNCTION fnFunc);
 XVM_API int XVM_GetParamAsInt(int iThreadIndex, int iParamIndex);
 XVM_API float XVM_GetParamAsFloat(int iThreadIndex, int iParamIndex);
 XVM_API char *XVM_GetParamAsString(int iThreadIndex, int iParamIndex);
