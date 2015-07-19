@@ -1,8 +1,12 @@
 ﻿#ifndef XVM_H_
 #define XVM_H_
 
-#ifdef __cplusplus
-extern "C" {
+#ifdef WIN32
+	#pragma once
+	#define _CRT_SECURE_NO_WARNINGS 1
+	#pragma warning(disable:4996)
+	#define WIN32_LEAN_AND_MEAN	1
+	#include <Windows.h>
 #endif
 
 /* Dynamic Link */
@@ -14,6 +18,11 @@ extern "C" {
 # else
 #   define XVM_API __declspec(dllimport)
 # endif
+#endif
+
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 // ------------Disable deprecation
@@ -90,6 +99,7 @@ struct Value
     };
 
     // 对于OP_TYPE_REL_STACK_INDEX，该字段保存的是偏移值的地址(偏移值是一个变量)
+	// 例如 var1[var2], 则该字段保存的就是var2的地址
     // 对于OP_TYPE_FUNC_INDEX，该字段保存了调用者(caller)的栈帧索引(FP)
     int OffsetIndex;               // Index of the offset
 };

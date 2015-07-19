@@ -28,8 +28,7 @@
 
 // ----Coercion --------------------------------------------------------------------------
 
-#define MAX_COERCION_STRING_SIZE    256         // The maximum allocated space for a
-// string coercion
+#define MAX_COERCION_STRING_SIZE    256         // The maximum allocated space for a string coercion
 
 // ----Multithreading --------------------------------------------------------------------
 
@@ -59,11 +58,11 @@ struct RUNTIME_STACK         // A runtime stack
 // ----Functions -------------------------------------------------------------------------
 struct FUNC                            // A function
 {
-    int EntryPoint;                            // The entry point
-    int ParamCount;                            // The parameter count
-    int LocalDataSize;                        // Total size of all local data
-    int StackFrameSize;                        // Total size of the stack frame
-    char Name[MAX_FUNC_NAME_SIZE+1];        // The function's name
+    int EntryPoint;                         // The entry point
+    int ParamCount;                         // The parameter count
+    int LocalDataSize;                      // Total size of all local data
+    int StackFrameSize;                     // Total size of the stack frame
+    char Name[MAX_FUNC_NAME_SIZE+1];		// The function's name
 };
 
 // ----Instructions ----------------------------------------------------------------------
@@ -89,7 +88,6 @@ struct FUNC_TABLE                       // A function table
 };
 
 // ----Host API Call Table ---------------------------------------------------------------
-// 脚本中出现的宿主函数调用
 struct HOST_CALL_TABLE                // A host API call table
 {
     char **Calls;                            // Pointer to the call array
@@ -156,9 +154,9 @@ int g_CurrThreadActiveTime;                    // The time at which the current 
 HOST_API_FUNC* g_HostAPIs = NULL;    // The host API
 
 
-# if defined(WIN32_PLATFORM)
-#  define stricmp _stricmp
-# endif
+#ifdef WIN32
+#define stricmp _stricmp
+#endif
 
 #ifdef __APPLE__
 static int stricmp(const char *s1, const char *s2)

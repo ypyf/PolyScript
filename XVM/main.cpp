@@ -1,7 +1,6 @@
 ﻿#if 1
 
 #define STANDALONE
-#define _CRT_SECURE_NO_WARNINGS
 
 // ----Include Files -------------------------------------------------------------------------
 

@@ -17,12 +17,6 @@
 
 // ----Include Files ----------------------------------------------------------
 
-#if defined(WIN32_PLATFORM)
-# define WIN32_LEAN_AND_MEAN
-# define _CRT_SECURE_NO_WARNINGS
-# include <windows.h>
-#endif
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

@@ -2,10 +2,11 @@
 #ifndef XSC_GLOBALS
 #define XSC_GLOBALS
 
-// ---- Include Files -------------------------------------------------------------------------
-
-#define _CRT_SECURE_NO_WARNINGS
+#ifdef WIN32
 #pragma warning(disable:4996)
+#endif
+
+// ---- Include Files -------------------------------------------------------------------------
 
 #include <stdlib.h>
 #include <stdio.h>
