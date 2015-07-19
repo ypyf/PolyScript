@@ -42,9 +42,6 @@
     <ClInclude Include="Compiler\error.h">
       <Filter>编译器</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\func_table.h">
-      <Filter>编译器</Filter>
-    </ClInclude>
     <ClInclude Include="Compiler\globals.h">
       <Filter>编译器</Filter>
     </ClInclude>
@@ -52,9 +49,6 @@
       <Filter>编译器</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\lexer.h">
-      <Filter>编译器</Filter>
-    </ClInclude>
-    <ClInclude Include="Compiler\linked_list.h">
       <Filter>编译器</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\parser.h">
@@ -73,6 +67,12 @@
       <Filter>编译器</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\xsc.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\func_table.h">
+      <Filter>编译器</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\linked_list.h">
       <Filter>编译器</Filter>
     </ClInclude>
   </ItemGroup>

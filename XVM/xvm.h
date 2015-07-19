@@ -58,8 +58,11 @@ extern "C" {
 
 #define XVM_GLOBAL_FUNC              1          // Flags a host API function as being global
 
-#define XASM_SRC_FILE_EXT            ".xasm"
-#define XVM_EXEC_FILE_EXT            ".xse"
+// 文件名后缀
+#define XSS_FILE_EXT				".xss"
+#define XASM_FILE_EXT				".xasm"
+#define XSE_FILE_EXT				".xse"
+
 
 // ----Data Structures -----------------------------------------------------------------------
 
@@ -101,7 +104,7 @@ XVM_API void XVM_ShutDown();
 // ----Script Interface ------------------------------------------------------------------
 
 XVM_API void XVM_CompileScript(char *pstrFilename, char *pstrExecFilename);
-XVM_API int XVM_LoadScript(const char *pstrFilename, int& iScriptIndex, int iThreadTimeslice);
+XVM_API int XVM_LoadXSE(const char *pstrFilename, int& iScriptIndex, int iThreadTimeslice);
 XVM_API void XVM_UnloadScript(int iThreadIndex);
 XVM_API void XVM_ResetScript(int iThreadIndex);
 XVM_API void XVM_RunScript(int iThreadIndex, int iTimesliceDur);

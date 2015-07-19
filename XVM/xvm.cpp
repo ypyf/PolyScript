@@ -3,7 +3,7 @@
 #include "xvm-internal.h"
 #include "bytecode.h"
 #include "xvm.h"
-#include "xasm.h"
+#include "compiler/xsc.h"
 #include "mathlib.h"
 #include <ctype.h>
 #include <time.h>
@@ -360,7 +360,7 @@ time_t XVM_GetSourceTimestamp(const char* filename)
 *    Loads an .XSE file into memory.
 */
 
-int XVM_LoadScript(const char *pstrFilename, int& iThreadIndex, int iThreadTimeslice)
+int XVM_LoadXSE(const char *pstrFilename, int& iThreadIndex, int iThreadTimeslice)
 {
     // ----Find the next free script index
     int iFreeThreadFound = FALSE;
@@ -997,7 +997,8 @@ static void ExecuteScript(int iTimesliceDur)
         }
 
         // 如果没有任何指令需要执行，则停止运行
-        if (g_Scripts[g_CurrThread].InstrStream.CurrInstr >= g_Scripts[g_CurrThread].InstrStream.Size) {
+        if (g_Scripts[g_CurrThread].InstrStream.CurrInstr >= g_Scripts[g_CurrThread].InstrStream.Size) 
+		{
             g_Scripts[g_CurrThread].IsRunning = FALSE;
             g_Scripts[g_CurrThread].ExitCode = XVM_EXIT_OK;
             break;
@@ -1713,16 +1714,16 @@ static void ExecuteScript(int iTimesliceDur)
                 break;
             }
 
-        case INSTR_EXIT:
-            {
-                // Resolve operand zero to find the exit code
-                // Get it from the integer field
-                g_Scripts[g_CurrThread].ExitCode = ResolveOpAsInt(0);
+        //case INSTR_EXIT:
+        //    {
+        //        // Resolve operand zero to find the exit code
+        //        // Get it from the integer field
+        //        g_Scripts[g_CurrThread].ExitCode = ResolveOpAsInt(0);
 
-                // Tell the XVM to stop executing the script
-                g_Scripts[g_CurrThread].IsRunning = FALSE;
-                break;
-            }
+        //        // Tell the XVM to stop executing the script
+        //        g_Scripts[g_CurrThread].IsRunning = FALSE;
+        //        break;
+        //    }
         }
 
         // If the instruction pointer hasn't been changed by an instruction, increment it
@@ -2900,8 +2901,8 @@ int XVM_GetExitCode(int iThreadIndex)
     return g_Scripts[iThreadIndex].ExitCode;
 }
 
-
+// .xss => .xse
 void XVM_CompileScript(char *pstrFilename, char *pstrExecFilename)
 {
-    XASM_Assembly(pstrFilename, pstrExecFilename);
+	XSC_CompileScript(pstrFilename, pstrExecFilename);
 }

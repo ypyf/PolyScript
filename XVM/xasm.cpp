@@ -14,17 +14,9 @@
 #include <ctype.h>
 #include <time.h>
 
-// ----Constants -----------------------------------------------------------------------------
+#include "compiler\linked_list.h"
+#include "compiler\lexer.h"
 
-// ----General ---------------------------------------------------------------------------
-
-#ifndef TRUE
-#define TRUE                    1           // True
-#endif
-
-#ifndef FALSE
-#define FALSE                   0           // False
-#endif
 
 // ----Newline 
 // 注意这里简化了Windows的换行符,使之和unix相同,并不影响我们统计文件行数
@@ -34,12 +26,6 @@
 # define NEWLINE '\n'
 #endif /* __APPLE__ */
 
-// ----Filename --------------------------------------------------------------------------
-
-#define MAX_FILENAME_SIZE           2048        // Maximum filename length
-
-#define XASM_SRC_FILE_EXT           ".xasm"     // Extension of a source code file
-#define XVM_EXEC_FILE_EXT           ".xse"      // Extension of an executable code file
 
 // ----Source Code -----------------------------------------------------------------------
 
@@ -56,36 +42,27 @@
 
 // ----Lexer -----------------------------------------------------------------------------
 
-#define MAX_LEXEME_SIZE             256         // Maximum lexeme size
+//#define MAX_LEXEME_SIZE             256         // Maximum lexeme size
 
 #define LEX_STATE_NO_STRING         0           // Lexemes are scanned as normal
 #define LEX_STATE_IN_STRING         1           // Lexemes are scanned as strings
 #define LEX_STATE_END_STRING        2           // Lexemes are scanned as normal, and the next state is LEXEME_STATE_NO_STRING
+enum {
 
-#define TOKEN_TYPE_INVALID          -1          // Error code for invalid tokens
-#define TOKEN_TYPE_INT              0           // An integer literal
-#define TOKEN_TYPE_FLOAT            1           // An floating-point literal
-#define TOKEN_TYPE_STRING           2           // An string literal
-#define TOKEN_TYPE_QUOTE            3           // A double-quote
-#define TOKEN_TYPE_IDENT            4           // An identifier
-#define TOKEN_TYPE_COLON            5           // A colon
-#define TOKEN_TYPE_OPEN_BRACKET     6           // An openening bracket
-#define TOKEN_TYPE_CLOSE_BRACKET    7           // An closing bracket
-#define TOKEN_TYPE_COMMA            8           // A comma
-#define TOKEN_TYPE_OPEN_BRACE       9           // An openening curly brace
-#define TOKEN_TYPE_CLOSE_BRACE      10          // An closing curly brace
-#define TOKEN_TYPE_NEWLINE          11          // A newline
-#define TOKEN_TYPE_INSTR            12          // An instruction
-#define TOKEN_TYPE_SETSTACKSIZE     13          // The SetStackSize directive
-#define TOKEN_TYPE_SETPRIORITY      14          // The SetPriority directive
-#define TOKEN_TYPE_GLOBAL           15          // The Global Var/Var [] directives
-#define TOKEN_TYPE_FUNC             16          // The Func directives
-#define TOKEN_TYPE_END             17			// The Endp keyword
-#define TOKEN_TYPE_PARAM            18          // The Param directives
-#define TOKEN_TYPE_LOCAL            19          // The Locals directives
-#define TOKEN_TYPE_REG_RETVAL       20          // The _RetVal register
-#define TOKEN_TYPE_REG_THISVAL      21          // The _ThisVal register
-#define END_OF_TOKEN_STREAM         22          // The end of the stream has been reached
+TOKEN_TYPE_QUOTE = 100,           // A double-quote
+
+TOKEN_TYPE_NEWLINE,          // A newline
+TOKEN_TYPE_INSTR,          // An instruction
+//TOKEN_TYPE_RSRVD_SETSTACKSIZE,          // The SetStackSize directive
+
+//TOKEN_TYPE_RSRVD_SETPRIORITY,		// The SetPriority directive
+
+//TOKEN_TYPE_RSRVD_PARAM,          // The Param directives
+TOKEN_TYPE_REG_RETVAL,          // The _RetVal register
+TOKEN_TYPE_REG_THISVAL,          // The _ThisVal register
+END_OF_TOKEN_STREAM,          // The end of the stream has been reached
+};
+
 
 #define MAX_IDENT_SIZE              256        // Maximum identifier size
 
@@ -120,30 +97,11 @@
 #define OP_TYPE_HOST_API_CALL_INDEX     7           // Host API call index
 #define OP_TYPE_REG                     8           // Register
 
-// ----Priority Types --------------------------------------------------------------------
-
-#define PRIORITY_USER               0           // User-defined priority
-#define PRIORITY_LOW                1           // Low priority
-#define PRIORITY_MED                2           // Medium priority
-#define PRIORITY_HIGH               3           // High priority
-
-#define PRIORITY_LOW_KEYWORD        "Low"       // Low priority keyword
-#define PRIORITY_MED_KEYWORD        "Med"       // Low priority keyword
-#define PRIORITY_HIGH_KEYWORD       "High"      // Low priority keyword
-
-// ----Functions -------------------------------------------------------------------------
-
-#define MAIN_FUNC_NAME              "Main"      // 程序入口
-
-// ----Error Strings ---------------------------------------------------------------------
 
 // The following macros are used to represent assembly-time error strings
 
 #define ERROR_MSSG_INVALID_INPUT    \
     "Invalid input"
-
-#define ERROR_MSSG_INVALID_SCOPE_KIND \
-    "Invalid scope kind"
 
 #define ERROR_MSSG_LOCAL_SETSTACKSIZE    \
     "SetStackSize can only appear in the global scope"
@@ -223,23 +181,6 @@
 #define ERROR_MSSG_INVALID_ARRAY_INDEX    \
     "Invalid array index"
 
-// ----Data Structures -----------------------------------------------------------------------
-
-// ----Linked Lists ----------------------------------------------------------------------
-
-struct LinkedListNode                  // A linked list node
-{
-    void *Data;                        // Pointer to the node's data
-    LinkedListNode *Next;              // Pointer to the next node in the list
-};
-
-struct LinkedList                      // A linked list
-{
-    LinkedListNode *head,              // Pointer to head node
-        *last;                           // Pointer to tail nail node
-
-    int NodeCount;                       // The number of nodes in the list
-};
 
 // ----Lexical Analysis ------------------------------------------------------------------
 
@@ -258,18 +199,6 @@ struct Lexer                            // The lexical analyzer/tokenizer
     int CurrLexState;                   // The current lex state
 };
 
-// ----Script ----------------------------------------------------------------------------
-struct ScriptHeader                    // Script header data
-{
-    int StackSize;                             // Requested stack size
-    int GlobalDataSize;                        // The size of the script's global data
-
-    int IsMainFuncPresent;                     // Is Main() present?
-    int MainFuncIndex;                            // Main()'s function index
-
-    int PriorityType;                          // The thread priority type
-    int UserPriority;                          // The user-defined priority(if any)
-};
 
 // ----Instruction Lookup Table ----------------------------------------------------------
 
@@ -310,17 +239,15 @@ struct Instr                           // An instruction
     Op *OpList;                               // Pointer to operand list
 };
 
-// ----Function Table --------------------------------------------------------------------
 
-struct FuncNode                        // A function table node
+// 函数表节点
+struct XFuncNode
 {
-    int Index;                                    // Index
-    char pstrName[MAX_IDENT_SIZE];           // Name
-    int iEntryPoint;                            // Entry point
-    int iParamCount;                            // Param count
-    int iLocalDataSize;                         // Local data size
-    int iNameSpaceIndex;
-    //int iCharacteristics;                // 函数属性
+	int iIndex;									 // Index
+	char pstrName[MAX_IDENT_SIZE];               // Name
+	int iParamCount;                             // The number of accepted parameters
+	int iEntryPoint;                             // Entry point (XASM专用
+	int iLocalDataSize;                          // Local data size (XASM专用)
 };
 
 // ----Label Table -----------------------------------------------------------------------
@@ -332,6 +259,18 @@ typedef struct _LabelNode                       // A label table node
     int iTargetIndex;                           // Index of the target instruction
     int iFuncIndex;                             // Function in which the label resides
 } LabelNode;
+
+struct ASMScriptHeader                    // Script header data
+{
+	int iStackSize;                             // Requested stack size
+	int GlobalDataSize;                         // (XASM专用)
+
+	int iIsMainFuncPresent;                     // Is _Main () present?
+	int iMainFuncIndex;							// _Main ()'s function index
+
+	int iPriorityType;                          // The thread priority type
+	int iUserPriority;                          // The user-defined priority (if any)
+};
 
 // ----Symbol Table ----------------------------------------------------------------------
 
@@ -373,7 +312,7 @@ FILE *g_pSourceFile = NULL;                    // Source code file pointer
 
 // ----Script ----------------------------------------------------------------------------
 
-ScriptHeader g_ScriptHeader;                    // Script header data
+ASMScriptHeader g_ASMScriptHeader;                    // Script header data
 
 int g_iIsSetStackSizeFound;                     // Has the SetStackSize directive been
 // found?
@@ -397,36 +336,28 @@ LinkedList g_NameSpaceTable;
 
 // ----Function Table --------------------------------------------------------------------
 
-LinkedList g_FuncTable;                         // The function table
+LinkedList g_ASMFuncTable;                         // The function table
 
 // ----Label Table -----------------------------------------------------------------------
 
-LinkedList g_LabelTable;                        // The label table
+LinkedList g_ASMLabelTable;                        // The label table
 
 // ----Symbol Table ----------------------------------------------------------------------
 
-LinkedList g_SymbolTable;                       // The symbol table
+LinkedList g_ASMSymbolTable;                       // The symbol table
 
 // ----String Table ----------------------------------------------------------------------
 
-LinkedList g_StringTable;                        // The string table
+LinkedList g_ASMStringTable;                        // The string table
 
 // ----Host API Call Table ---------------------------------------------------------------
 
 LinkedList g_HostAPICallTable;                    // The host API call table
 
-// ----Function Prototypes -------------------------------------------------------------------
-
-// ----Linked Lists ----------------------------------------------------------------------
-
-void InitLinkedList(LinkedList *pList);
-void FreeLinkedList(LinkedList *pList);
-int AddNode(LinkedList *pList, void *pData);
-
 
 // ----String Processing -----------------------------------------------------------------
 void StripComments(char *pstrSourceLine);
-int IsCharWhitespace(char cChar);
+int ASM_IsCharWhitespace(char cChar);
 int IsIdentStart(char cChar);
 int IsCharDelimiter(char cChar);
 void TrimWhitespace(char *pstrString);
@@ -441,23 +372,23 @@ void PrintLogo();
 void PrintUsage();
 
 // ----Main ------------------------------------------------------------------------------
-void Init();
+void InitAssembler();
 void LoadSourceFile(const char* file);
 void AssmblSourceFile();
 void BuildXSE(const char* file);
-void ShutDown();
+void ShutdownAssembler();
 
-void ExitProgram();
-void ExitOnError(char *pstrErrorMssg);
-void ExitOnCodeError(char *pstrErrorMssg);
+void ASM_ExitProgram();
+void ASM_ExitOnError(char *pstrErrorMssg);
+void ASM_ExitOnCodeError(char *pstrErrorMssg);
 void ExitOnCharExpectedError(char cChar);
 
 // ----Lexical Analysis ------------------------------------------------------------------
 
-void ResetLexer();
-Token GetNextToken();
-char *GetCurrLexeme();
-char GetLookAheadChar();
+void ASM_ResetLexer();
+Token ASM_GetNextToken();
+char *ASM_GetCurrLexeme();
+char ASM_GetLookAheadChar();
 int SkipToNextLine();
 
 // ----Instructions ----------------------------------------------------------------------
@@ -471,9 +402,9 @@ void SetOpType(int iInstrIndex, int iOpIndex, OpTypes iOpType);
 
 int AddString(LinkedList *pList, char *pstrString);
 
-int AddFunc(char *pstrName, int iEntryPoint);
-FuncNode *GetFuncByName(char *pstrName);
-void SetFuncInfo(char *pstrName, int iParamCount, int iLocalDataSize);
+int ASM_AddFunc(char *pstrName, int iEntryPoint);
+XFuncNode *ASM_GetFuncByName(char *pstrName);
+void ASM_SetFuncInfo(char *pstrName, int iParamCount, int iLocalDataSize);
 
 int AddLabel(char *pstrIdent, int iTargetIndex, int iFuncIndex);
 LabelNode *GetLabelByIdent(char *pstrIdent, int iFuncIndex);
@@ -487,134 +418,6 @@ SymbolNode *GetSymbolByLevel(char *pstrIdent, int iLevel, int iFuncIndex);
 int GetStackIndexByIdent(char *pstrIdent, int iLevel, int iFuncIndex);
 int GetSizeByIdent(char *pstrIdent, int iLevel, int iFuncIndex);
 
-// ----Functions -----------------------------------------------------------------------------
-
-/******************************************************************************************
-*
-*   InitLinkedList()
-*
-*   Initializes a linked list.
-*/
-
-void InitLinkedList(LinkedList *pList)
-{
-    // Set both the head and tail pointers to null
-
-    pList->head = NULL;
-    pList->last = NULL;
-
-    // Set the node count to zero, since the list is currently empty
-
-    pList->NodeCount = 0;
-}
-
-/******************************************************************************************
-*
-*   FreeLinkedList()
-*
-*   Frees a linked list.
-*/
-
-void FreeLinkedList(LinkedList *pList)
-{
-    // If the list is empty, exit
-
-    if (!pList)
-        return;
-
-    // If the list is not empty, free each node
-
-    if (pList->NodeCount)
-    {
-        // Create a pointer to hold each current node and the next node
-
-        LinkedListNode *pCurrNode,
-            *pNextNode;
-
-        // Set the current node to the head of the list
-
-        pCurrNode = pList->head;
-
-        // Traverse the list
-
-        while (TRUE)
-        {
-            // Save the pointer to the next node befor (e freeing the current one
-
-            pNextNode = pCurrNode->Next;
-
-            // Clear the current node's data
-
-            if (pCurrNode->Data)
-                free(pCurrNode->Data);
-
-            // Clear the node itself
-
-            if (pCurrNode)
-                free(pCurrNode);
-
-            // Move to the next node if it exists; otherwise, exit the loop
-
-            if (pNextNode)
-                pCurrNode = pNextNode;
-            else
-                break;
-        }
-    }
-}
-
-/******************************************************************************************
-*
-*   AddNode()
-*
-*   Adds a node to a linked list and returns its index.
-*/
-
-int AddNode(LinkedList *pList, void *pData)
-{
-    // Create a new node
-
-    LinkedListNode *pNewNode = (LinkedListNode *) malloc(sizeof(LinkedListNode));
-
-    // Set the node's data to the specified pointer
-
-    pNewNode->Data = pData;
-
-    // Set the next pointer to NULL, since nothing will lie beyond it
-
-    pNewNode->Next = NULL;
-
-    // If the list is currently empty, set both the head and tail pointers to the new node
-
-    if (!pList->NodeCount)
-    {
-        // Point the head and tail of the list at the node
-
-        pList->head = pNewNode;
-        pList->last = pNewNode;
-    }
-
-    // Otherwise append it to the list and update the tail pointer
-
-    else
-    {
-        // Alter the tail's next pointer to point to the new node
-
-        pList->last->Next = pNewNode;
-
-        // Update the list's tail pointer
-
-        pList->last = pNewNode;
-    }
-
-    // Increment the node count
-
-    ++pList->NodeCount;
-
-    // Return the new size of the linked list - 1, which is the node's index
-
-    return pList->NodeCount - 1;
-}
 
 /******************************************************************************************
 *
@@ -659,23 +462,6 @@ void StripComments(char *pstrSourceLine)
 
 /******************************************************************************************
 *
-*    IsCharWhitespace()
-*
-*    Returns a nonzero if the given character is whitespace, or zero otherwise.
-*/
-
-int IsCharWhitespace(char cChar)
-{
-    // Return true if the character is a space or tab.
-
-    if (cChar == ' ' || cChar == '\t')
-        return TRUE;
-    else
-        return FALSE;
-}
-
-/******************************************************************************************
-*
 *    IsCharIdentifier()
 *
 *    Returns a nonzero if the given character is part of a valid identifier, meaning it's an
@@ -698,6 +484,23 @@ int IsIdentStart(char cChar)
 
 /******************************************************************************************
 *
+*	ASM_IsCharWhitespace ()
+*
+*	Returns a nonzero if the given character is whitespace, or zero otherwise.
+*/
+
+int ASM_IsCharWhitespace(char cChar)
+{
+	// Return true if the character is a space or tab.
+
+	if (cChar == ' ' || cChar == '\t')
+		return TRUE;
+	else
+		return FALSE;
+}
+
+/******************************************************************************************
+*
 *    IsCharDelimiter()
 *
 *    Return a nonzero if the given character is a token delimeter, and return zero otherwise
@@ -710,7 +513,7 @@ int IsCharDelimiter(char cChar)
     if (cChar == ':' || cChar == ',' || cChar == '"' ||
         cChar == '[' || cChar == ']' ||
         cChar == '{' || cChar == '}' ||
-        IsCharWhitespace(cChar) || cChar == '\n')
+        ASM_IsCharWhitespace(cChar) || cChar == '\n')
         return TRUE;
     else
         return FALSE;
@@ -734,7 +537,7 @@ void TrimWhitespace(char *pstrString)
         // First determine whitespace quantity on the left
 
         for (iCurrCharIndex = 0; iCurrCharIndex < iStringLength; ++iCurrCharIndex)
-            if (!IsCharWhitespace(pstrString[iCurrCharIndex]))
+            if (!ASM_IsCharWhitespace(pstrString[iCurrCharIndex]))
                 break;
 
         // Slide string to the left to overwrite whitespace
@@ -753,7 +556,7 @@ void TrimWhitespace(char *pstrString)
 
         for (iCurrCharIndex = iStringLength - 1; iCurrCharIndex > 0; --iCurrCharIndex)
         {
-            if (!IsCharWhitespace(pstrString[iCurrCharIndex]))
+            if (!ASM_IsCharWhitespace(pstrString[iCurrCharIndex]))
             {
                 pstrString[iCurrCharIndex + 1] = '\0';
                 break;
@@ -990,7 +793,7 @@ void LoadSourceFile(const char* file)
     // Open the source file in binary mode
 
     if (!(g_pSourceFile = fopen(file, "rb")))
-        ExitOnError("Could not open source file");
+        ASM_ExitOnError("Could not open source file");
 
     // Count the number of source lines
     while (!feof(g_pSourceFile)) {
@@ -1011,12 +814,12 @@ void LoadSourceFile(const char* file)
     // Reopen the source file in ASCII mode
 
     if (!(g_pSourceFile = fopen(file, "r")))
-        ExitOnError("Could not open source file");
+        ASM_ExitOnError("Could not open source file");
 
     // Allocate an array of strings to hold each source line
 
     if (!(g_ppstrSourceCode = (char **) malloc(g_iSourceCodeSize * sizeof(char *))))
-        ExitOnError("Could not allocate space for ( source code");
+        ASM_ExitOnError("Could not allocate space for ( source code");
 
     // Read the source code in from the file
 
@@ -1025,7 +828,7 @@ void LoadSourceFile(const char* file)
         // Allocate space for the line
 
         if (!(g_ppstrSourceCode[iCurrLineIndex] = (char *) malloc(MAX_SOURCE_LINE_SIZE + 1)))
-            ExitOnError("Could not allocate space for ( source line");
+            ASM_ExitOnError("Could not allocate space for ( source line");
 
         // Read in the current line
 
@@ -1494,47 +1297,6 @@ int AddInstrLookup(char *pstrMnemonic, int iOpcode, int iOpCount)
 
 /******************************************************************************************
 *
-*    AddString()
-*
-*    Adds a string to a linked list, blocking duplicate entries
-*/
-
-int AddString(LinkedList *pList, char *pstrString)
-{
-    // ----First check to see if the string is already in the list
-
-    // Create a node to traverse the list
-
-    LinkedListNode *pNode = pList->head;
-
-    // Loop through each node in the list
-
-    for (int iCurrNode = 0; iCurrNode < pList->NodeCount; ++iCurrNode)
-    {
-        // If the current node's string equals the specified string, return its index
-
-        if (strcmp(( char *) pNode->Data, pstrString) == 0)
-            return iCurrNode;
-
-        // Otherwise move along to the next node
-
-        pNode = pNode->Next;
-    }
-
-    // ----Add the new string, since it wasn't added
-
-    // Create space on the heap for ( the specified string
-
-    char *pstrStringNode = (char *) malloc(strlen(pstrString) + 1);
-    strcpy(pstrStringNode, pstrString);
-
-    // Add the string to the list and return its index
-
-    return AddNode(pList, pstrStringNode);
-}
-
-/******************************************************************************************
-*
 *   SetOpType()
 *
 *   Sets the operand type for ( the specified operand in the specified instruction.
@@ -1552,7 +1314,7 @@ void SetOpType(int iInstrIndex, int iOpIndex, OpTypes iOpType)
 *    Initializes the assembler.
 */
 
-void Init()
+void InitAssembler()
 {
     // Initialize the master instruction lookup table
 
@@ -1560,21 +1322,21 @@ void Init()
 
     // Initialize tables
     InitLinkedList(&g_NameSpaceTable);
-    InitLinkedList(&g_SymbolTable);
-    InitLinkedList(&g_LabelTable);
-    InitLinkedList(&g_FuncTable);
-    InitLinkedList(&g_StringTable);
+    InitLinkedList(&g_ASMSymbolTable);
+    InitLinkedList(&g_ASMLabelTable);
+    InitLinkedList(&g_ASMFuncTable);
+    InitLinkedList(&g_ASMStringTable);
     InitLinkedList(&g_HostAPICallTable);
 }
 
 /******************************************************************************************
 *
-*   ShutDown()
+*   ShutdownAssembler()
 *
 *   Frees any dynamically allocated resources back to the system.
 */
 
-void ShutDown()
+void ShutdownAssembler()
 {
     // ----Free source code array
 
@@ -1604,22 +1366,22 @@ void ShutDown()
 
     // ----Free the tables
     FreeLinkedList(&g_NameSpaceTable);
-    FreeLinkedList(&g_SymbolTable);
-    FreeLinkedList(&g_LabelTable);
-    FreeLinkedList(&g_FuncTable);
-    FreeLinkedList(&g_StringTable);
+    FreeLinkedList(&g_ASMSymbolTable);
+    FreeLinkedList(&g_ASMLabelTable);
+    FreeLinkedList(&g_ASMFuncTable);
+    FreeLinkedList(&g_ASMStringTable);
     FreeLinkedList(&g_HostAPICallTable);
 }
 
 /******************************************************************************************
 *
-*   ResetLexer()
+*   ASM_ResetLexer()
 *
 *   Resets the lexer to the beginning of the source file by setting the current line and
 *   indices to zero.
 */
 
-void ResetLexer()
+void ASM_ResetLexer()
 {
     // Set the current line to the start of the file
     g_Lexer.CurrSourceLine = 0;
@@ -1644,7 +1406,7 @@ void ResetLexer()
 *   the current lexeme for use with GetCurrLexeme().
 */
 
-Token GetNextToken()
+Token ASM_GetNextToken()
 {
     // ----Lexeme Extraction
 
@@ -1670,7 +1432,7 @@ Token GetNextToken()
     {
         while (TRUE)
         {
-            if (!IsCharWhitespace(g_ppstrSourceCode[g_Lexer.CurrSourceLine][g_Lexer.Index0]))
+            if (!ASM_IsCharWhitespace(g_ppstrSourceCode[g_Lexer.CurrSourceLine][g_Lexer.Index0]))
                 break;
             ++g_Lexer.Index0;
         }
@@ -1815,13 +1577,13 @@ Token GetNextToken()
             // Opening Bracket
 
         case '[':
-            g_Lexer.CurrToken = TOKEN_TYPE_OPEN_BRACKET;
+            g_Lexer.CurrToken = TOKEN_TYPE_OPEN_BRACE;
             break;
 
             // Closing Bracket
 
         case ']':
-            g_Lexer.CurrToken = TOKEN_TYPE_CLOSE_BRACKET;
+            g_Lexer.CurrToken = TOKEN_TYPE_CLOSE_BRACE;
             break;
 
             // Opening Brace
@@ -1864,39 +1626,39 @@ Token GetNextToken()
     // Is it SetStackSize?
 
     if (_stricmp(g_Lexer.CurrLexeme, "SETSTACKSIZE") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_SETSTACKSIZE;
+        g_Lexer.CurrToken = TOKEN_TYPE_RSRVD_SETSTACKSIZE;
 
     // Is it SetPriority?
 
-    if (_stricmp(g_Lexer.CurrLexeme, "SETPRIORITY") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_SETPRIORITY;
+	if (_stricmp(g_Lexer.CurrLexeme, "SETPRIORITY") == 0)
+		g_Lexer.CurrToken = TOKEN_TYPE_RSRVD_SETPRIORITY;
 
     //// 是否是 NameSpace?
     //if (_stricmp(g_Lexer.CurrLexeme, "NAMESPACE") == 0)
     //    g_Lexer.CurrToken = TOKEN_TYPE_NAMESPACE;
 
-    // Is it Global Var/Var []?
-    if (_stricmp(g_Lexer.CurrLexeme, "GLOBAL") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_GLOBAL;
+    // Is it Var/Var []?
+    if (_stricmp(g_Lexer.CurrLexeme, "VAR") == 0)
+        g_Lexer.CurrToken = TOKEN_TYPE_RSRVD_VAR;
 
     // Is it Func?
     if (_stricmp(g_Lexer.CurrLexeme, "FUNC") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_FUNC;
+        g_Lexer.CurrToken = TOKEN_TYPE_RSRVD_FUNC;
 
-	if (_stricmp(g_Lexer.CurrLexeme, "END") == 0)
-		g_Lexer.CurrToken = TOKEN_TYPE_END;
+	//if (_stricmp(g_Lexer.CurrLexeme, "END") == 0)
+	//	g_Lexer.CurrToken = TOKEN_TYPE_END;
 
     //// 结构体
     //if (strcmp(g_Lexer.CurrLexeme, "STRUCT") == 0)
     //    g_Lexer.CurrToken = TOKEN_TYPE_STRUCT;
 
-    if (_stricmp(g_Lexer.CurrLexeme, "LOCAL") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_LOCAL;
+    //if (_stricmp(g_Lexer.CurrLexeme, "LOCAL") == 0)
+    //    g_Lexer.CurrToken = TOKEN_TYPE_LOCAL;
 
     // Is it Param?
 
     if (_stricmp(g_Lexer.CurrLexeme, "PARAM") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_PARAM;
+        g_Lexer.CurrToken = TOKEN_TYPE_RSRVD_PARAM;
 
     // Is it _RetVal?
 
@@ -1921,7 +1683,7 @@ Token GetNextToken()
 *   Returns a pointer to the current lexeme.
 */
 
-inline char* GetCurrLexeme()
+inline char* ASM_GetCurrLexeme()
 {
     // Simply return the pointer rather than making a copy
     return g_Lexer.CurrLexeme;
@@ -1935,7 +1697,7 @@ inline char* GetCurrLexeme()
 *   the stream.
 */
 
-char GetLookAheadChar()
+char ASM_GetLookAheadChar()
 {
     // We don't actually want to move the lexer's indices, so we'll make a copy of them
 
@@ -1972,7 +1734,7 @@ char GetLookAheadChar()
             // If the current character is not whitespace, return it, since it's the first
             // character of the next lexeme and is thus the look-ahead
 
-            if (!IsCharWhitespace(g_ppstrSourceCode[iCurrSourceLine][iIndex]))
+            if (!ASM_IsCharWhitespace(g_ppstrSourceCode[iCurrSourceLine][iIndex]))
                 break;
 
             // It is whitespace, however, so move to the next character and continue scanning
@@ -2043,27 +1805,27 @@ int GetInstrByMnemonic(char *pstrMnemonic, InstrLookup *pInstr)
 *
 *   GetFuncByName()
 *
-*   Returns a FuncNode structure pointer corresponding to the specified name.
+*   Returns a XFuncNode structure pointer corresponding to the specified name.
 */
 
-FuncNode *GetFuncByName(char *pstrName)
+XFuncNode *ASM_GetFuncByName(char *pstrName)
 {
     // If the table is empty, return a NULL pointer
 
-    if (!g_FuncTable.NodeCount)
+    if (!g_ASMFuncTable.iNodeCount)
         return NULL;
 
     // Create a pointer to traverse the list
 
-    LinkedListNode *pCurrNode = g_FuncTable.head;
+    LinkedListNode *pCurrNode = g_ASMFuncTable.pHead;
 
     // Traverse the list until the matching structure is found
 
-    for (int iCurrNode = 0; iCurrNode < g_FuncTable.NodeCount; ++iCurrNode)
+    for (int iCurrNode = 0; iCurrNode < g_ASMFuncTable.iNodeCount; ++iCurrNode)
     {
         // Create a pointer to the current function structure
 
-        FuncNode *pCurrFunc = (FuncNode *) pCurrNode->Data;
+        XFuncNode *pCurrFunc = (XFuncNode *) pCurrNode->pData;
 
         // If the names match, return the current pointer
 
@@ -2072,7 +1834,7 @@ FuncNode *GetFuncByName(char *pstrName)
 
         // Otherwise move to the next node
 
-        pCurrNode = pCurrNode->Next;
+        pCurrNode = pCurrNode->pNext;
     }
 
     // The structure was not found, so return a NULL pointer
@@ -2087,17 +1849,17 @@ FuncNode *GetFuncByName(char *pstrName)
 *   Adds a function to the function table.
 */
 
-int AddFunc(char *pstrName, int iEntryPoint)
+int ASM_AddFunc(char *pstrName, int iEntryPoint)
 {
     // If a function already exists with the specified name, exit and return an invalid
     // index
 
-    if (GetFuncByName(pstrName))
+    if (ASM_GetFuncByName(pstrName))
         return -1;
 
     // Create a new function node
 
-    FuncNode *pNewFunc = (FuncNode *) malloc(sizeof(FuncNode));
+    XFuncNode *pNewFunc = (XFuncNode *) malloc(sizeof(XFuncNode));
 
     // Initialize the new function
 
@@ -2106,11 +1868,11 @@ int AddFunc(char *pstrName, int iEntryPoint)
 
     // Add the function to the list and get its index
 
-    int iIndex = AddNode(&g_FuncTable, pNewFunc);
+    int iIndex = AddNode(&g_ASMFuncTable, pNewFunc);
 
     // Set the function node's index
 
-    pNewFunc->Index = iIndex;
+    pNewFunc->iIndex = iIndex;
 
     // Return the new function's index
 
@@ -2124,10 +1886,10 @@ int AddFunc(char *pstrName, int iEntryPoint)
 *   Fills in the remaining fields not initialized by AddFunc().
 */
 
-inline void SetFuncInfo(char *pstrName, int iParamCount, int iLocalDataSize)
+inline void ASM_SetFuncInfo(char *pstrName, int iParamCount, int iLocalDataSize)
 {
     // Based on the function's name, find its node in the list
-    FuncNode *pFunc = GetFuncByName(pstrName);
+    XFuncNode *pFunc = ASM_GetFuncByName(pstrName);
 
     // Set the remaining fields
     pFunc->iParamCount = iParamCount;
@@ -2146,20 +1908,20 @@ LabelNode *GetLabelByIdent(char *pstrIdent, int iFuncIndex)
 {
     // If the table is empty, return a NULL pointer
 
-    if (!g_LabelTable.NodeCount)
+    if (!g_ASMLabelTable.iNodeCount)
         return NULL;
 
     // Create a pointer to traverse the list
 
-    LinkedListNode *pCurrNode = g_LabelTable.head;
+    LinkedListNode *pCurrNode = g_ASMLabelTable.pHead;
 
     // Traverse the list until the matching structure is found
 
-    for (int iCurrNode = 0; iCurrNode < g_LabelTable.NodeCount; ++iCurrNode)
+    for (int iCurrNode = 0; iCurrNode < g_ASMLabelTable.iNodeCount; ++iCurrNode)
     {
         // Create a pointer to the current label structure
 
-        LabelNode *pCurrLabel = (LabelNode *) pCurrNode->Data;
+        LabelNode *pCurrLabel = (LabelNode *) pCurrNode->pData;
 
         // If the names and scopes match, return the current pointer
 
@@ -2168,7 +1930,7 @@ LabelNode *GetLabelByIdent(char *pstrIdent, int iFuncIndex)
 
         // Otherwise move to the next node
 
-        pCurrNode = pCurrNode->Next;
+        pCurrNode = pCurrNode->pNext;
     }
 
     // The structure was not found, so return a NULL pointer
@@ -2202,7 +1964,7 @@ int AddLabel(char *pstrIdent, int iTargetIndex, int iFuncIndex)
 
     // Add the label to the list and get its index
 
-    int iIndex = AddNode(&g_LabelTable, pNewLabel);
+    int iIndex = AddNode(&g_ASMLabelTable, pNewLabel);
 
     // Set the index of the label node
 
@@ -2225,22 +1987,22 @@ SymbolNode *GetSymbolByLevel(char *pstrIdent, int iLevel, int iFuncIndex)
 {
     // If the table is empty, return a NULL pointer
 
-    if (!g_SymbolTable.NodeCount)
+    if (!g_ASMSymbolTable.iNodeCount)
         return NULL;
 
     // Create a pointer to traverse the list
 
-    LinkedListNode *pCurrNode = g_SymbolTable.head;
+    LinkedListNode *pCurrNode = g_ASMSymbolTable.pHead;
 
     // Traverse the list until the matching structure is found
 
     SymbolNode *pSymbol = NULL;
 
-    for (int iCurrNode = 0; iCurrNode < g_SymbolTable.NodeCount; ++iCurrNode)
+    for (int iCurrNode = 0; iCurrNode < g_ASMSymbolTable.iNodeCount; ++iCurrNode)
     {
         // Create a pointer to the current symbol structure
 
-        SymbolNode *pCurrSymbol = (SymbolNode *) pCurrNode->Data;
+        SymbolNode *pCurrSymbol = (SymbolNode *) pCurrNode->pData;
 
         // See if the names match
 
@@ -2258,7 +2020,7 @@ SymbolNode *GetSymbolByLevel(char *pstrIdent, int iLevel, int iFuncIndex)
 
         // Otherwise move to the next node
 
-        pCurrNode = pCurrNode->Next;
+        pCurrNode = pCurrNode->pNext;
     }
 
     // The structure was not found, so return a NULL pointer
@@ -2278,20 +2040,20 @@ SymbolNode *GetSymbolByFuncIndex(char *pstrIdent, int iFuncIndex)
 {
     // If the table is empty, return a NULL pointer
 
-    if (!g_SymbolTable.NodeCount)
+    if (!g_ASMSymbolTable.iNodeCount)
         return NULL;
 
     // Create a pointer to traverse the list
 
-    LinkedListNode *pCurrNode = g_SymbolTable.head;
+    LinkedListNode *pCurrNode = g_ASMSymbolTable.pHead;
 
     // Traverse the list until the matching structure is found
 
-    for (int iCurrNode = 0; iCurrNode < g_SymbolTable.NodeCount; ++iCurrNode)
+    for (int iCurrNode = 0; iCurrNode < g_ASMSymbolTable.iNodeCount; ++iCurrNode)
     {
         // Create a pointer to the current symbol structure
 
-        SymbolNode *pCurrSymbol = (SymbolNode *) pCurrNode->Data;
+        SymbolNode *pCurrSymbol = (SymbolNode *) pCurrNode->pData;
 
         // See if the names match
         if (pCurrSymbol->iFuncIndex == iFuncIndex)
@@ -2306,7 +2068,7 @@ SymbolNode *GetSymbolByFuncIndex(char *pstrIdent, int iFuncIndex)
 
         // Otherwise move to the next node
 
-        pCurrNode = pCurrNode->Next;
+        pCurrNode = pCurrNode->pNext;
     }
 
     // The structure was not found, so return a NULL pointer
@@ -2375,7 +2137,7 @@ int AddSymbol(char *pstrIdent, int iSize, int iLevel, int iStackIndex, int iFunc
 
     // Add the symbol to the list and get its index
 
-    int iIndex = AddNode(&g_SymbolTable, pNewSymbol);
+    int iIndex = AddNode(&g_ASMSymbolTable, pNewSymbol);
 
     // Set the symbol node's index
 
@@ -2397,20 +2159,20 @@ void AssmblSourceFile()
 {
     // ----Initialize the script header
 
-    g_ScriptHeader.StackSize = 0;
-    g_ScriptHeader.IsMainFuncPresent = FALSE;
+    g_ASMScriptHeader.iStackSize = 0;
+    g_ASMScriptHeader.iIsMainFuncPresent = FALSE;
 
     // ----Set some initial variables
 
     g_iInstrStreamSize = 0;
     g_iIsSetStackSizeFound = FALSE;
     g_iIsSetPriorityFound = FALSE;
-    g_ScriptHeader.GlobalDataSize = 0;
+    g_ASMScriptHeader.GlobalDataSize = 0;
 
     // Set the current function's flags and variables
 
     int iIsFuncActive = FALSE;
-    FuncNode *pCurrFunc;
+    XFuncNode *pCurrFunc;
     int iCurrFuncIndex = -1;    // 全局作用域
     char pstrCurrFuncName[MAX_IDENT_SIZE];
     int iCurrFuncParamCount = 0;
@@ -2425,7 +2187,7 @@ void AssmblSourceFile()
 
     // Reset the lexer
 
-    ResetLexer();
+    ASM_ResetLexer();
 
     // Loop through each line of code
 
@@ -2433,7 +2195,7 @@ void AssmblSourceFile()
     {
         // Get the next token and make sure we aren't at the end of the stream
 
-        if (GetNextToken() == END_OF_TOKEN_STREAM)
+        if (ASM_GetNextToken() == END_OF_TOKEN_STREAM)
             break;
 
         // Check the initial token
@@ -2444,28 +2206,28 @@ void AssmblSourceFile()
 
             // SetStackSize
 
-        case TOKEN_TYPE_SETSTACKSIZE:
+        case TOKEN_TYPE_RSRVD_SETSTACKSIZE:
 
             // SetStackSize can only be found in the global scope, so make sure we
             // aren't in a function.
 
             if (iIsFuncActive)
-                ExitOnCodeError(ERROR_MSSG_LOCAL_SETSTACKSIZE);
+                ASM_ExitOnCodeError(ERROR_MSSG_LOCAL_SETSTACKSIZE);
 
             // It can only be found once, so make sure we haven't already found it
 
             if (g_iIsSetStackSizeFound)
-                ExitOnCodeError(ERROR_MSSG_MULTIPLE_SETSTACKSIZES);
+                ASM_ExitOnCodeError(ERROR_MSSG_MULTIPLE_SETSTACKSIZES);
 
             // Read the next lexeme, which should contain the stack size
 
-            if (GetNextToken() != TOKEN_TYPE_INT)
-                ExitOnCodeError(ERROR_MSSG_INVALID_STACK_SIZE);
+            if (ASM_GetNextToken() != TOKEN_TYPE_INT)
+                ASM_ExitOnCodeError(ERROR_MSSG_INVALID_STACK_SIZE);
 
             // Convert the lexeme to an integer value from its string
             // representation and store it in the script header
 
-            g_ScriptHeader.StackSize = strtol(GetCurrLexeme(), 0, g_Lexer.CurrBase);
+            g_ASMScriptHeader.iStackSize = strtol(ASM_GetCurrLexeme(), 0, g_Lexer.CurrBase);
 
             // Mark the presence of SetStackSize for ( future encounters
 
@@ -2488,20 +2250,20 @@ void AssmblSourceFile()
 
             // SetPriority
 
-        case TOKEN_TYPE_SETPRIORITY:
+        case TOKEN_TYPE_RSRVD_SETPRIORITY:
 
             // SetPriority can only be found in the global scope, so make sure we
             // aren't in a function.
 
             if (iIsFuncActive)
-                ExitOnCodeError(ERROR_MSSG_LOCAL_SETPRIORITY);
+                ASM_ExitOnCodeError(ERROR_MSSG_LOCAL_SETPRIORITY);
 
             // It can only be found once, so make sure we haven't already found it
 
             if (g_iIsSetPriorityFound)
-                ExitOnCodeError(ERROR_MSSG_MULTIPLE_SETPRIORITIES);
+                ASM_ExitOnCodeError(ERROR_MSSG_MULTIPLE_SETPRIORITIES);
 
-            GetNextToken();
+            ASM_GetNextToken();
 
             // Determin
 
@@ -2514,11 +2276,11 @@ void AssmblSourceFile()
                 // Convert the lexeme to an integer value from its string
                 // representation and store it in the script header
 
-                g_ScriptHeader.UserPriority = strtol(GetCurrLexeme(), 0, g_Lexer.CurrBase);
+                g_ASMScriptHeader.iUserPriority = strtol(ASM_GetCurrLexeme(), 0, g_Lexer.CurrBase);
 
                 // Set the user priority flag
 
-                g_ScriptHeader.StackSize = PRIORITY_USER;
+                g_ASMScriptHeader.iStackSize = PRIORITY_USER;
 
                 break;
 
@@ -2530,20 +2292,20 @@ void AssmblSourceFile()
                 // Determine which rank was specified
 
                 if (_stricmp(g_Lexer.CurrLexeme, PRIORITY_LOW_KEYWORD) == 0)
-                    g_ScriptHeader.PriorityType = PRIORITY_LOW;
+                    g_ASMScriptHeader.iPriorityType = PRIORITY_LOW;
                 else if (_stricmp(g_Lexer.CurrLexeme, PRIORITY_MED_KEYWORD) == 0)
-                    g_ScriptHeader.PriorityType = PRIORITY_MED;
+                    g_ASMScriptHeader.iPriorityType = PRIORITY_MED;
                 else if (_stricmp(g_Lexer.CurrLexeme, PRIORITY_HIGH_KEYWORD) == 0)
-                    g_ScriptHeader.PriorityType = PRIORITY_HIGH;
+                    g_ASMScriptHeader.iPriorityType = PRIORITY_HIGH;
                 else
-                    ExitOnCodeError(ERROR_MSSG_INVALID_PRIORITY);
+                    ASM_ExitOnCodeError(ERROR_MSSG_INVALID_PRIORITY);
 
                 break;
 
                 // Anything else should cause an error
 
             default:
-                ExitOnCodeError(ERROR_MSSG_INVALID_PRIORITY);
+                ASM_ExitOnCodeError(ERROR_MSSG_INVALID_PRIORITY);
             }
 
             // Mark the presence of SetStackSize for ( future encounters
@@ -2553,21 +2315,15 @@ void AssmblSourceFile()
             break;
 
             // Var/Var []
-
-        case TOKEN_TYPE_GLOBAL:    // 全局变量
-        case TOKEN_TYPE_LOCAL:  // 本地变量
+        case TOKEN_TYPE_RSRVD_VAR:
             {
-                if (iIsFuncActive && g_Lexer.CurrToken == TOKEN_TYPE_GLOBAL ||
-                    !iIsFuncActive && g_Lexer.CurrToken == TOKEN_TYPE_LOCAL)
-                    ExitOnCodeError(ERROR_MSSG_INVALID_SCOPE_KIND);
-
                 // Get the variable's identifier
 
-                if (GetNextToken() != TOKEN_TYPE_IDENT)
-                    ExitOnCodeError(ERROR_MSSG_IDENT_EXPECTED);
+                if (ASM_GetNextToken() != TOKEN_TYPE_IDENT)
+                    ASM_ExitOnCodeError(ERROR_MSSG_IDENT_EXPECTED);
 
                 char pstrIdent[MAX_IDENT_SIZE];
-                strcpy(pstrIdent, GetCurrLexeme());
+                strcpy(pstrIdent, ASM_GetCurrLexeme());
 
                 // Now determine its size by finding out if it's an array or not, otherwise
                 // default to 1.
@@ -2576,31 +2332,31 @@ void AssmblSourceFile()
 
                 // Find out if an opening bracket lies ahead
 
-                if (GetLookAheadChar() == '[')
+                if (ASM_GetLookAheadChar() == '[')
                 {
                     // Validate and consume the opening bracket
 
-                    if (GetNextToken() != TOKEN_TYPE_OPEN_BRACKET)
+                    if (ASM_GetNextToken() != TOKEN_TYPE_OPEN_BRACE)
                         ExitOnCharExpectedError('[');
 
                     // We're parsing an array, so the next lexeme should be an integer
                     // describing the array's size
 
-                    if (GetNextToken() != TOKEN_TYPE_INT)
-                        ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY_SIZE);
+                    if (ASM_GetNextToken() != TOKEN_TYPE_INT)
+                        ASM_ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY_SIZE);
 
                     // Convert the size lexeme to an integer value
 
-                    iSize = strtol(GetCurrLexeme(), 0, g_Lexer.CurrBase);
+                    iSize = strtol(ASM_GetCurrLexeme(), 0, g_Lexer.CurrBase);
 
                     // Make sure the size is valid, in that it's greater than zero
 
                     if (iSize <= 0)
-                        ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY_SIZE);
+                        ASM_ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY_SIZE);
 
                     // Make sure the closing bracket is present as well
 
-                    if (GetNextToken() != TOKEN_TYPE_CLOSE_BRACKET)
+                    if (ASM_GetNextToken() != TOKEN_TYPE_CLOSE_BRACE)
                         ExitOnCharExpectedError(']');
                 }
 
@@ -2622,13 +2378,13 @@ void AssmblSourceFile()
                 else
                 {
                     iLevel = GLOBAL;
-                    iStackIndex = g_ScriptHeader.GlobalDataSize;
+                    iStackIndex = g_ASMScriptHeader.GlobalDataSize;
                 }
 
                 // Attempt to add the symbol to the table
 
                 if (AddSymbol(pstrIdent, iSize, iLevel, iStackIndex, iCurrFuncIndex) == -1)
-                    ExitOnCodeError(ERROR_MSSG_IDENT_REDEFINITION);
+                    ASM_ExitOnCodeError(ERROR_MSSG_IDENT_REDEFINITION);
 
                 // Depending on the scope, increment either the local or global data size
                 // by the size of the variable
@@ -2636,27 +2392,27 @@ void AssmblSourceFile()
                 if (iIsFuncActive)
                     iCurrFuncLocalDataSize += iSize;
                 else
-                    g_ScriptHeader.GlobalDataSize += iSize;
+                    g_ASMScriptHeader.GlobalDataSize += iSize;
 
                 break;
             }
 
             // Func
 
-        case TOKEN_TYPE_FUNC:
+        case TOKEN_TYPE_RSRVD_FUNC:
             {
                 // First make sure we aren't in a function already, since nested functions
                 // are illegal
 
                 if (iIsFuncActive)
-                    ExitOnCodeError(ERROR_MSSG_NESTED_FUNC);
+                    ASM_ExitOnCodeError(ERROR_MSSG_NESTED_FUNC);
 
                 // Read the next lexeme, which is the function name
 
-                if (GetNextToken() != TOKEN_TYPE_IDENT)
-                    ExitOnCodeError(ERROR_MSSG_IDENT_EXPECTED);
+                if (ASM_GetNextToken() != TOKEN_TYPE_IDENT)
+                    ASM_ExitOnCodeError(ERROR_MSSG_IDENT_EXPECTED);
 
-                char *pstrFuncName = GetCurrLexeme();
+                char *pstrFuncName = ASM_GetCurrLexeme();
 
                 // Calculate the function's entry point, which is the instruction immediately
                 // following the current one, which is in turn equal to the instruction stream
@@ -2667,16 +2423,16 @@ void AssmblSourceFile()
                 // Try adding it to the function table, and print an error if it's already
                 // been declared
 
-                int iFuncIndex = AddFunc(pstrFuncName, iEntryPoint);
+                int iFuncIndex = ASM_AddFunc(pstrFuncName, iEntryPoint);
                 if (iFuncIndex == -1)
-                    ExitOnCodeError(ERROR_MSSG_FUNC_REDEFINITION);
+                    ASM_ExitOnCodeError(ERROR_MSSG_FUNC_REDEFINITION);
 
                 // Is this the main() function?
                 // 默认主函数不存在，且索引为0
                 if (strcmp(pstrFuncName, MAIN_FUNC_NAME) == 0)
                 {
-                    g_ScriptHeader.IsMainFuncPresent = TRUE;
-                    g_ScriptHeader.MainFuncIndex = iFuncIndex;
+                    g_ASMScriptHeader.iIsMainFuncPresent = TRUE;
+                    g_ASMScriptHeader.iMainFuncIndex = iFuncIndex;
                 }
 
                 // Set the function flag to true for ( any future encounters and re-initialize
@@ -2690,7 +2446,7 @@ void AssmblSourceFile()
 
 				// Read any number of line breaks until the opening brace is found
 				// ignore any newline
-				while (GetNextToken() == TOKEN_TYPE_NEWLINE);
+				while (ASM_GetNextToken() == TOKEN_TYPE_NEWLINE);
 
 				// Make sure the lexeme was an opening brace
 
@@ -2711,7 +2467,7 @@ void AssmblSourceFile()
 
             // Set the fields we've collected
 
-            SetFuncInfo(pstrCurrFuncName, iCurrFuncParamCount, iCurrFuncLocalDataSize);
+            ASM_SetFuncInfo(pstrCurrFuncName, iCurrFuncParamCount, iCurrFuncLocalDataSize);
 
             // Close the function
 
@@ -2721,22 +2477,22 @@ void AssmblSourceFile()
 
             // Param
 
-        case TOKEN_TYPE_PARAM:
+        case TOKEN_TYPE_RSRVD_PARAM:
             {
                 // If we aren't currently in a function, print an error
 
                 if (!iIsFuncActive)
-                    ExitOnCodeError(ERROR_MSSG_GLOBAL_PARAM);
+                    ASM_ExitOnCodeError(ERROR_MSSG_GLOBAL_PARAM);
 
                 // Main() can't accept parameters, so make sure we aren't in it
 
                 if (strcmp(pstrCurrFuncName, MAIN_FUNC_NAME) == 0)
-                    ExitOnCodeError(ERROR_MSSG_MAIN_PARAM);
+                    ASM_ExitOnCodeError(ERROR_MSSG_MAIN_PARAM);
 
                 // The parameter's identifier should follow
 
-                if (GetNextToken() != TOKEN_TYPE_IDENT)
-                    ExitOnCodeError(ERROR_MSSG_IDENT_EXPECTED);
+                if (ASM_GetNextToken() != TOKEN_TYPE_IDENT)
+                    ASM_ExitOnCodeError(ERROR_MSSG_IDENT_EXPECTED);
 
                 // Increment the current function's local data size
 
@@ -2753,7 +2509,7 @@ void AssmblSourceFile()
                 // can only appear in functions
 
                 if (!iIsFuncActive)
-                    ExitOnCodeError(ERROR_MSSG_GLOBAL_INSTR);
+                    ASM_ExitOnCodeError(ERROR_MSSG_GLOBAL_INSTR);
 
                 // Increment the instruction stream size
 
@@ -2768,17 +2524,17 @@ void AssmblSourceFile()
             {
                 // Make sure it's a line label
 
-                if (GetLookAheadChar() != ':')
-                    ExitOnCodeError(ERROR_MSSG_INVALID_INSTR);
+                if (ASM_GetLookAheadChar() != ':')
+                    ASM_ExitOnCodeError(ERROR_MSSG_INVALID_INSTR);
 
                 // Make sure we're in a function, since labels can only appear there
 
                 if (!iIsFuncActive)
-                    ExitOnCodeError(ERROR_MSSG_GLOBAL_LINE_LABEL);
+                    ASM_ExitOnCodeError(ERROR_MSSG_GLOBAL_LINE_LABEL);
 
                 // The current lexeme is the label's identifier
 
-                char *pstrIdent = GetCurrLexeme();
+                char *pstrIdent = ASM_GetCurrLexeme();
 
                 // The target instruction is always the value of the current
                 // instruction count, which is the current size - 1
@@ -2793,7 +2549,7 @@ void AssmblSourceFile()
                 // already exists
 
                 if (AddLabel(pstrIdent, iTargetIndex, iFuncIndex) == -1)
-                    ExitOnCodeError(ERROR_MSSG_LINE_LABEL_REDEFINITION);
+                    ASM_ExitOnCodeError(ERROR_MSSG_LINE_LABEL_REDEFINITION);
 
                 break;
             }
@@ -2801,7 +2557,7 @@ void AssmblSourceFile()
         default:
             // Anything else should cause an error, minus line breaks
             if (g_Lexer.CurrToken != TOKEN_TYPE_NEWLINE)
-                ExitOnCodeError(ERROR_MSSG_INVALID_INPUT);
+                ASM_ExitOnCodeError(ERROR_MSSG_INVALID_INPUT);
         }
 
         // Skip to the next line, since the initial tokens are all we're really worrid
@@ -2829,7 +2585,7 @@ void AssmblSourceFile()
 
     // Reset the lexer so we begin at the top of the source again
 
-    ResetLexer();
+    ASM_ResetLexer();
     int hasRetInstr;
     // Loop through each line of code
 
@@ -2837,7 +2593,7 @@ void AssmblSourceFile()
     {
         // Get the next token and make sure we aren't at the end of the stream
 
-        if (GetNextToken() == END_OF_TOKEN_STREAM)
+        if (ASM_GetNextToken() == END_OF_TOKEN_STREAM)
             break;
 
         // Check the initial token
@@ -2846,7 +2602,7 @@ void AssmblSourceFile()
         {
             // Func
 
-        case TOKEN_TYPE_FUNC:
+        case TOKEN_TYPE_RSRVD_FUNC:
             {
                 // We've encountered a Func directive, but since we validated the syntax
                 // of all functions in the previous phase, we don't need to perform any
@@ -2854,12 +2610,12 @@ void AssmblSourceFile()
 
                 // Read the identifier
 
-                GetNextToken();
+                ASM_GetNextToken();
 
                 // Use the identifier(the current lexeme) to get it's corresponding function
                 // from the table
 
-                pCurrFunc = GetFuncByName(GetCurrLexeme());
+                pCurrFunc = ASM_GetFuncByName(ASM_GetCurrLexeme());
 
                 // Set the active function flag
 
@@ -2872,11 +2628,11 @@ void AssmblSourceFile()
 
                 // Save the function's index
 
-                iCurrFuncIndex = pCurrFunc->Index;
+                iCurrFuncIndex = pCurrFunc->iIndex;
 
                 // Read any number of line breaks until the opening brace is found
 
-                while (GetNextToken() == TOKEN_TYPE_NEWLINE);
+                while (ASM_GetNextToken() == TOKEN_TYPE_NEWLINE);
 
                 break;
             }
@@ -2910,16 +2666,16 @@ void AssmblSourceFile()
 
             // Param
 
-        case TOKEN_TYPE_PARAM:
+        case TOKEN_TYPE_RSRVD_PARAM:
             {
                 // Read the next token to get the identifier
 
-                if (GetNextToken() != TOKEN_TYPE_IDENT)
-                    ExitOnCodeError(ERROR_MSSG_IDENT_EXPECTED);
+                if (ASM_GetNextToken() != TOKEN_TYPE_IDENT)
+                    ASM_ExitOnCodeError(ERROR_MSSG_IDENT_EXPECTED);
 
                 // Read the identifier, which is the current lexeme
 
-                char *pstrIdent = GetCurrLexeme();
+                char *pstrIdent = ASM_GetCurrLexeme();
 
                 // Calculate the parameter's stack index
 
@@ -2928,7 +2684,7 @@ void AssmblSourceFile()
                 // Add the parameter to the symbol table
 
                 if (AddSymbol(pstrIdent, 1, PARAM, iStackIndex, iCurrFuncIndex) == -1)
-                    ExitOnCodeError(ERROR_MSSG_IDENT_REDEFINITION);
+                    ASM_ExitOnCodeError(ERROR_MSSG_IDENT_REDEFINITION);
 
                 // Increment the current parameter count
                 ++iCurrFuncParamCount;
@@ -2942,7 +2698,7 @@ void AssmblSourceFile()
             {
                 // Get the instruction's info using the current lexeme(the mnemonic)
 
-                GetInstrByMnemonic(GetCurrLexeme(), &CurrInstr);
+                GetInstrByMnemonic(ASM_GetCurrLexeme(), &CurrInstr);
 
                 if (CurrInstr.Opcode == INSTR_RET)
                     hasRetInstr = TRUE;
@@ -2968,7 +2724,7 @@ void AssmblSourceFile()
 
                     // Read in the next token, which is the initial token of the operand
 
-                    Token InitOpToken = GetNextToken();
+                    Token InitOpToken = ASM_GetNextToken();
                     switch(InitOpToken)
                     {
                         // An integer literal
@@ -2986,10 +2742,10 @@ void AssmblSourceFile()
                             // Copy the value into the operand list from the current
                             // lexeme
 
-                            pOpList[iCurrOpIndex].Fixnum = strtol(GetCurrLexeme(), 0, g_Lexer.CurrBase);
+                            pOpList[iCurrOpIndex].Fixnum = strtol(ASM_GetCurrLexeme(), 0, g_Lexer.CurrBase);
                         }
                         else
-                            ExitOnCodeError(ERROR_MSSG_INVALID_OP);
+                            ASM_ExitOnCodeError(ERROR_MSSG_INVALID_OP);
 
                         break;
 
@@ -3008,10 +2764,10 @@ void AssmblSourceFile()
                             // Copy the value into the operand list from the current
                             // lexeme
 
-                            pOpList[iCurrOpIndex].FloatLiteral = (float)atof(GetCurrLexeme());
+                            pOpList[iCurrOpIndex].FloatLiteral = (float)atof(ASM_GetCurrLexeme());
                         }
                         else
-                            ExitOnCodeError(ERROR_MSSG_INVALID_OP);
+                            ASM_ExitOnCodeError(ERROR_MSSG_INVALID_OP);
 
                         break;
 
@@ -3023,7 +2779,7 @@ void AssmblSourceFile()
 
                             if (CurrOpTypes & OP_FLAG_TYPE_STRING)
                             {
-                                GetNextToken();
+                                ASM_GetNextToken();
 
                                 // Handle the string based on its type
 
@@ -3046,16 +2802,16 @@ void AssmblSourceFile()
                                     {
                                         // Get the string literal
 
-                                        char *pstrString = GetCurrLexeme();
+                                        char *pstrString = ASM_GetCurrLexeme();
 
                                         // Add the string to the table, or get the index of
                                         // the existing copy
 
-                                        int iStringIndex = AddString(&g_StringTable, pstrString);
+                                        int iStringIndex = AddString(&g_ASMStringTable, pstrString);
 
                                         // Make sure the closing double-quote is present
 
-                                        if (GetNextToken() != TOKEN_TYPE_QUOTE)
+                                        if (ASM_GetNextToken() != TOKEN_TYPE_QUOTE)
                                             ExitOnCharExpectedError('\\');
 
                                         // Set the operand type to string index and set its
@@ -3069,11 +2825,11 @@ void AssmblSourceFile()
                                     // The string is invalid
 
                                 default:
-                                    ExitOnCodeError(ERROR_MSSG_INVALID_STRING);
+                                    ASM_ExitOnCodeError(ERROR_MSSG_INVALID_STRING);
                                 }
                             }
                             else
-                                ExitOnCodeError(ERROR_MSSG_INVALID_OP);
+                                ASM_ExitOnCodeError(ERROR_MSSG_INVALID_OP);
 
                             break;
                         }
@@ -3091,7 +2847,7 @@ void AssmblSourceFile()
                             pOpList[iCurrOpIndex].Reg = 0;
                         }
                         else
-                            ExitOnCodeError(ERROR_MSSG_INVALID_OP);
+                            ASM_ExitOnCodeError(ERROR_MSSG_INVALID_OP);
 
                         break;
 
@@ -3120,12 +2876,12 @@ void AssmblSourceFile()
                                 // copy of it for ( later
 
                                 char pstrIdent[MAX_IDENT_SIZE];
-                                strcpy(pstrIdent, GetCurrLexeme());
+                                strcpy(pstrIdent, ASM_GetCurrLexeme());
 
                                 // Make sure the variable/array has been defined
 
                                 if (!GetSymbolByLevel(pstrIdent, LOCAL, iCurrFuncIndex))
-                                    ExitOnCodeError(ERROR_MSSG_UNDEFINED_IDENT);
+                                    ASM_ExitOnCodeError(ERROR_MSSG_UNDEFINED_IDENT);
 
                                 // Get the identifier's index as well; it may either be
                                 // an absolute index or a base index
@@ -3135,7 +2891,7 @@ void AssmblSourceFile()
                                 // Use the lookahead character to find out whether or not
                                 // we're parsing an array
 
-                                if (GetLookAheadChar() != '[')
+                                if (ASM_GetLookAheadChar() != '[')
                                 {
                                     // It's just a single identifier so the base index we
                                     // already saved is the variable's stack index
@@ -3143,7 +2899,7 @@ void AssmblSourceFile()
                                     // Make sure the variable isn't an array
 
                                     if (GetSizeByIdent(pstrIdent, LOCAL, iCurrFuncIndex) > 1)
-                                        ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY_NOT_INDEXED);
+                                        ASM_ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY_NOT_INDEXED);
 
                                     // Set the operand type to stack index and set the data
                                     // field
@@ -3157,24 +2913,24 @@ void AssmblSourceFile()
                                     // an actual array
 
                                     if (GetSizeByIdent(pstrIdent, LOCAL, iCurrFuncIndex) == 1)
-                                        ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY);
+                                        ASM_ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY);
 
                                     // First make sure the open brace is valid
 
-                                    if (GetNextToken() != TOKEN_TYPE_OPEN_BRACKET)
+                                    if (ASM_GetNextToken() != TOKEN_TYPE_OPEN_BRACE)
                                         ExitOnCharExpectedError('[');
 
                                     // The next token is the index, be it an integer literal
                                     // or variable identifier
 
-                                    Token IndexToken = GetNextToken();
+                                    Token IndexToken = ASM_GetNextToken();
 
                                     if (IndexToken == TOKEN_TYPE_INT)
                                     {
                                         // It's an integer, so determine its value by
                                         // converting the current lexeme to an integer
 
-                                        int iOffsetIndex = strtol(GetCurrLexeme(), 0, g_Lexer.CurrBase);
+                                        int iOffsetIndex = strtol(ASM_GetCurrLexeme(), 0, g_Lexer.CurrBase);
 
                                         // Add the index to the base index to find the offset
                                         // index and set the operand type to absolute stack
@@ -3191,17 +2947,17 @@ void AssmblSourceFile()
                                     {
                                         // It's an identifier, so save the current lexeme
 
-                                        char *pstrIndexIdent = GetCurrLexeme();
+                                        char *pstrIndexIdent = ASM_GetCurrLexeme();
 
                                         // Make sure the index is a valid array index, in
                                         // that the identifier represents a single variable
                                         // as opposed to another array
 
                                         if (!GetSymbolByLevel(pstrIndexIdent, LOCAL, iCurrFuncIndex))
-                                            ExitOnCodeError(ERROR_MSSG_UNDEFINED_IDENT);
+                                            ASM_ExitOnCodeError(ERROR_MSSG_UNDEFINED_IDENT);
 
                                         if (GetSizeByIdent(pstrIndexIdent, LOCAL, iCurrFuncIndex) > 1)
-                                            ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY_INDEX);
+                                            ASM_ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY_INDEX);
 
                                         // Get the variable's stack index and set the operand
                                         // type to relative stack index
@@ -3216,12 +2972,12 @@ void AssmblSourceFile()
                                     {
                                         // Whatever it is, it's invalid
 
-                                        ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY_INDEX);
+                                        ASM_ExitOnCodeError(ERROR_MSSG_INVALID_ARRAY_INDEX);
                                     }
 
                                     // Lastly, make sure the closing brace is present as well
 
-                                    if (GetNextToken() != TOKEN_TYPE_CLOSE_BRACKET)
+                                    if (ASM_GetNextToken() != TOKEN_TYPE_CLOSE_BRACE)
                                         ExitOnCharExpectedError('[');
                                 }
                             }
@@ -3232,7 +2988,7 @@ void AssmblSourceFile()
                             {
                                 // Get the current lexeme, which is the line label
 
-                                char *pstrLabelIdent = GetCurrLexeme();
+                                char *pstrLabelIdent = ASM_GetCurrLexeme();
 
                                 // Use the label identifier to get the label's information
 
@@ -3241,7 +2997,7 @@ void AssmblSourceFile()
                                 // Make sure the label exists
 
                                 if (!pLabel)
-                                    ExitOnCodeError(ERROR_MSSG_UNDEFINED_LINE_LABEL);
+                                    ASM_ExitOnCodeError(ERROR_MSSG_UNDEFINED_LINE_LABEL);
 
                                 // Set the operand type to instruction index and set the
                                 // data field
@@ -3260,11 +3016,11 @@ void AssmblSourceFile()
                             {
                                 // Get the current lexeme, which is the function name
 
-                                char *pstrFuncName = GetCurrLexeme();
+                                char *pstrFuncName = ASM_GetCurrLexeme();
 
                                 // Use the function name to get the function's information
 
-                                FuncNode *pFunc = GetFuncByName(pstrFuncName);
+                                XFuncNode *pFunc = ASM_GetFuncByName(pstrFuncName);
 
                                 // C 函数(host call)
 
@@ -3283,7 +3039,7 @@ void AssmblSourceFile()
                                     // field
 
                                     pOpList[iCurrOpIndex].Type = OP_TYPE_FUNC_INDEX;
-                                    pOpList[iCurrOpIndex].FuncIndex = pFunc->Index;
+                                    pOpList[iCurrOpIndex].FuncIndex = pFunc->iIndex;
                                 }
                             }
 
@@ -3294,21 +3050,21 @@ void AssmblSourceFile()
 
                     default:
 
-                        ExitOnCodeError(ERROR_MSSG_INVALID_OP);
+                        ASM_ExitOnCodeError(ERROR_MSSG_INVALID_OP);
                         break;
                     }
 
                     // Make sure a comma follows the operand, unless it's the last one
 
                     if (iCurrOpIndex < CurrInstr.OpCount - 1)
-                        if (GetNextToken() != TOKEN_TYPE_COMMA)
+                        if (ASM_GetNextToken() != TOKEN_TYPE_COMMA)
                             ExitOnCharExpectedError(',');
                 }
 
                 // Make sure there's no extranous stuff ahead
 
-                if (GetNextToken() != TOKEN_TYPE_NEWLINE)
-                    ExitOnCodeError(ERROR_MSSG_INVALID_INPUT);
+                if (ASM_GetNextToken() != TOKEN_TYPE_NEWLINE)
+                    ASM_ExitOnCodeError(ERROR_MSSG_INVALID_INPUT);
 
                 // Copy the operand list pointer into the assembled stream
 
@@ -3332,115 +3088,13 @@ void AssmblSourceFile()
 /* Assembly .XASM to .XSE */
 void XASM_Assembly(char* pstrFilename, char* pstrExecFilename)
 {
-    Init();
+    InitAssembler();
     LoadSourceFile(pstrFilename);
     AssmblSourceFile();
     BuildXSE(pstrExecFilename);
-    ShutDown();
+    ShutdownAssembler();
 }
 
-/******************************************************************************************
-*
-*   PrintAssmblStats()
-*
-*   Prints miscellaneous assembly stats.
-*/
-#if 0
-void PrintAssmblStats()
-{
-    // ----Calculate statistics
-
-    // Symbols
-
-    // Create some statistic variables
-
-    int iVarCount = 0,
-        iArrayCount = 0,
-        iGlobalCount = 0;
-
-    // Create a pointer to traverse the list
-
-    LinkedListNode *pCurrNode = g_SymbolTable.head;
-
-    // Traverse the list to count each symbol type
-
-    for (int iCurrNode = 0; iCurrNode < g_SymbolTable.NodeCount; ++iCurrNode)
-    {
-        // Create a pointer to the current symbol structure
-
-        SymbolNode *pCurrSymbol = (SymbolNode *) pCurrNode->Data;
-
-        // It's an array if the size is greater than 1
-        if (pCurrSymbol->iSize > 1)
-        {
-            ++iArrayCount;
-        }
-        // It's a variable otherwise
-        else
-        {
-            ++iVarCount;
-        }
-
-        // It's a global if it's stack index is nonnegative
-
-        if (pCurrSymbol->iStackIndex >= 0)
-            ++iGlobalCount;
-
-        // Move to the next node
-        pCurrNode = pCurrNode->Next;
-    }
-
-    // Print out final calculations
-
-    printf("%s created successfully!\n\n", file);
-    printf("Source Lines Processed: %d\n", g_iSourceCodeSize);
-
-    printf("            Stack Size: ");
-    if (g_ScriptHeader.StackSize)
-        printf("%d", g_ScriptHeader.StackSize);
-    else
-        printf("Default");
-
-    printf("\n");
-
-    printf("              Priority: ");
-    switch(g_ScriptHeader.PriorityType)
-    {
-    case PRIORITY_USER:
-        printf("%dms Timeslice", g_ScriptHeader.UserPriority);
-        break;
-
-    case PRIORITY_LOW:
-        printf(PRIORITY_LOW_KEYWORD);
-        break;
-
-    case PRIORITY_MED:
-        printf(PRIORITY_MED_KEYWORD);
-        break;
-
-    case PRIORITY_HIGH:
-        printf(PRIORITY_HIGH_KEYWORD);
-        break;
-    }
-    printf("\n");
-
-    printf("Instructions Assembled: %d\n", g_iInstrStreamSize);
-    printf("             Variables: %d\n", iVarCount);
-    printf("                Arrays: %d\n", iArrayCount);
-    printf("               Globals: %d\n", iGlobalCount);
-    printf("       String Literals: %d\n", g_StringTable.NodeCount);
-    printf("                Labels: %d\n", g_LabelTable.NodeCount);
-    printf("        Host API Calls: %d\n", g_HostAPICallTable.NodeCount);
-    printf("             Functions: %d\n", g_FuncTable.NodeCount);
-
-    printf("      Main() Present: ");
-    if (g_ScriptHeader.IsMainFuncPresent)
-        printf("Yes(Index %d)\n", g_ScriptHeader.MainFuncIndex);
-    else
-        printf("No\n");
-    printf("\n");
-}
-#endif
 
 /******************************************************************************************
 *
@@ -3455,7 +3109,7 @@ void BuildXSE(const char* file)
 
     FILE *pExecFile;
     if (!(pExecFile = fopen(file, "wb")))
-        ExitOnError("Could not open executable file for output");
+        ASM_ExitOnError("Could not open executable file for output");
 
     // ----Write the header
 
@@ -3481,31 +3135,31 @@ void BuildXSE(const char* file)
 
     // Write the stack size(4 bytes)
 
-    fwrite(&g_ScriptHeader.StackSize, 4, 1, pExecFile);
+    fwrite(&g_ASMScriptHeader.iStackSize, 4, 1, pExecFile);
 
     // Write the global data size(4 bytes)
 
-    fwrite(&g_ScriptHeader.GlobalDataSize, 4, 1, pExecFile);
+    fwrite(&g_ASMScriptHeader.GlobalDataSize, 4, 1, pExecFile);
 
     // Write the Main() flag(1 byte)
 
     char cIsMainPresent = 0;
-    if (g_ScriptHeader.IsMainFuncPresent)
+    if (g_ASMScriptHeader.iIsMainFuncPresent)
         cIsMainPresent = 1;
     fwrite(& cIsMainPresent, 1, 1, pExecFile);
 
     // Write the Main() function index(4 bytes)
 
-    fwrite(&g_ScriptHeader.MainFuncIndex, 4, 1, pExecFile);
+    fwrite(&g_ASMScriptHeader.iMainFuncIndex, 4, 1, pExecFile);
 
     // Write the priority type(1 byte)
 
-    char cPriorityType = g_ScriptHeader.PriorityType;
+    char cPriorityType = g_ASMScriptHeader.iPriorityType;
     fwrite(& cPriorityType, 1, 1, pExecFile);
 
     // Write the user-defined priority(4 bytes)
 
-    fwrite(&g_ScriptHeader.UserPriority, 4, 1, pExecFile);
+    fwrite(&g_ASMScriptHeader.iUserPriority, 4, 1, pExecFile);
 
     // ----Write the instruction stream
 
@@ -3611,11 +3265,11 @@ void BuildXSE(const char* file)
 
     // Write out the string count(4 bytes)
 
-    fwrite(&g_StringTable.NodeCount, 4, 1, pExecFile);
+    fwrite(&g_ASMStringTable.iNodeCount, 4, 1, pExecFile);
 
     // Set the pointer to the head of the list
 
-    pNode = g_StringTable.head;
+    pNode = g_ASMStringTable.pHead;
 
     // Create a character for ( writing parameter counts
 
@@ -3623,11 +3277,11 @@ void BuildXSE(const char* file)
 
     // Loop through each node in the list and write out its string
 
-    for (iCurrNode = 0; iCurrNode < g_StringTable.NodeCount; ++iCurrNode)
+    for (iCurrNode = 0; iCurrNode < g_ASMStringTable.iNodeCount; ++iCurrNode)
     {
         // Copy the string and calculate its length
 
-        char *pstrCurrString = (char *) pNode->Data;
+        char *pstrCurrString = (char *) pNode->pData;
         int iCurrStringLength = strlen(pstrCurrString);
 
         // Write the length(4 bytes), followed by the string data(N bytes)
@@ -3637,26 +3291,26 @@ void BuildXSE(const char* file)
 
         // Move to the next node
 
-        pNode = pNode->Next;
+        pNode = pNode->pNext;
     }
 
     // ----Write the function table
 
     // Write out the function count(4 bytes)
 
-    fwrite(&g_FuncTable.NodeCount, 4, 1, pExecFile);
+    fwrite(&g_ASMFuncTable.iNodeCount, 4, 1, pExecFile);
 
     // Set the pointer to the head of the list
 
-    pNode = g_FuncTable.head;
+    pNode = g_ASMFuncTable.pHead;
 
     // Loop through each node in the list and write out its function info
 
-    for (iCurrNode = 0; iCurrNode < g_FuncTable.NodeCount; ++iCurrNode)
+    for (iCurrNode = 0; iCurrNode < g_ASMFuncTable.iNodeCount; ++iCurrNode)
     {
         // Create a local copy of the function
 
-        FuncNode *pFunc = (FuncNode *) pNode->Data;
+        XFuncNode *pFunc = (XFuncNode *) pNode->pData;
 
         // Write the entry point(4 bytes)
 
@@ -3682,26 +3336,26 @@ void BuildXSE(const char* file)
 
         // Move to the next node
 
-        pNode = pNode->Next;
+        pNode = pNode->pNext;
     }
 
     // ----Write the host API call table
 
     // Write out the call count(4 bytes)
 
-    fwrite(&g_HostAPICallTable.NodeCount, 4, 1, pExecFile);
+    fwrite(&g_HostAPICallTable.iNodeCount, 4, 1, pExecFile);
 
     // Set the pointer to the head of the list
 
-    pNode = g_HostAPICallTable.head;
+    pNode = g_HostAPICallTable.pHead;
 
     // Loop through each node in the list and write out its string
 
-    for (iCurrNode = 0; iCurrNode < g_HostAPICallTable.NodeCount; ++iCurrNode)
+    for (iCurrNode = 0; iCurrNode < g_HostAPICallTable.iNodeCount; ++iCurrNode)
     {
         // Copy the string pointer and calculate its length
 
-        char *pstrCurrHostAPICall = (char *) pNode->Data;
+        char *pstrCurrHostAPICall = (char *) pNode->pData;
         char cCurrHostAPICallLength = strlen(pstrCurrHostAPICall);
 
         // Write the length(1 byte), followed by the string data(N bytes)
@@ -3711,7 +3365,7 @@ void BuildXSE(const char* file)
 
         // Move to the next node
 
-        pNode = pNode->Next;
+        pNode = pNode->pNext;
     }
 
     // ----Close the output file
@@ -3726,10 +3380,10 @@ void BuildXSE(const char* file)
 *   Exits the program.
 */
 
-void ExitProgram()
+void ASM_ExitProgram()
 {
     // Give allocated resources a chance to be freed
-    ShutDown();
+    ShutdownAssembler();
     exit(0);
 }
 
@@ -3740,15 +3394,15 @@ void ExitProgram()
 *   Prints an error message and exits.
 */
 
-void ExitOnError(char *pstrErrorMssg)
+void ASM_ExitOnError(char *pstrErrorMssg)
 {
     // Print the message
 
-    printf("Fatal Error: %s.\n", pstrErrorMssg);
+    fprintf(stderr, "Fatal Error: %s.\n", pstrErrorMssg);
 
     // Exit the program
 
-    ExitProgram();
+    ASM_ExitProgram();
 }
 
 /******************************************************************************************
@@ -3758,9 +3412,9 @@ void ExitOnError(char *pstrErrorMssg)
 *   Prints an error message relating to the source code and exits.
 */
 
-void ExitOnCodeError(char *pstrErrorMssg)
+void ASM_ExitOnCodeError(char *pstrErrorMssg)
 {
-    printf("Could not assemble.\n");
+    fprintf(stderr, "Could not assemble.\n");
 
     // Reduce all of the source line's spaces to tabs so it takes less space and so the
     // karet lines up with the current token properly
@@ -3776,18 +3430,18 @@ void ExitOnCodeError(char *pstrErrorMssg)
 
     // Print the offending source line
 
-    printf("%s", pstrSourceLine);
+    fprintf(stderr, "%s", pstrSourceLine);
 
     // Print a karet at the start of the(presumably) offending lexeme
 
     for (size_t iCurrSpace = 0; iCurrSpace < g_Lexer.Index0; ++iCurrSpace)
-        printf(" ");
-    printf("^\n");
+       fprintf(stderr, " ");
+    fprintf(stderr, "^\n");
 
     // Print the message
-    printf("Error: %s (Line %d).\n", pstrErrorMssg, g_Lexer.CurrSourceLine + 1);
+    fprintf(stderr, "Error: %s (Line %d).\n", pstrErrorMssg, g_Lexer.CurrSourceLine + 1);
 
-    ExitProgram();
+    ASM_ExitProgram();
 }
 
 /******************************************************************************************
@@ -3801,5 +3455,5 @@ void ExitOnCharExpectedError(char cChar)
 {
     char pstrErrorMesg[16];
     sprintf(pstrErrorMesg, "'%c' expected", cChar);
-    ExitOnCodeError(pstrErrorMesg);
+    ASM_ExitOnCodeError(pstrErrorMesg);
 }

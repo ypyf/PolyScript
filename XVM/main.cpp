@@ -58,6 +58,20 @@ static void average(int iThreadIndex)
     XVM_ReturnIntFromHost(iThreadIndex, sum / n);
 }
 
+static void h_PrintString(int iThreadIndex)
+{
+	char* str = XVM_GetParamAsString(iThreadIndex, 0);
+	puts(str);
+	XVM_ReturnFromHost(iThreadIndex);
+}
+
+static void h_PrintInt(int iThreadIndex)
+{
+	int i = XVM_GetParamAsInt(iThreadIndex, 0);
+	printf("%d\n", i);
+	XVM_ReturnFromHost(iThreadIndex);
+}
+
 // ----XVM Entry Main ----------------------------------------------------------------------------------
 
 int RunScript(char* pstrFilename)
@@ -65,17 +79,17 @@ int RunScript(char* pstrFilename)
     char ExecFileName[MAX_PATH];
 
     // 构造 .XSE 文件名
-    if (strstr(pstrFilename, XASM_SRC_FILE_EXT))
+    if (strstr(pstrFilename, XSS_FILE_EXT))
     {
         int ExtOffset = strrchr(pstrFilename, '.') - pstrFilename;
         strncpy(ExecFileName, pstrFilename, ExtOffset);
         ExecFileName[ExtOffset] = '\0';
-        strcat(ExecFileName, XVM_EXEC_FILE_EXT);
+        strcat(ExecFileName, XSE_FILE_EXT);
 
         // 编译
 		XVM_CompileScript(pstrFilename, ExecFileName);
     }
-    else if (strstr(pstrFilename, XVM_EXEC_FILE_EXT))
+    else if (strstr(pstrFilename, XSE_FILE_EXT))
     {
         strcpy(ExecFileName, pstrFilename);
     }
@@ -89,7 +103,8 @@ int RunScript(char* pstrFilename)
     XVM_Init();
 
     // 注册宿主api
-	if (!XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "average", average))
+	XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "PrintInt", h_PrintInt);
+	if (!XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "PrintString", h_PrintString))
     {
         printf("Register Host API Failed!");
         exit(1);
@@ -102,7 +117,7 @@ int RunScript(char* pstrFilename)
     int iErrorCode;
 
     // Load the demo script
-    iErrorCode = XVM_LoadScript(ExecFileName, iThreadIndex, XVM_THREAD_PRIORITY_USER);
+    iErrorCode = XVM_LoadXSE(ExecFileName, iThreadIndex, XVM_THREAD_PRIORITY_USER);
 
     // Check for an error
     if (iErrorCode != XVM_LOAD_OK)
