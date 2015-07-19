@@ -1,7 +1,7 @@
 ﻿#define _XVM_SOURCE
 
-#include "xvm-internal.h"
 #include "bytecode.h"
+#include "xvm-internal.h"
 #include "xvm.h"
 #include "compiler/xsc.h"
 #include "mathlib.h"
@@ -1177,7 +1177,6 @@ static void ExecuteScript(int iTimesliceDur)
             // they only work with integers and floats (except Not, which works with
             // integers only). Any other destination data type will be ignored.
 
-        case INSTR_THISCALL:
         case INSTR_NEG:
         case INSTR_NOT:
         case INSTR_INC:
@@ -1194,13 +1193,6 @@ static void ExecuteScript(int iTimesliceDur)
 
                 switch (iOpcode)
                 {
-                case INSTR_THISCALL:
-                    {
-                        //Value& val = allocate_object(g_Scripts[g_CurrThread]._ThisVal);
-                        //Push(g_CurrThread, val);
-                    }
-                    break;
-
                 case INSTR_SQRT:
 
                     if (Dest.Type == OP_TYPE_INT)
@@ -1534,8 +1526,47 @@ static void ExecuteScript(int iTimesliceDur)
                 break;
             }
 
-            // ----The Function Call Interface
+		case INSTR_ICONST_0:
+			{
+				// PUSH 0
+				Value Source;
+				Source.Type = OP_TYPE_INT;
+				Source.Fixnum = 0;
+				Push(g_CurrThread, Source);
+				break;
+			}
 
+		case INSTR_ICONST_1:
+			{
+				// PUSH 1
+				Value Source;
+				Source.Type = OP_TYPE_INT;
+				Source.Fixnum = 1;
+				Push(g_CurrThread, Source);
+				break;
+			}
+
+		case INSTR_FCONST_0:
+			{
+				// PUSH 1
+				Value Source;
+				Source.Type = OP_TYPE_FLOAT;
+				Source.Realnum = 0.f;
+				Push(g_CurrThread, Source);
+				break;
+			}
+
+		case INSTR_FCONST_1:
+			{
+				// PUSH 1
+				Value Source;
+				Source.Type = OP_TYPE_FLOAT;
+				Source.Realnum = 1.f;
+				Push(g_CurrThread, Source);
+				break;
+			}
+
+            // ----The Function Call Interface
         case INSTR_CALL:
             {
                 Value oprand = ResolveOpValue(0);
@@ -1696,6 +1727,10 @@ static void ExecuteScript(int iTimesliceDur)
                 Push(g_CurrThread, val);
                 break;
             }
+
+		case INSTR_NOP:
+			// 空指令，消耗一个指令周期
+			break;
 
         case INSTR_PAUSE:
             {
@@ -1952,14 +1987,12 @@ static void RunGC(Script *pScript)
 
 void CopyValue(Value *pDest, Value Source)
 {
-	// 对象浅拷贝
-
     // If the destination already contains a string, make sure to free it first
 
     if (pDest->Type == OP_TYPE_STRING)
         free(pDest->String);
 
-    // Copy the object
+    // Copy the object (浅拷贝)
 
     *pDest = Source;
 

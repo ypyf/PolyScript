@@ -1,7 +1,7 @@
 ﻿/* 汇编器 */
+
 #include "xasm.h"
 #include "bytecode.h"
-
 
 // ------------Disable deprecation
 #define _CRT_SECURE_NO_WARNINGS
@@ -1222,6 +1222,12 @@ void InitInstrTable()
 
     iInstrIndex = AddInstrLookup("Ret", INSTR_RET, 0);
 
+	// push const
+	AddInstrLookup("IConst0", INSTR_ICONST_0, 0);
+	AddInstrLookup("IConst1", INSTR_ICONST_1, 0);
+	AddInstrLookup("IConst1", INSTR_FCONST_0, 0);
+	AddInstrLookup("IConst1", INSTR_FCONST_1, 0);
+
     // Clone Object
     iInstrIndex = AddInstrLookup("ThisCall", INSTR_THISCALL, 1);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_ATTR_NAME);
@@ -1232,6 +1238,8 @@ void InitInstrTable()
     //SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_HOST_API_CALL);
 
     // ----Miscellaneous
+
+	AddInstrLookup("Nop", INSTR_NOP, 0);
 
     // Pause        Duration
 
@@ -1244,12 +1252,12 @@ void InitInstrTable()
 
     // Exit         Code
 
-    iInstrIndex = AddInstrLookup("Exit", INSTR_EXIT, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+    //iInstrIndex = AddInstrLookup("Exit", INSTR_EXIT, 1);
+    //SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
+    //    OP_FLAG_TYPE_FLOAT |
+    //    OP_FLAG_TYPE_STRING |
+    //    OP_FLAG_TYPE_MEM_REF |
+    //    OP_FLAG_TYPE_REG);
 }
 
 /******************************************************************************************

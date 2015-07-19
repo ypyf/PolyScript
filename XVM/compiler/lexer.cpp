@@ -44,18 +44,6 @@ OpState g_OpChars2[MAX_OP_STATE_COUNT] = { { '=', 0, 0, 33 }, { '=', 0, 0, 34 } 
 
 char cDelims[MAX_DELIM_COUNT] = { ',', '(', ')', '[', ']', '{', '}', ';' };
 
-// ---- Function Prototypes -------------------------------------------------------------------
-
-int GetOpStateIndex(char cChar, int iCharIndex, int iSubStateIndex, int iSubStateCount);
-int IsCharOpChar(char cChar, int iCharIndex);
-OpState GetOpState(int iCharIndex, int iStateIndex);
-int IsCharDelim(char cChar);
-int IsCharWhitespace(char cChar);
-int IsCharNumeric(char cChar);
-int IsCharIdent(char cChar);
-
-char GetNextChar();
-
 // ---- Functions -----------------------------------------------------------------------------
 
 /******************************************************************************************
@@ -236,6 +224,30 @@ OpState GetOpState(int iCharIndex, int iStateIndex)
 	}
 
 	return State;
+}
+
+
+int IsAssignOp(int iOp)
+{
+	switch (iOp)
+	{
+	case OP_TYPE_ASSIGN:
+	case OP_TYPE_ASSIGN_ADD:
+	case OP_TYPE_ASSIGN_SUB:
+	case OP_TYPE_ASSIGN_MUL:
+	case OP_TYPE_ASSIGN_DIV:
+	case OP_TYPE_ASSIGN_MOD:
+	case OP_TYPE_ASSIGN_EXP:
+	case OP_TYPE_ASSIGN_CONCAT:
+	case OP_TYPE_ASSIGN_AND:
+	case OP_TYPE_ASSIGN_OR:
+	case OP_TYPE_ASSIGN_XOR:
+	case OP_TYPE_ASSIGN_SHIFT_LEFT:
+	case OP_TYPE_ASSIGN_SHIFT_RIGHT:
+		return TRUE;
+	default:
+		return FALSE;
+	}
 }
 
 /******************************************************************************************

@@ -796,8 +796,7 @@ void ParseExpr ()
 
 			// Generate the outcome for falsehood
 
-			iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-			AddIntICodeOp ( g_iCurrScope, iInstrIndex, 0 );
+			AddICodeInstr(g_iCurrScope, INSTR_ICONST_0);
 
 			// Generate a jump past the true outcome
 
@@ -810,8 +809,7 @@ void ParseExpr ()
 
 			// Generate the outcome for truth
 
-			iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-			AddIntICodeOp ( g_iCurrScope, iInstrIndex, 1 );
+			AddICodeInstr(g_iCurrScope, INSTR_ICONST_1);
 
 			// Set the jump target for exiting the operand evaluation
 
@@ -846,10 +844,9 @@ void ParseExpr ()
 					AddIntICodeOp ( g_iCurrScope, iInstrIndex, 0 );
 					AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex );
 
-					// Push 1
+					// Push 1	返回的是布尔值0
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-					AddIntICodeOp ( g_iCurrScope, iInstrIndex, 1 );
+					AddICodeInstr(g_iCurrScope, INSTR_ICONST_1);
 
 					// Jmp Exit
 
@@ -860,10 +857,9 @@ void ParseExpr ()
 
 					AddICodeJumpTarget ( g_iCurrScope, iFalseJumpTargetIndex );
 
-					// Push 0
+					// Push 0	 返回的是布尔值0
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-					AddIntICodeOp ( g_iCurrScope, iInstrIndex, 0 );
+					AddICodeInstr(g_iCurrScope, INSTR_ICONST_0);
 
 					// L1: (Exit)
 
@@ -1178,10 +1174,12 @@ void ParseFactor ()
 	{
 		// It's a true or false constant, so push either 0 and 1 onto the stack
 
-	case TOKEN_TYPE_RSRVD_TRUE:
 	case TOKEN_TYPE_RSRVD_FALSE:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-		AddIntICodeOp ( g_iCurrScope, iInstrIndex, GetCurrToken () == TOKEN_TYPE_RSRVD_TRUE ? 1 : 0 );
+		AddICodeInstr(g_iCurrScope, INSTR_ICONST_0);
+		break;
+
+	case TOKEN_TYPE_RSRVD_TRUE:
+		AddICodeInstr(g_iCurrScope, INSTR_ICONST_1);
 		break;
 
 		// It's an integer literal, so push it onto the stack
@@ -1695,6 +1693,7 @@ void ParseReturn()
 	g_iGotReturnStmt = TRUE;
 }
 
+
 /******************************************************************************************
 *
 *   ParseAssign ()
@@ -1746,7 +1745,7 @@ void ParseAssign ()
 
 		// Parse the index as an expression
 
-		ParseExpr ();
+		ParseExpr();
 
 		// Make sure the index is closed
 
@@ -1766,27 +1765,14 @@ void ParseAssign ()
 
 	// ---- Parse the assignment operator
 
-	if ( GetNextToken () != TOKEN_TYPE_OP &&
-		( GetCurrOp () != OP_TYPE_ASSIGN &&
-		GetCurrOp () != OP_TYPE_ASSIGN_ADD &&
-		GetCurrOp () != OP_TYPE_ASSIGN_SUB &&
-		GetCurrOp () != OP_TYPE_ASSIGN_MUL &&
-		GetCurrOp () != OP_TYPE_ASSIGN_DIV &&
-		GetCurrOp () != OP_TYPE_ASSIGN_MOD &&
-		GetCurrOp () != OP_TYPE_ASSIGN_EXP &&
-		GetCurrOp () != OP_TYPE_ASSIGN_CONCAT &&
-		GetCurrOp () != OP_TYPE_ASSIGN_AND &&
-		GetCurrOp () != OP_TYPE_ASSIGN_OR &&
-		GetCurrOp () != OP_TYPE_ASSIGN_XOR &&
-		GetCurrOp () != OP_TYPE_ASSIGN_SHIFT_LEFT &&
-		GetCurrOp () != OP_TYPE_ASSIGN_SHIFT_RIGHT ) )
-		ExitOnCodeError ( "Illegal assignment operator" );
+	if (GetNextToken() != TOKEN_TYPE_OP && !IsAssignOp(GetCurrOp()))
+		ExitOnCodeError("Illegal assignment operator");
 	else
-		iAssignOp = GetCurrOp ();
+		iAssignOp = GetCurrOp();
 
 	// ---- Parse the value expression
 
-	ParseExpr ();
+	ParseExpr();
 
 	// Validate the presence of the semicolon
 

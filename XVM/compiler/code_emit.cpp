@@ -9,9 +9,10 @@ FILE * g_pOutputFile = NULL;                        // Pointer to the output fil
 
 // These mnemonics are mapped to each I-code instruction, allowing the emitter to
 // easily translate I-code to XVM assembly
-
+// 每个助记符的位置与指令常量必须相等
 char ppstrMnemonics[][12] =
 {
+	"nop",
 	"mov",
 	"add", "sub", "mul", "div", "mod", "exp", "neg", "inc", "dec",
 	"and", "or", "xor", "not", "shl", "shr",
@@ -20,6 +21,7 @@ char ppstrMnemonics[][12] =
 	"push", "pop",
 	"call", "ret",
 	"pause",
+	"iconst0", "iconst1", "fconst0", "fconst1",
 };
 
 // ---- Functions -----------------------------------------------------------------------------

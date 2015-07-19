@@ -72,6 +72,14 @@ static void h_PrintInt(int iThreadIndex)
 	XVM_ReturnFromHost(iThreadIndex);
 }
 
+static void h_Division(int iThreadIndex)
+{
+	float i = XVM_GetParamAsFloat(iThreadIndex, 0);
+	float j = XVM_GetParamAsFloat(iThreadIndex, 1);
+	printf("%f\n", i / j);
+	XVM_ReturnFromHost(iThreadIndex);
+}
+
 // ----XVM Entry Main ----------------------------------------------------------------------------------
 
 int RunScript(char* pstrFilename)
@@ -104,6 +112,7 @@ int RunScript(char* pstrFilename)
 
     // 注册宿主api
 	XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "PrintInt", h_PrintInt);
+	XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "Division", h_Division);
 	if (!XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "PrintString", h_PrintString))
     {
         printf("Register Host API Failed!");

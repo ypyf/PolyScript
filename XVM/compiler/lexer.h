@@ -167,6 +167,7 @@ void ResetLexer();
 void CopyLexerState(LexerState & pDestState, LexerState & pSourceState);
 
 int GetOpStateIndex(char cChar, int iCharIndex, int iSubStateIndex, int iSubStateCount);
+int IsAssignOp(int iOp);
 int IsCharOpChar(char cChar, int iCharIndex);
 OpState GetOpState(int iCharIndex, int iStateIndex);
 int IsCharDelim(char cChar);
