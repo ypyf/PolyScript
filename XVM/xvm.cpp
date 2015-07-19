@@ -355,7 +355,7 @@ time_t XVM_GetSourceTimestamp(const char* filename)
 
 /******************************************************************************************
 *
-*    XVM_LoadScript()
+*    XVM_LoadXSE()
 *
 *    Loads an .XSE file into memory.
 */

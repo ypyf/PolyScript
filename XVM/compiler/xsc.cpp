@@ -220,39 +220,3 @@ void XSC_CompileScript(char* pstrFilename, char* pstrExecFilename)
 		fprintf(stderr, "unexpected script file name: %s.\n", g_pstrSourceFilename);
 	}
 }
-
-//int main( int argc, char * argv [] )
-//{
-//	// Verify the filenames
-//
-//	VerifyFilenames( argc, argv );
-//
-//	// Initialize the compiler
-//
-//	Init();
-//
-//	// ---- Begin the compilation process (front end)
-//
-//	// Load the source file into memory
-//
-//	LoadSourceFile ();
-//
-//	// Preprocess the source file
-//
-//	PreprocessSourceFile ();
-//
-//	// ---- Compile the source code to I-code
-//
-//	printf ( "Compiling %s...\n\n", g_pstrSourceFilename );
-//	CompileSourceFile ();
-//
-//	// ---- Emit XVM assembly from the I-code representation (back end)
-//
-//	EmitCode ();
-//
-//	// Free resources and perform general cleanup
-//
-//	ShutDown ();
-//
-//	return 0;
-//}
