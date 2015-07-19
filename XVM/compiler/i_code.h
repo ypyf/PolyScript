@@ -13,7 +13,7 @@
 // ---- I-Code Node Types -----------------------------------------------------------------
 
 #define ICODE_NODE_INSTR        0               // An I-code instruction
-#define ICODE_NODE_SOURCE_LINE  1               // Source-code annotation
+#define ICODE_NODE_ANNOTATION_LINE  1               // Source-code annotation
 #define ICODE_NODE_JUMP_TARGET  2               // A jump target
 
 //// ---- I-Code Instruction Opcodes --------------------------------------------------------
@@ -116,7 +116,7 @@ ICodeNode;
 
 ICodeNode * GetICodeNodeByImpIndex(int iFuncIndex, int iInstrIndex);
 
-void AddICodeSourceLine(int iFuncIndex, char * pstrSourceLine);
+void AddICodeAnnotationLine(int iFuncIndex, char * pstrSourceLine);
 
 int AddICodeInstr(int iFuncIndex, int iOpcode);
 Op * GetICodeOpByIndex(ICodeNode * pInstr, int iOpIndex);

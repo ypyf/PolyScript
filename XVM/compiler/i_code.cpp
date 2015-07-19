@@ -57,7 +57,7 @@ ICodeNode * GetICodeNodeByImpIndex(int iFuncIndex, int iInstrIndex)
 *   Adds a line of source code annotation to the I-code stream of the specified function.
 */
 
-void AddICodeSourceLine(int iFuncIndex, char * pstrSourceLine)
+void AddICodeAnnotationLine(int iFuncIndex, char * pstrSourceLine)
 {
 	// Get the function to which the source line should be added
 
@@ -69,7 +69,7 @@ void AddICodeSourceLine(int iFuncIndex, char * pstrSourceLine)
 
 	// Set the node type to source line
 
-	pSourceLineNode->iType = ICODE_NODE_SOURCE_LINE;
+	pSourceLineNode->iType = ICODE_NODE_ANNOTATION_LINE;
 
 	// Set the source line string pointer
 

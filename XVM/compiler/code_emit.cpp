@@ -224,11 +224,13 @@ void EmitFunc(FuncNode * pFunc)
 			{
 				// Source code annotation
 
-			case ICODE_NODE_SOURCE_LINE:
+			case ICODE_NODE_ANNOTATION_LINE:
 			{
 				// Make a local copy of the source line
 
 				char * pstrSourceLine = pCurrNode->pstrSourceLine;
+
+				// TODO 去掉源代码行前面的缩进
 
 				// If the last character of the line is a line break, clip it
 

@@ -392,7 +392,7 @@ void ParseStatement ()
 
 				// Annotate the line and parse the call
 
-				AddICodeSourceLine ( g_iCurrScope, GetCurrSourceLine () );
+				AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
 				ParseFuncCall ();
 
 				// Verify the presence of the semicolon
@@ -1404,7 +1404,7 @@ void ParseIf ()
 
 	// Annotate the line
 
-	AddICodeSourceLine ( g_iCurrScope, GetCurrSourceLine () );
+	AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
 
 	// Create a jump target to mark the beginning of the false block
 
@@ -1493,7 +1493,7 @@ void ParseWhile ()
 
 	// Annotate the line
 
-	AddICodeSourceLine ( g_iCurrScope, GetCurrSourceLine () );
+	AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
 
 	// Get two jump targets; for the top and bottom of the loop
 
@@ -1573,7 +1573,7 @@ void ParseFor ()
 
 	// Annotate the line
 
-	AddICodeSourceLine ( g_iCurrScope, GetCurrSourceLine () );
+	AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
 
 	/*
 	A for loop parser implementation could go here
@@ -1596,7 +1596,7 @@ void ParseBreak ()
 
 	// Annotate the line
 
-	AddICodeSourceLine ( g_iCurrScope, GetCurrSourceLine () );
+	AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
 
 	// Attempt to read the semicolon
 
@@ -1628,7 +1628,7 @@ void ParseContinue ()
 
 	// Annotate the line
 
-	AddICodeSourceLine ( g_iCurrScope, GetCurrSourceLine () );
+	AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
 
 	// Attempt to read the semicolon
 
@@ -1667,7 +1667,7 @@ void ParseReturn()
 
 	// Annotate the line
 
-	AddICodeSourceLine ( g_iCurrScope, GetCurrSourceLine () );
+	AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
 
 	// If a semicolon doesn't appear to follow, parse the expression and place it in
 	// _RetVal
@@ -1718,7 +1718,7 @@ void ParseAssign ()
 
 	// Annotate the line
 
-	AddICodeSourceLine ( g_iCurrScope, GetCurrSourceLine () );
+	AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
 
 	// ---- Parse the variable or array
 
