@@ -36,7 +36,7 @@
 #define OP_TYPE_REL_STACK_INDEX             4           // Relative stack index
 #define OP_TYPE_INSTR_INDEX                 5           // Instruction index
 #define OP_TYPE_FUNC_INDEX                  6           // Function index
-#define OP_TYPE_HOST_API_CALL_INDEX         7           // Host API call index
+#define OP_TYPE_HOST_CALL_INDEX				7           // Host API call index
 #define OP_TYPE_REG                         8           // Register
 #define OP_TYPE_STACK_BASE_MARKER           9           // 从C函数调用脚本中的函数，返回时这个标志被检测到
 #define OP_TYPE_OBJECT                      10          // Object type

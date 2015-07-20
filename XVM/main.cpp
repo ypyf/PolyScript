@@ -46,37 +46,37 @@ void print_error_message(int iErrorCode)
 // ----Host API ------------------------------------------------------------------------------
 
 /* 打印平均值 */
-static void average(int iThreadIndex)
+static void average(XVM_State* vm)
 {
-    int n = XVM_GetParamCount(iThreadIndex);
+    int n = XVM_GetParamCount(vm);
     int sum = 0;
     for (int i = 0; i < n; i++)
     {
-        sum += XVM_GetParamAsInt(iThreadIndex, i);
+        sum += XVM_GetParamAsInt(vm, i);
     }
-    XVM_ReturnIntFromHost(iThreadIndex, sum / n);
+    XVM_ReturnIntFromHost(vm, sum / n);
 }
 
-static void h_PrintString(int iThreadIndex)
+static void h_PrintString(XVM_State* vm)
 {
-	char* str = XVM_GetParamAsString(iThreadIndex, 0);
+	char* str = XVM_GetParamAsString(vm, 0);
 	puts(str);
-	XVM_ReturnFromHost(iThreadIndex);
+	XVM_ReturnFromHost(vm);
 }
 
-static void h_PrintInt(int iThreadIndex)
+static void h_PrintInt(XVM_State* vm)
 {
-	int i = XVM_GetParamAsInt(iThreadIndex, 0);
-	printf("%d\n", i);
-	XVM_ReturnFromHost(iThreadIndex);
+	int i = XVM_GetParamAsInt(vm, 0);
+	printf("Explode %d!\n", i);
+	XVM_ReturnFromHost(vm);
 }
 
-static void h_Division(int iThreadIndex)
+static void h_Division(XVM_State* vm)
 {
-	float i = XVM_GetParamAsFloat(iThreadIndex, 0);
-	float j = XVM_GetParamAsFloat(iThreadIndex, 1);
+	float i = XVM_GetParamAsFloat(vm, 0);
+	float j = XVM_GetParamAsFloat(vm, 1);
 	printf("%f\n", i / j);
-	XVM_ReturnFromHost(iThreadIndex);
+	XVM_ReturnFromHost(vm);
 }
 
 // ----XVM Entry Main ----------------------------------------------------------------------------------
@@ -84,21 +84,25 @@ static void h_Division(int iThreadIndex)
 int RunScript(char* pstrFilename)
 {
     char ExecFileName[MAX_PATH];
+	char inputFilename[MAX_PATH];
+
+	strcpy(inputFilename, pstrFilename);
+	strupr(inputFilename);
 
     // 构造 .XSE 文件名
-    if (strstr(pstrFilename, XSS_FILE_EXT))
+    if (strstr(inputFilename, XSS_FILE_EXT))
     {
-        int ExtOffset = strrchr(pstrFilename, '.') - pstrFilename;
-        strncpy(ExecFileName, pstrFilename, ExtOffset);
+        int ExtOffset = strrchr(inputFilename, '.') - inputFilename;
+        strncpy(ExecFileName, inputFilename, ExtOffset);
         ExecFileName[ExtOffset] = '\0';
         strcat(ExecFileName, XSE_FILE_EXT);
 
         // 编译
-		XVM_CompileScript(pstrFilename, ExecFileName);
+		XVM_CompileScript(inputFilename, ExecFileName);
     }
-    else if (strstr(pstrFilename, XSE_FILE_EXT))
+    else if (strstr(inputFilename, XSE_FILE_EXT))
     {
-        strcpy(ExecFileName, pstrFilename);
+        strcpy(ExecFileName, inputFilename);
     }
     else
     {
@@ -107,10 +111,10 @@ int RunScript(char* pstrFilename)
     }
 
     // Initialize the runtime environment
-    XVM_Init();
+    XVM_State* vm = XVM_Create();
 
     // 注册宿主api
-	XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "PrintInt", h_PrintInt);
+	XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "Explode", h_PrintInt);
 	XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "Division", h_Division);
 	if (!XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "PrintString", h_PrintString))
     {
@@ -118,14 +122,11 @@ int RunScript(char* pstrFilename)
         exit(1);
     }
 
-    // Declare the thread indices
-    int iThreadIndex;
-
     // An error code
     int iErrorCode;
 
     // Load the demo script
-    iErrorCode = XVM_LoadXSE(ExecFileName, iThreadIndex, XVM_THREAD_PRIORITY_USER);
+    iErrorCode = XVM_LoadXSE(vm, ExecFileName);
 
     // Check for an error
     if (iErrorCode != XVM_LOAD_OK)
@@ -138,19 +139,20 @@ int RunScript(char* pstrFilename)
     //XVM_StartScript(iThreadIndex);
 
     // Run we're loaded script from Main()
-    XVM_RunScript(iThreadIndex, XVM_INFINITE_TIMESLICE);
+    XVM_RunScript(vm, XVM_INFINITE_TIMESLICE);
 
-    int iExitCode = XVM_GetExitCode(iThreadIndex);
+    int iExitCode = XVM_GetExitCode(vm);
 
     // Free resources and perform general cleanup
-    XVM_ShutDown();
+    XVM_ShutDown(vm);
 
     return iExitCode;
 }
 
 int main(int argc, char* argv[])
 {
-    if (argc < 2) {
+    if (argc < 2) 
+	{
         printf("XVM: No input files\n");
         exit(0);
     }

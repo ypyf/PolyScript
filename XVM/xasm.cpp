@@ -38,7 +38,7 @@
 #define XSE_ID_STRING               "XSE0"      // Written to the file to state it's validity
 
 #define VERSION_MAJOR               0           // Major version number
-#define VERSION_MINOR               8           // Minor version number
+#define VERSION_MINOR               7           // Minor version number
 
 // ----Lexer -----------------------------------------------------------------------------
 
@@ -94,7 +94,7 @@ END_OF_TOKEN_STREAM,          // The end of the stream has been reached
 #define OP_TYPE_REL_STACK_INDEX         4           // Relative array index
 #define OP_TYPE_INSTR_INDEX             5           // Instruction index
 #define OP_TYPE_FUNC_INDEX              6           // Function index
-#define OP_TYPE_HOST_API_CALL_INDEX     7           // Host API call index
+#define OP_TYPE_HOST_CALL_INDEX     7           // Host API call index
 #define OP_TYPE_REG                     8           // Register
 
 
@@ -3039,7 +3039,7 @@ void AssmblSourceFile()
                                     // Set the operand type to host API call index and set its
                                     // data field
 
-                                    pOpList[iCurrOpIndex].Type = OP_TYPE_HOST_API_CALL_INDEX;
+                                    pOpList[iCurrOpIndex].Type = OP_TYPE_HOST_CALL_INDEX;
                                     pOpList[iCurrOpIndex].HostAPICallIndex = iIndex;
 
                                 } else {
@@ -3251,7 +3251,7 @@ void BuildXSE(const char* file)
 
                 // Host API call index
 
-            case OP_TYPE_HOST_API_CALL_INDEX:
+            case OP_TYPE_HOST_CALL_INDEX:
                 fwrite(& CurrOp.HostAPICallIndex, sizeof(int), 1, pExecFile);
                 break;
 

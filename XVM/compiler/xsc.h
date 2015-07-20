@@ -23,7 +23,7 @@
 // ---- Program ---------------------------------------------------------------------------
 
 #define VERSION_MAJOR               0           // Major version number
-#define VERSION_MINOR               8           // Minor version number
+#define VERSION_MINOR               7           // Minor version number
 
 // ---- Filename --------------------------------------------------------------------------
 
