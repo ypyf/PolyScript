@@ -24,7 +24,7 @@ void ExitOnError(char * pstrErrorMssg)
 
 /******************************************************************************************
 *
-*   ExitOnCodeError ()
+*   ExitOnCodeError()
 *
 *   Prints an code-related error message and exits.
 */

@@ -55,7 +55,7 @@ void EmitHeader()
 
 /******************************************************************************************
 *
-*   EmitDirectives ()
+*   EmitDirectives()
 *
 *   Emits the script's directives.
 */
@@ -182,7 +182,7 @@ void EmitScopeSymbols(int iScope, int iType)
 
 /******************************************************************************************
 *
-*   EmitFunc ()
+*   EmitFunc()
 *
 *   Emits a function, its local declarations, and its code.
 */
@@ -315,14 +315,14 @@ void EmitFunc(FuncNode * pFunc)
 						// Array index absolute
 
 					case OP_TYPE_ARRAY_INDEX_ABS:
-						fprintf(g_pOutputFile, "%s [ %d ]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
+						fprintf(g_pOutputFile, "%s[%d]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
 							pOp->iOffset);
 						break;
 
 						// Array index variable
 
 					case OP_TYPE_ARRAY_INDEX_VAR:
-						fprintf(g_pOutputFile, "%s [ %s ]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
+						fprintf(g_pOutputFile, "%s[%s]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
 							GetSymbolByIndex(pOp->iOffsetSymbolIndex)->pstrIdent);
 						break;
 
@@ -445,11 +445,11 @@ void EmitCode()
 
 			pCurrFunc = (FuncNode *)pNode->pData;
 
-			if ( ! pCurrFunc->iIsHostAPI )
+			if (! pCurrFunc->iIsHostAPI)
 			{
 				// Is the current function _Main ()?
 
-				if ( stricmp ( pCurrFunc->pstrName, MAIN_FUNC_NAME ) == 0 )
+				if (stricmp (pCurrFunc->pstrName, MAIN_FUNC_NAME) == 0)
 				{
 					// Yes, so save the pointer for later (and don't emit it yet)
 
@@ -459,8 +459,8 @@ void EmitCode()
 				{
 					// No, so emit it
 
-					EmitFunc ( pCurrFunc );
-					fprintf ( g_pOutputFile, "\n\n" );
+					EmitFunc (pCurrFunc);
+					fprintf (g_pOutputFile, "\n\n");
 				}
 			}
 

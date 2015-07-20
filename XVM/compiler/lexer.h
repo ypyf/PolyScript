@@ -69,7 +69,7 @@
 
 #define TOKEN_TYPE_COMMA				34		// ,
 #define TOKEN_TYPE_OPEN_PAREN			35		// (
-#define TOKEN_TYPE_CLOSE_PAREN			36		// )
+#define TOKEN_TYPE_CLOSE_PAREN			36		//)
 #define TOKEN_TYPE_OPEN_BRACE			37		// [
 #define TOKEN_TYPE_CLOSE_BRACE			38		// ]
 #define TOKEN_TYPE_OPEN_CURLY_BRACE		39		// {
@@ -167,7 +167,6 @@ void ResetLexer();
 void CopyLexerState(LexerState & pDestState, LexerState & pSourceState);
 
 int GetOpStateIndex(char cChar, int iCharIndex, int iSubStateIndex, int iSubStateCount);
-int IsAssignOp(int iOp);
 int IsCharOpChar(char cChar, int iCharIndex);
 OpState GetOpState(int iCharIndex, int iStateIndex);
 int IsCharDelim(char cChar);

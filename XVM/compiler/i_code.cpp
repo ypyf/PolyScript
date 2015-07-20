@@ -52,12 +52,12 @@ ICodeNode * GetICodeNodeByImpIndex(int iFuncIndex, int iInstrIndex)
 
 /******************************************************************************************
 *
-*   AddICodeSourceLine ()
+*   AddICodeSourceLine()
 *
 *   Adds a line of source code annotation to the I-code stream of the specified function.
 */
 
-void AddICodeAnnotationLine(int iFuncIndex, char * pstrSourceLine)
+void AddICodeAnnotation(int iFuncIndex, char * pstrSourceLine)
 {
 	// Get the function to which the source line should be added
 
@@ -157,7 +157,7 @@ Op * GetICodeOpByIndex(ICodeNode * pInstr, int iOpIndex)
 
 /******************************************************************************************
 *
-*   AddICodeOp ()
+*   AddICodeOp()
 *
 *   Adds an operand to the specified I-code instruction.
 */
@@ -180,7 +180,7 @@ void AddICodeOp(int iFuncIndex, int iInstrIndex, Op Value)
 
 /******************************************************************************************
 *
-*   AddIntICodeOp ()
+*   AddIntICodeOp()
 *
 *   Adds an integer literal operand to the specified I-code instruction.
 */
@@ -249,7 +249,7 @@ void AddStringICodeOp(int iFuncIndex, int iInstrIndex, int iStringIndex)
 
 /******************************************************************************************
 *
-*   AddVarICodeOp ()
+*   AddVarICodeOp()
 *
 *   Adds a variable operand to the specified I-code instruction.
 */
@@ -272,7 +272,7 @@ void AddVarICodeOp(int iFuncIndex, int iInstrIndex, int iSymbolIndex)
 
 /******************************************************************************************
 *
-*   AddArrayIndexAbsICodeOp ()
+*   AddArrayIndexAbsICodeOp()
 *
 *   Adds an array indexed with a literal integer value operand to the specified I-code
 *   instruction.

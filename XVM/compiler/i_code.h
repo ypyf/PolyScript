@@ -16,50 +16,9 @@
 #define ICODE_NODE_ANNOTATION_LINE  1               // Source-code annotation
 #define ICODE_NODE_JUMP_TARGET  2               // A jump target
 
-//// ---- I-Code Instruction Opcodes --------------------------------------------------------
-//
-//#define INSTR_MOV               0
-//
-//#define INSTR_ADD               1
-//#define INSTR_SUB               2
-//#define INSTR_MUL               3
-//#define INSTR_DIV               4
-//#define INSTR_MOD               5
-//#define INSTR_EXP               6
-//#define INSTR_NEG               7
-//#define INSTR_INC               8
-//#define INSTR_DEC               9
-//
-//#define INSTR_AND               10
-//#define INSTR_OR                11
-//#define INSTR_XOR               12
-//#define INSTR_NOT               13
-//#define INSTR_SHL               14
-//#define INSTR_SHR               15
-//
-//#define INSTR_CONCAT            16
-//#define INSTR_GETCHAR           17
-//#define INSTR_SETCHAR           18
-//
-//#define INSTR_JMP               19
-//#define INSTR_JE                20
-//#define INSTR_JNE               21
-//#define INSTR_JG                22
-//#define INSTR_JL                23
-//#define INSTR_JGE               24
-//#define INSTR_JLE               25
-//
-//#define INSTR_PUSH              26
-//#define INSTR_POP               27
-//
-//#define INSTR_CALL              28
-//#define INSTR_RET               29
-//
-//#define INSTR_PAUSE             30
-//
-//#define INSTR_ICONST0			64		// push 0
+// ---- I-Code Opcode 采用了和执行体（XVM）相同的指令集
 
-// ---- Operand Types ---------------------------------------------------------------------
+// ---- I-Code Operand Types ---------------------------------------------------------------------
 
 #define OP_TYPE_INT                 0           // Integer literal value
 #define OP_TYPE_FLOAT               1           // Floating-point literal value
@@ -69,12 +28,11 @@
 #define OP_TYPE_ARRAY_INDEX_VAR     5           // Array with relative index
 #define OP_TYPE_JUMP_TARGET_INDEX   6           // Jump target index
 #define OP_TYPE_FUNC_INDEX          7           // Function index
-#define OP_TYPE_HOST_FUNC		    8           // Host Function
+//#define OP_TYPE_HOST_FUNC		    8           // Host Function
 #define OP_TYPE_REG                 9           // Register
 
-// ---- Data Structures -----------------------------------------------------------------------
-
-typedef struct _Op                                  // An I-code operand
+ // An I-code operand
+struct Op
 {
 	int iType;                                      // Type
 	union                                           // The value
@@ -89,37 +47,33 @@ typedef struct _Op                                  // An I-code operand
 	};
 	int iOffset;                                    // Immediate offset
 	int iOffsetSymbolIndex;                         // Offset symbol index
-}
-Op;
+};
 
-typedef struct _ICodeInstr                          // An I-code instruction
+struct ICodeInstr                          // An I-code instruction
 {
 	int iOpcode;                                    // Opcode
 	LinkedList OpList;                              // Operand list
-}
-ICodeInstr;
+};
 
-typedef struct _ICodeNode                           // An I-code node
+struct ICodeNode                           // An I-code node
 {
 	int iType;                                      // The node type
 	union
 	{
-		ICodeInstr Instr;                           // The I-code instruction
-		char * pstrSourceLine;                      // The source line with which this
-		// instruction is annotated
-		int iJumpTargetIndex;                       // The jump target index
+		ICodeInstr Instr;                          // The I-code instruction
+		char* pstrSourceLine;                      // The source line with which this instruction is annotated
+		int iJumpTargetIndex;                      // The jump target index
 	};
-}
-ICodeNode;
+};
 
 // ---- Function Prototypes -------------------------------------------------------------------
 
-ICodeNode * GetICodeNodeByImpIndex(int iFuncIndex, int iInstrIndex);
+ICodeNode* GetICodeNodeByImpIndex(int iFuncIndex, int iInstrIndex);
 
-void AddICodeAnnotationLine(int iFuncIndex, char * pstrSourceLine);
+void AddICodeAnnotation(int iFuncIndex, char * pstrSourceLine);
 
 int AddICodeInstr(int iFuncIndex, int iOpcode);
-Op * GetICodeOpByIndex(ICodeNode * pInstr, int iOpIndex);
+Op* GetICodeOpByIndex(ICodeNode * pInstr, int iOpIndex);
 void AddICodeOp(int iFuncIndex, int iInstrIndex, Op Value);
 
 void AddIntICodeOp(int iFuncIndex, int iInstrIndex, int iValue);

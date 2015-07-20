@@ -26,237 +26,260 @@ inline bool IsMainFunc()
 
 /******************************************************************************************
 *
-*   ReadToken ()
+*   ReadToken()
 *
 *   Attempts to read a specific token and prints an error if its not found.
 */
 
-void ReadToken ( Token ReqToken )
+void ReadToken(Token ReqToken)
 {
 	// Determine if the next token is the required one
 
-	if ( GetNextToken() != ReqToken )
+	if (GetNextToken() != ReqToken)
 	{
 		// If not, exit on a specific error
 
 		char pstrErrorMssg [ 256 ];
-		switch ( ReqToken )
+		switch (ReqToken)
 		{
 			// Integer
 
 		case TOKEN_TYPE_INT:
-			strcpy ( pstrErrorMssg, "Integer" );
+			strcpy (pstrErrorMssg, "Integer");
 			break;
 
 			// Float
 
 		case TOKEN_TYPE_FLOAT:
-			strcpy ( pstrErrorMssg, "Float" );
+			strcpy (pstrErrorMssg, "Float");
 			break;
 
 			// Identifier
 
 		case TOKEN_TYPE_IDENT:
-			strcpy ( pstrErrorMssg, "Identifier" );
+			strcpy (pstrErrorMssg, "Identifier");
 			break;
 
 			// var
 
 		case TOKEN_TYPE_RSRVD_VAR:
-			strcpy ( pstrErrorMssg, "var" );
+			strcpy (pstrErrorMssg, "var");
 			break;
 
 			// true
 
 		case TOKEN_TYPE_RSRVD_TRUE:
-			strcpy ( pstrErrorMssg, "true" );
+			strcpy (pstrErrorMssg, "true");
 			break;
 
 			// false
 
 		case TOKEN_TYPE_RSRVD_FALSE:
-			strcpy ( pstrErrorMssg, "false" );
+			strcpy (pstrErrorMssg, "false");
 			break;
 
 			// if
 
 		case TOKEN_TYPE_RSRVD_IF:
-			strcpy ( pstrErrorMssg, "if" );
+			strcpy (pstrErrorMssg, "if");
 			break;
 
 			// else
 
 		case TOKEN_TYPE_RSRVD_ELSE:
-			strcpy ( pstrErrorMssg, "else" );
+			strcpy (pstrErrorMssg, "else");
 			break;
 
 			// break
 
 		case TOKEN_TYPE_RSRVD_BREAK:
-			strcpy ( pstrErrorMssg, "break" );
+			strcpy (pstrErrorMssg, "break");
 			break;
 
 			// continue
 
 		case TOKEN_TYPE_RSRVD_CONTINUE:
-			strcpy ( pstrErrorMssg, "continue" );
+			strcpy (pstrErrorMssg, "continue");
 			break;
 
 			// for
 
 		case TOKEN_TYPE_RSRVD_FOR:
-			strcpy ( pstrErrorMssg, "for" );
+			strcpy (pstrErrorMssg, "for");
 			break;
 
 			// while
 
 		case TOKEN_TYPE_RSRVD_WHILE:
-			strcpy ( pstrErrorMssg, "while" );
+			strcpy (pstrErrorMssg, "while");
 			break;
 
 			// func
 
 		case TOKEN_TYPE_RSRVD_FUNC:
-			strcpy ( pstrErrorMssg, "func" );
+			strcpy (pstrErrorMssg, "func");
 			break;
 
 			// return
 
 		case TOKEN_TYPE_RSRVD_RETURN:
-			strcpy ( pstrErrorMssg, "return" );
+			strcpy (pstrErrorMssg, "return");
 			break;
-
-			// host
-
-		//case TOKEN_TYPE_RSRVD_HOST:
-		//	strcpy ( pstrErrorMssg, "host" );
-		//	break;
 
 			// Operator
 
 		case TOKEN_TYPE_OP:
-			strcpy ( pstrErrorMssg, "Operator" );
+			strcpy (pstrErrorMssg, "Operator");
 			break;
 
 			// Comma
 
 		case TOKEN_TYPE_COMMA:
-			strcpy ( pstrErrorMssg, "," );
+			strcpy (pstrErrorMssg, ",");
 			break;
 
 			// Open parenthesis
 
 		case TOKEN_TYPE_OPEN_PAREN:
-			strcpy ( pstrErrorMssg, "(" );
+			strcpy (pstrErrorMssg, "(");
 			break;
 
 			// Close parenthesis
 
 		case TOKEN_TYPE_CLOSE_PAREN:
-			strcpy ( pstrErrorMssg, ")" );
+			strcpy (pstrErrorMssg, ")");
 			break;
 
 			// Open brace
 
 		case TOKEN_TYPE_OPEN_BRACE:
-			strcpy ( pstrErrorMssg, "[" );
+			strcpy (pstrErrorMssg, "[");
 			break;
 
 			// Close brace
 
 		case TOKEN_TYPE_CLOSE_BRACE:
-			strcpy ( pstrErrorMssg, "]" );
+			strcpy (pstrErrorMssg, "]");
 			break;
 
 			// Open curly brace
 
 		case TOKEN_TYPE_OPEN_CURLY_BRACE:
-			strcpy ( pstrErrorMssg, "{" );
+			strcpy (pstrErrorMssg, "{");
 			break;
 
 			// Close curly brace
 
 		case TOKEN_TYPE_CLOSE_CURLY_BRACE:
-			strcpy ( pstrErrorMssg, "}" );
+			strcpy (pstrErrorMssg, "}");
 			break;
 
 			// Semicolon
 
 		case TOKEN_TYPE_SEMICOLON:
-			strcpy ( pstrErrorMssg, ";" );
+			strcpy (pstrErrorMssg, ";");
 			break;
 
 			// String
 
 		case TOKEN_TYPE_STRING:
-			strcpy ( pstrErrorMssg, "String" );
+			strcpy (pstrErrorMssg, "String");
 			break;
 		}
 
 		// Finish the message
 
-		strcat ( pstrErrorMssg, " expected" );
+		strcat (pstrErrorMssg, " expected");
 
 		// Display the error
 
-		ExitOnCodeError ( pstrErrorMssg );
+		ExitOnCodeError(pstrErrorMssg);
+	}
+}
+
+int IsOpAssign(int iOpType)
+{
+	switch (iOpType)
+	{
+	case OP_TYPE_ASSIGN:
+	case OP_TYPE_ASSIGN_ADD:
+	case OP_TYPE_ASSIGN_SUB:
+	case OP_TYPE_ASSIGN_MUL:
+	case OP_TYPE_ASSIGN_DIV:
+	case OP_TYPE_ASSIGN_MOD:
+	case OP_TYPE_ASSIGN_EXP:
+	case OP_TYPE_ASSIGN_CONCAT:
+	case OP_TYPE_ASSIGN_AND:
+	case OP_TYPE_ASSIGN_OR:
+	case OP_TYPE_ASSIGN_XOR:
+	case OP_TYPE_ASSIGN_SHIFT_LEFT:
+	case OP_TYPE_ASSIGN_SHIFT_RIGHT:
+		return TRUE;
+	default:
+		return FALSE;
 	}
 }
 
 /******************************************************************************************
 *
-*   IsOpRelational ()
+*   IsOpRelational()
 *
 *   Determines if the specified operator is a relational operator.
 */
 
-int IsOpRelational ( int iOpType )
+int IsOpRelational(int iOpType)
 {
-	if ( iOpType != OP_TYPE_EQUAL &&
-		iOpType != OP_TYPE_NOT_EQUAL &&
-		iOpType != OP_TYPE_LESS &&
-		iOpType != OP_TYPE_GREATER &&
-		iOpType != OP_TYPE_LESS_EQUAL &&
-		iOpType != OP_TYPE_GREATER_EQUAL )
-		return FALSE;
-	else
+	switch (iOpType)
+	{
+	case OP_TYPE_EQUAL:
+	case OP_TYPE_NOT_EQUAL:
+	case OP_TYPE_LESS:
+	case OP_TYPE_GREATER:
+	case OP_TYPE_LESS_EQUAL:
+	case OP_TYPE_GREATER_EQUAL:
 		return TRUE;
+	default:
+		return FALSE;
+	}
 }
 
 /******************************************************************************************
 *
-*   IsOpLogical ()
+*   IsOpLogical()
 *
 *   Determines if the specified operator is a logical operator.
 */
 
-int IsOpLogical ( int iOpType )
+int IsOpLogical(int iOpType)
 {
-	if ( iOpType != OP_TYPE_LOGICAL_AND &&
-		iOpType != OP_TYPE_LOGICAL_OR &&
-		iOpType != OP_TYPE_LOGICAL_NOT )
-		return FALSE;
-	else
+	switch (iOpType)
+	{
+	case OP_TYPE_LOGICAL_AND:
+	case OP_TYPE_LOGICAL_OR:
+	case OP_TYPE_LOGICAL_NOT:
 		return TRUE;
+	default:
+		return FALSE;
+	}
 }
 
 /******************************************************************************************
 *
-*   ParseSourceCode ()
+*   ParseSourceCode()
 *
 *   Parses the source code from start to finish, generating a complete I-code
 *   representation.
 */
 
-void ParseSourceCode ()
+void ParseSourceCode()
 {
 	// Reset the lexer
 
-	ResetLexer ();
+	ResetLexer();
 
 	// Initialize the loop stack
 
-	InitStack ( & g_LoopStack );
+	InitStack (& g_LoopStack);
 
 	// Set the current scope to global
 
@@ -264,23 +287,23 @@ void ParseSourceCode ()
 
 	// Parse each line of code
 
-	while ( TRUE )
+	while (TRUE)
 	{
 		// Parse the next statement and ignore an end of file marker
 
-		ParseStatement ();
+		ParseStatement();
 
 		// If we're at the end of the token stream, break the parsing loop
 
-		if ( GetNextToken () == TOKEN_TYPE_END_OF_STREAM )
+		if (GetNextToken() == TOKEN_TYPE_END_OF_STREAM)
 			break;
 		else
-			RewindTokenStream ();
+			RewindTokenStream();
 	}
 
 	// Free the loop stack
 
-	FreeStack ( & g_LoopStack );
+	FreeStack (& g_LoopStack);
 }
 
 /******************************************************************************************
@@ -294,84 +317,84 @@ void ParseStatement ()
 {
 	// If the next token is a semicolon, the statement is empty so return
 
-	if ( GetLookAheadChar () == ';' )
+	if (GetLookAheadChar() == ';')
 	{
-		ReadToken ( TOKEN_TYPE_SEMICOLON );
+		ReadToken(TOKEN_TYPE_SEMICOLON);
 		return;
 	}
 
 	// Determine the initial token of the statement
 
-	Token InitToken = GetNextToken ();
+	Token InitToken = GetNextToken();
 
 	// Branch to a parse function based on the token
 
-	switch ( InitToken )
+	switch (InitToken)
 	{
 		// Unexpected end of file
 
 	case TOKEN_TYPE_END_OF_STREAM:
-		ExitOnCodeError ( "Unexpected end of file" );
+		ExitOnCodeError("Unexpected end of file");
 		break;
 
 		// Block
 
 	case TOKEN_TYPE_OPEN_CURLY_BRACE:
-		ParseBlock ();
+		ParseBlock();
 		break;
 
 		// Variable/array declaration
 
 	case TOKEN_TYPE_RSRVD_VAR:
-		ParseVar ();
+		ParseVar();
 		break;
 
 		// Host API function import
 
 	//case TOKEN_TYPE_RSRVD_HOST:
-	//	ParseHost ();
+	//	ParseHost();
 	//	break;
 
 		// Function definition
 
 	case TOKEN_TYPE_RSRVD_FUNC:
-		ParseFunc ();
+		ParseFunc();
 		break;
 
 		// if block
 
 	case TOKEN_TYPE_RSRVD_IF:
-		ParseIf ();
+		ParseIf();
 		break;
 
 		// while loop block
 
 	case TOKEN_TYPE_RSRVD_WHILE:
-		ParseWhile ();
+		ParseWhile();
 		break;
 
 		// for loop block
 
 	case TOKEN_TYPE_RSRVD_FOR:
-		ParseFor ();
+		ParseFor();
 		break;
 
 		// break
 
 	case TOKEN_TYPE_RSRVD_BREAK:
-		ParseBreak ();
+		ParseBreak();
 		break;
 
 		// continue
 
 	case TOKEN_TYPE_RSRVD_CONTINUE:
-		ParseContinue ();
+		ParseContinue();
 		break;
 
 		// return
 
 	case TOKEN_TYPE_RSRVD_RETURN:
-		ParseReturn ();
+		ParseReturn();
 		break;
 
 		// Assignment or Function Call
@@ -380,30 +403,30 @@ void ParseStatement ()
 		{
 			// What kind of identifier is it?
 
-			if ( GetSymbolByIdent ( GetCurrLexeme (), g_iCurrScope ) )
+			if (GetSymbolByIdent (GetCurrLexeme(), g_iCurrScope))
 			{
 				// It's an identifier, so treat the statement as an assignment
 
-				ParseAssign ();
+				ParseAssign();
 			}
-			else //if ( GetFuncByName ( GetCurrLexeme () ) )
+			else //if (GetFuncByName (GetCurrLexeme()))
 			{
 				// It's a function
 
 				// Annotate the line and parse the call
 
-				AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
-				ParseFuncCall ();
+				AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
+				ParseFuncCall();
 
 				// Verify the presence of the semicolon
 
-				ReadToken ( TOKEN_TYPE_SEMICOLON );
+				ReadToken(TOKEN_TYPE_SEMICOLON);
 			}
 			//else
 			//{
 			//	// It's invalid
 
-			//	ExitOnCodeError ( "Invalid identifier" );
+			//	ExitOnCodeError("Invalid identifier");
 			//}
 
 			break;
@@ -412,40 +435,40 @@ void ParseStatement ()
 		// Anything else is invalid
 
 	default:
-		ExitOnCodeError ( "Unexpected input" );
+		ExitOnCodeError("Unexpected input");
 		break;
 	}
 }
 
 /******************************************************************************************
 *
-*   ParseBlock ()
+*   ParseBlock()
 *
 *   Parses a code block.
 *
 *       { <Statement-List> }
 */
 
-void ParseBlock ()
+void ParseBlock()
 {
 	// Make sure we're not in the global scope
 
-	if ( g_iCurrScope == SCOPE_GLOBAL )
-		ExitOnCodeError ( "Code blocks illegal in global scope" );
+	if (g_iCurrScope == SCOPE_GLOBAL)
+		ExitOnCodeError("Code blocks illegal in global scope");
 
 	// Read each statement until the end of the block
 
-	while ( GetLookAheadChar () != '}' )
-		ParseStatement ();
+	while (GetLookAheadChar() != '}')
+		ParseStatement();
 
 	// Read the closing curly brace
 
-	ReadToken ( TOKEN_TYPE_CLOSE_CURLY_BRACE );
+	ReadToken(TOKEN_TYPE_CLOSE_CURLY_BRACE);
 }
 
 /******************************************************************************************
 *
-*   ParseVar ()
+*   ParseVar()
 *
 *   Parses the declaration of a variable or array and adds it to the symbol table.
 *
@@ -453,16 +476,16 @@ void ParseBlock ()
 *       var <Identifier> [ <Integer> ];
 */
 
-void ParseVar ()
+void ParseVar()
 {
 	// Read an identifier token
 
-	ReadToken ( TOKEN_TYPE_IDENT );
+	ReadToken(TOKEN_TYPE_IDENT);
 
 	// Copy the current lexeme into a local string buffer to save the variable's identifier
 
 	char pstrIdent [ MAX_LEXEME_SIZE ];
-	CopyCurrLexeme ( pstrIdent );
+	CopyCurrLexeme(pstrIdent);
 
 	// Set the size to 1 for a variable (an array will update this value)
 
@@ -470,93 +493,63 @@ void ParseVar ()
 
 	// Is the look-ahead character an open brace?
 
-	if ( GetLookAheadChar () == '[' )
+	if (GetLookAheadChar() == '[')
 	{
 		// Verify the open brace
 
-		ReadToken ( TOKEN_TYPE_OPEN_BRACE );
+		ReadToken(TOKEN_TYPE_OPEN_BRACE);
 
 		// If so, read an integer token
 
-		ReadToken ( TOKEN_TYPE_INT );
+		ReadToken(TOKEN_TYPE_INT);
 
 		// Convert the current lexeme to an integer to get the size
 
-		iSize = atoi ( GetCurrLexeme () );
+		iSize = atoi (GetCurrLexeme());
 
 		// Read the closing brace
 
-		ReadToken ( TOKEN_TYPE_CLOSE_BRACE );
+		ReadToken(TOKEN_TYPE_CLOSE_BRACE);
 	}
 
 	// Add the identifier and size to the symbol table
 
-	if ( AddSymbol ( pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR ) == -1 )
-		ExitOnCodeError ( "Identifier redefinition" );
+	if (AddSymbol(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
+		ExitOnCodeError("Identifier redefinition");
 
 	// Read the semicolon
 
-	ReadToken ( TOKEN_TYPE_SEMICOLON );
+	ReadToken(TOKEN_TYPE_SEMICOLON);
 }
 
 /******************************************************************************************
 *
-*   ParseHostAPIFuncImport ()
-*
-*   Parses the importing of a host API function.
-*
-*       host <Identifier> ();
-*/
-
-//void ParseHost ()
-//{
-//	// Read the host API function name
-//
-//	ReadToken ( TOKEN_TYPE_IDENT );
-//
-//	// Add the function to the function table with the host API flag set
-//
-//	if ( AddFunc ( GetCurrLexeme (), TRUE ) == -1 )
-//		ExitOnCodeError ( "Function redefinition" );
-//
-//	// Make sure the function name is followed with ()
-//
-//	ReadToken ( TOKEN_TYPE_OPEN_PAREN );
-//	ReadToken ( TOKEN_TYPE_CLOSE_PAREN );
-//
-//	// Read the semicolon
-//
-//	ReadToken ( TOKEN_TYPE_SEMICOLON );
-//}
-
-/******************************************************************************************
-*
-*   ParseFunc ()
+*   ParseFunc()
 *
 *   Parses a function.
 *
-*       func <Identifier> ( <Parameter-List> ) <Statement>
+*       func <Identifier> (<Parameter-List>) <Statement>
 */
 
-void ParseFunc ()
+void ParseFunc()
 {
 	// Make sure we're not already in a function
 
-	if ( g_iCurrScope != SCOPE_GLOBAL )
-		ExitOnCodeError ( "Nested functions illegal" );
+	if (g_iCurrScope != SCOPE_GLOBAL)
+		ExitOnCodeError("Nested functions illegal");
 
 	// Read the function name
 
-	ReadToken ( TOKEN_TYPE_IDENT );
+	ReadToken(TOKEN_TYPE_IDENT);
 
 	// Add the non-host API function to the function table and get its index
 
-	int iFuncIndex = AddFunc ( GetCurrLexeme (), FALSE );
+	int iFuncIndex = AddFunc (GetCurrLexeme(), FALSE);
 
 	// Check for a function redefinition
 
-	if ( iFuncIndex == -1 )
-		ExitOnCodeError ( "Function redefinition" );
+	if (iFuncIndex == -1)
+		ExitOnCodeError("Function redefinition");
 
 	// Set the scope to the function
 
@@ -564,18 +557,18 @@ void ParseFunc ()
 
 	// Read the opening parenthesis
 
-	ReadToken ( TOKEN_TYPE_OPEN_PAREN );
+	ReadToken(TOKEN_TYPE_OPEN_PAREN);
 
 	// Use the look-ahead character to determine if the function takes parameters
 
-	if ( GetLookAheadChar () != ')' )
+	if (GetLookAheadChar() != ')')
 	{
 		// If the function being defined is _Main (), flag an error since _Main ()
 		// cannot accept paraemters
 
 		if (IsMainFunc())
 		{
-			ExitOnCodeError ( "Main() cannot accept parameters" );
+			ExitOnCodeError("Main() cannot accept parameters");
 		}
 
 		// Start the parameter count at zero
@@ -588,15 +581,15 @@ void ParseFunc ()
 
 		// Read the parameters
 
-		while ( TRUE )
+		while (TRUE)
 		{
 			// Read the identifier
 
-			ReadToken ( TOKEN_TYPE_IDENT );
+			ReadToken(TOKEN_TYPE_IDENT);
 
 			// Copy the current lexeme to the parameter list array
 
-			CopyCurrLexeme ( ppstrParamList [ iParamCount ] );
+			CopyCurrLexeme(ppstrParamList [ iParamCount ]);
 
 			// Increment the parameter count
 
@@ -604,42 +597,42 @@ void ParseFunc ()
 
 			// Check again for the closing parenthesis to see if the parameter list is done
 
-			if ( GetLookAheadChar () == ')' )
+			if (GetLookAheadChar() == ')')
 				break;
 
 			// Otherwise read a comma and move to the next parameter
 
-			ReadToken ( TOKEN_TYPE_COMMA );
+			ReadToken(TOKEN_TYPE_COMMA);
 		}
 
 		// Set the final parameter count
 
-		SetFuncParamCount ( g_iCurrScope, iParamCount );
+		SetFuncParamCount(g_iCurrScope, iParamCount);
 
 		// Write the parameters to the function's symbol table in reverse order, so they'll
 		// be emitted from right-to-left
 
-		while ( iParamCount > 0 )
+		while (iParamCount > 0)
 		{
 			-- iParamCount;
 
 			// Add the parameter to the symbol table
 
-			AddSymbol ( ppstrParamList [ iParamCount ], 1, g_iCurrScope, SYMBOL_TYPE_PARAM );
+			AddSymbol(ppstrParamList [ iParamCount ], 1, g_iCurrScope, SYMBOL_TYPE_PARAM);
 		}
 	}
 
 	// Read the closing parenthesis
 
-	ReadToken ( TOKEN_TYPE_CLOSE_PAREN );
+	ReadToken(TOKEN_TYPE_CLOSE_PAREN);
 
 	// Read the opening curly brace
 
-	ReadToken ( TOKEN_TYPE_OPEN_CURLY_BRACE );
+	ReadToken(TOKEN_TYPE_OPEN_CURLY_BRACE);
 
 	// Parse the function's body
 
-	ParseBlock ();
+	ParseBlock();
 
 	// 添加返回指令
 	if (!g_iGotReturnStmt)
@@ -678,54 +671,54 @@ void ParseExpr ()
 
 	// Parse the subexpression
 
-	ParseSubExpr ();
+	ParseSubExpr();
 
 	// Parse any subsequent relational or logical operators
 
-	while ( TRUE )
+	while (TRUE)
 	{
 		// Get the next token
 
-		if ( GetNextToken () != TOKEN_TYPE_OP ||
-			( ! IsOpRelational ( GetCurrOp () ) &&
-			! IsOpLogical ( GetCurrOp () ) ) )
+		if (GetNextToken() != TOKEN_TYPE_OP ||
+			(! IsOpRelational (GetCurrOp ()) &&
+			! IsOpLogical (GetCurrOp ())))
 		{
-			RewindTokenStream ();
+			RewindTokenStream();
 			break;
 		}
 
 		// Save the operator
 
-		iOpType = GetCurrOp ();
+		iOpType = GetCurrOp();
 
 		// Parse the second term
 
-		ParseSubExpr ();
+		ParseSubExpr();
 
 		// Pop the first operand into _T1
 
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_POP );
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_POP);
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
 
 		// Pop the second operand into _T0
 
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_POP );
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_POP);
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 
 		// ---- Perform the binary operation associated with the specified operator
 
 		// Determine the operator type
 
-		if ( IsOpRelational ( iOpType ) )
+		if (IsOpRelational (iOpType))
 		{
 			// Get a pair of free jump target indices
 
 			int iTrueJumpTargetIndex = GetNextJumpTargetIndex (),
-				iExitJumpTargetIndex = GetNextJumpTargetIndex ();
+				iExitJumpTargetIndex = GetNextJumpTargetIndex();
 
 			// It's a relational operator
 
-			switch ( iOpType )
+			switch (iOpType)
 			{
 				// Equal
 
@@ -733,7 +726,7 @@ void ParseExpr ()
 				{
 					// Generate a JE instruction
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JE );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JE);
 					break;
 				}
 
@@ -743,7 +736,7 @@ void ParseExpr ()
 				{
 					// Generate a JNE instruction
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JNE );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JNE);
 					break;
 				}
 
@@ -753,7 +746,7 @@ void ParseExpr ()
 				{
 					// Generate a JG instruction
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JG );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JG);
 					break;
 				}
 
@@ -763,7 +756,7 @@ void ParseExpr ()
 				{
 					// Generate a JL instruction
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JL );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JL);
 					break;
 				}
 
@@ -773,7 +766,7 @@ void ParseExpr ()
 				{
 					// Generate a JGE instruction
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JGE );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JGE);
 					break;
 				}
 
@@ -783,16 +776,16 @@ void ParseExpr ()
 				{
 					// Generate a JLE instruction
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JLE );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JLE);
 					break;
 				}
 			}
 
 			// Add the jump instruction's operands (_T0 and _T1)
 
-			AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
-			AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex );
-			AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex );
+			AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+			AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
+			AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex);
 
 			// Generate the outcome for falsehood
 
@@ -800,12 +793,12 @@ void ParseExpr ()
 
 			// Generate a jump past the true outcome
 
-			iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JMP );
-			AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iExitJumpTargetIndex );
+			iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JMP);
+			AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iExitJumpTargetIndex);
 
 			// Set the jump target for the true outcome
 
-			AddICodeJumpTarget ( g_iCurrScope, iTrueJumpTargetIndex );
+			AddICodeJumpTarget (g_iCurrScope, iTrueJumpTargetIndex);
 
 			// Generate the outcome for truth
 
@@ -813,13 +806,13 @@ void ParseExpr ()
 
 			// Set the jump target for exiting the operand evaluation
 
-			AddICodeJumpTarget ( g_iCurrScope, iExitJumpTargetIndex );
+			AddICodeJumpTarget (g_iCurrScope, iExitJumpTargetIndex);
 		}
 		else
 		{
 			// It must be a logical operator
 
-			switch ( iOpType )
+			switch (iOpType)
 			{
 				// And
 
@@ -828,21 +821,21 @@ void ParseExpr ()
 					// Get a pair of free jump target indices
 
 					int iFalseJumpTargetIndex = GetNextJumpTargetIndex (),
-						iExitJumpTargetIndex = GetNextJumpTargetIndex ();
+						iExitJumpTargetIndex = GetNextJumpTargetIndex();
 
 					// JE _T0, 0, True
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JE );
-					AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
-					AddIntICodeOp ( g_iCurrScope, iInstrIndex, 0 );
-					AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JE);
+					AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+					AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+					AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex);
 
 					// JE _T1, 0, True
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JE );
-					AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex );
-					AddIntICodeOp ( g_iCurrScope, iInstrIndex, 0 );
-					AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JE);
+					AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
+					AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+					AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex);
 
 					// Push 1	返回的是布尔值0
 
@@ -850,12 +843,12 @@ void ParseExpr ()
 
 					// Jmp Exit
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JMP );
-					AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iExitJumpTargetIndex );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JMP);
+					AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iExitJumpTargetIndex);
 
 					// L0: (False)
 
-					AddICodeJumpTarget ( g_iCurrScope, iFalseJumpTargetIndex );
+					AddICodeJumpTarget (g_iCurrScope, iFalseJumpTargetIndex);
 
 					// Push 0	 返回的是布尔值0
 
@@ -863,7 +856,7 @@ void ParseExpr ()
 
 					// L1: (Exit)
 
-					AddICodeJumpTarget ( g_iCurrScope, iExitJumpTargetIndex );
+					AddICodeJumpTarget (g_iCurrScope, iExitJumpTargetIndex);
 
 					break;
 				}
@@ -875,44 +868,44 @@ void ParseExpr ()
 					// Get a pair of free jump target indices
 
 					int iTrueJumpTargetIndex = GetNextJumpTargetIndex (),
-						iExitJumpTargetIndex = GetNextJumpTargetIndex ();
+						iExitJumpTargetIndex = GetNextJumpTargetIndex();
 
 					// JNE _T0, 0, True
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JNE );
-					AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
-					AddIntICodeOp ( g_iCurrScope, iInstrIndex, 0 );
-					AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JNE);
+					AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+					AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+					AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex);
 
 					// JNE _T1, 0, True
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JNE );
-					AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex );
-					AddIntICodeOp ( g_iCurrScope, iInstrIndex, 0 );
-					AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JNE);
+					AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
+					AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+					AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex);
 
 					// Push 0
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-					AddIntICodeOp ( g_iCurrScope, iInstrIndex, 0 );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
+					AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
 
 					// Jmp Exit
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JMP );
-					AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iExitJumpTargetIndex );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JMP);
+					AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iExitJumpTargetIndex);
 
 					// L0: (True)
 
-					AddICodeJumpTarget ( g_iCurrScope, iTrueJumpTargetIndex );
+					AddICodeJumpTarget (g_iCurrScope, iTrueJumpTargetIndex);
 
 					// Push 1
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-					AddIntICodeOp ( g_iCurrScope, iInstrIndex, 1 );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
+					AddIntICodeOp (g_iCurrScope, iInstrIndex, 1);
 
 					// L1: (Exit)
 
-					AddICodeJumpTarget ( g_iCurrScope, iExitJumpTargetIndex );
+					AddICodeJumpTarget (g_iCurrScope, iExitJumpTargetIndex);
 
 					break;
 				}
@@ -938,45 +931,45 @@ void ParseSubExpr ()
 
 	// Parse the first term
 
-	ParseTerm ();
+	ParseTerm();
 
 	// Parse any subsequent +, - or $ operators
 
-	while ( TRUE )
+	while (TRUE)
 	{
 		// Get the next token
 
-		if ( GetNextToken () != TOKEN_TYPE_OP ||
-			( GetCurrOp () != OP_TYPE_ADD &&
+		if (GetNextToken() != TOKEN_TYPE_OP ||
+			(GetCurrOp () != OP_TYPE_ADD &&
 			GetCurrOp () != OP_TYPE_SUB &&
-			GetCurrOp () != OP_TYPE_CONCAT ) )
+			GetCurrOp () != OP_TYPE_CONCAT))
 		{
-			RewindTokenStream ();
+			RewindTokenStream();
 			break;
 		}
 
 		// Save the operator
 
-		iOpType = GetCurrOp ();
+		iOpType = GetCurrOp();
 
 		// Parse the second term
 
-		ParseTerm ();
+		ParseTerm();
 
 		// Pop the first operand into _T1
 
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_POP );
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_POP);
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
 
 		// Pop the second operand into _T0
 
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_POP );
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_POP);
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 
 		// Perform the binary operation associated with the specified operator
 
 		int iOpInstr;
-		switch ( iOpType )
+		switch (iOpType)
 		{
 			// Binary addition
 
@@ -996,14 +989,14 @@ void ParseSubExpr ()
 			iOpInstr = INSTR_CONCAT;
 			break;
 		}
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, iOpInstr );
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, iOpInstr);
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
 
 		// Push the result (stored in _T0)
 
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 	}
 }
 
@@ -1024,16 +1017,16 @@ void ParseTerm ()
 
 	// Parse the first factor
 
-	ParseFactor ();
+	ParseFactor();
 
 	// Parse any subsequent *, /, %, ^, &, |, #, << and >> operators
 
-	while ( TRUE )
+	while (TRUE)
 	{
 		// Get the next token
 
-		if ( GetNextToken () != TOKEN_TYPE_OP ||
-			( GetCurrOp () != OP_TYPE_MUL &&
+		if (GetNextToken() != TOKEN_TYPE_OP ||
+			(GetCurrOp () != OP_TYPE_MUL &&
 			GetCurrOp () != OP_TYPE_DIV &&
 			GetCurrOp () != OP_TYPE_MOD &&
 			GetCurrOp () != OP_TYPE_EXP &&
@@ -1041,34 +1034,34 @@ void ParseTerm ()
 			GetCurrOp () != OP_TYPE_BITWISE_OR &&
 			GetCurrOp () != OP_TYPE_BITWISE_XOR &&
 			GetCurrOp () != OP_TYPE_BITWISE_SHIFT_LEFT &&
-			GetCurrOp () != OP_TYPE_BITWISE_SHIFT_RIGHT ) )
+			GetCurrOp () != OP_TYPE_BITWISE_SHIFT_RIGHT))
 		{
-			RewindTokenStream ();
+			RewindTokenStream();
 			break;
 		}
 
 		// Save the operator
 
-		iOpType = GetCurrOp ();
+		iOpType = GetCurrOp();
 
 		// Parse the second factor
 
-		ParseFactor ();
+		ParseFactor();
 
 		// Pop the first operand into _T1
 
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_POP );
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_POP);
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
 
 		// Pop the second operand into _T0
 
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_POP );
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_POP);
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 
 		// Perform the binary operation associated with the specified operator
 
 		int iOpInstr;
-		switch ( iOpType )
+		switch (iOpType)
 		{
 			// Binary multiplication
 
@@ -1124,14 +1117,14 @@ void ParseTerm ()
 			iOpInstr = INSTR_SHR;
 			break;
 		}
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, iOpInstr );
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, iOpInstr);
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
 
 		// Push the result (stored in _T0)
 
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 	}
 }
 
@@ -1150,27 +1143,27 @@ void ParseFactor ()
 
 	// First check for a unary operator
 
-	if ( GetNextToken () == TOKEN_TYPE_OP &&
-		( GetCurrOp () == OP_TYPE_ADD ||
+	if (GetNextToken() == TOKEN_TYPE_OP &&
+		(GetCurrOp () == OP_TYPE_ADD ||
 		GetCurrOp () == OP_TYPE_SUB ||
 		GetCurrOp () == OP_TYPE_BITWISE_NOT ||
-		GetCurrOp () == OP_TYPE_LOGICAL_NOT ) )
+		GetCurrOp () == OP_TYPE_LOGICAL_NOT))
 	{
 		// If it was found, save it and set the unary operator flag
 
 		iUnaryOpPending = TRUE;
-		iOpType = GetCurrOp ();
+		iOpType = GetCurrOp();
 	}
 	else
 	{
 		// Otherwise rewind the token stream
 
-		RewindTokenStream ();
+		RewindTokenStream();
 	}
 
 	// Determine which type of factor we're dealing with based on the next token
 
-	switch ( GetNextToken () )
+	switch (GetNextToken())
 	{
 		// It's a true or false constant, so push either 0 and 1 onto the stack
 
@@ -1185,15 +1178,15 @@ void ParseFactor ()
 		// It's an integer literal, so push it onto the stack
 
 	case TOKEN_TYPE_INT:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-		AddIntICodeOp ( g_iCurrScope, iInstrIndex, atoi ( GetCurrLexeme () ) );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
+		AddIntICodeOp (g_iCurrScope, iInstrIndex, atoi (GetCurrLexeme()));
 		break;
 
 		// It's a float literal, so push it onto the stack
 
 	case TOKEN_TYPE_FLOAT:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-		AddFloatICodeOp ( g_iCurrScope, iInstrIndex, ( float ) atof ( GetCurrLexeme () ) );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
+		AddFloatICodeOp (g_iCurrScope, iInstrIndex, (float) atof (GetCurrLexeme()));
 		break;
 
 		// It's a string literal, so add it to the string table and push the resulting
@@ -1201,9 +1194,9 @@ void ParseFactor ()
 
 	case TOKEN_TYPE_STRING:
 		{
-			int iStringIndex = AddString ( & g_StringTable, GetCurrLexeme () );
-			iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-			AddStringICodeOp ( g_iCurrScope, iInstrIndex, iStringIndex );
+			int iStringIndex = AddString (& g_StringTable, GetCurrLexeme());
+			iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
+			AddStringICodeOp (g_iCurrScope, iInstrIndex, iStringIndex);
 			break;
 		}
 
@@ -1213,59 +1206,59 @@ void ParseFactor ()
 		{
 			// First find out if the identifier is a variable or array
 
-			SymbolNode * pSymbol = GetSymbolByIdent ( GetCurrLexeme (), g_iCurrScope );
-			if ( pSymbol )
+			SymbolNode * pSymbol = GetSymbolByIdent (GetCurrLexeme(), g_iCurrScope);
+			if (pSymbol)
 			{
 				// Does an array index follow the identifier?
 
-				if ( GetLookAheadChar () == '[' )
+				if (GetLookAheadChar() == '[')
 				{
 					// Ensure the variable is an array
 
-					if ( pSymbol->iSize == 1 )
-						ExitOnCodeError ( "Invalid array" );
+					if (pSymbol->iSize == 1)
+						ExitOnCodeError("Invalid array");
 
 					// Verify the opening brace
 
-					ReadToken ( TOKEN_TYPE_OPEN_BRACE );
+					ReadToken(TOKEN_TYPE_OPEN_BRACE);
 
 					// Make sure an expression is present
 
-					if ( GetLookAheadChar () == ']' )
-						ExitOnCodeError ( "Invalid expression" );
+					if (GetLookAheadChar() == ']')
+						ExitOnCodeError("Invalid expression");
 
 					// Parse the index as an expression recursively
 
-					ParseExpr ();
+					ParseExpr();
 
 					// Make sure the index is closed
 
-					ReadToken ( TOKEN_TYPE_CLOSE_BRACE );
+					ReadToken(TOKEN_TYPE_CLOSE_BRACE);
 
 					// Pop the resulting value into _T0 and use it as the index variable
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_POP );
-					AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_POP);
+					AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 
 					// Push the original identifier onto the stack as an array, indexed
 					// with _T0
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-					AddArrayIndexVarICodeOp ( g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar0SymbolIndex );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
+					AddArrayIndexVarICodeOp (g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar0SymbolIndex);
 				}
 				else
 				{
 					// If not, make sure the identifier is not an array, and push it onto
 					// the stack
 
-					if ( pSymbol->iSize == 1 )
+					if (pSymbol->iSize == 1)
 					{
-						iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-						AddVarICodeOp ( g_iCurrScope, iInstrIndex, pSymbol->iIndex );
+						iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
+						AddVarICodeOp (g_iCurrScope, iInstrIndex, pSymbol->iIndex);
 					}
 					else
 					{
-						ExitOnCodeError ( "Arrays must be indexed" );
+						ExitOnCodeError("Arrays must be indexed");
 					}
 				}
 			}
@@ -1274,16 +1267,16 @@ void ParseFactor ()
 				// The identifier wasn't a variable or array, so find out if it's a
 				// function
 
-				if ( GetFuncByName ( GetCurrLexeme () ) )
+				if (GetFuncByName (GetCurrLexeme()))
 				{
 					// It is, so parse the call
 
-					ParseFuncCall ();
+					ParseFuncCall();
 
 					// Push the return value
 
-					iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-					AddRegICodeOp ( g_iCurrScope, iInstrIndex, REG_CODE_RETVAL );
+					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
+					AddRegICodeOp (g_iCurrScope, iInstrIndex, REG_CODE_RETVAL);
 				}
 			}
 
@@ -1294,68 +1287,68 @@ void ParseFactor ()
 		// presence of the closing parenthesis
 
 	case TOKEN_TYPE_OPEN_PAREN:
-		ParseExpr ();
-		ReadToken ( TOKEN_TYPE_CLOSE_PAREN );
+		ParseExpr();
+		ReadToken(TOKEN_TYPE_CLOSE_PAREN);
 		break;
 
 		// Anything else is invalid
 
 	default:
-		ExitOnCodeError ( "Invalid input" );
+		ExitOnCodeError("Invalid input");
 	}
 
 	// Is a unary operator pending?
 
-	if ( iUnaryOpPending )
+	if (iUnaryOpPending)
 	{
 		// If so, pop the result of the factor off the top of the stack
 
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_POP );
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_POP);
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 
 		// Perform the unary operation
 
-		if ( iOpType == OP_TYPE_LOGICAL_NOT )
+		if (iOpType == OP_TYPE_LOGICAL_NOT)
 		{
 			// Get a pair of free jump target indices
 
 			int iTrueJumpTargetIndex = GetNextJumpTargetIndex (),
-				iExitJumpTargetIndex = GetNextJumpTargetIndex ();
+				iExitJumpTargetIndex = GetNextJumpTargetIndex();
 
 			// JE _T0, 0, True
 
-			iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JE );
-			AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
-			AddIntICodeOp ( g_iCurrScope, iInstrIndex, 0 );
-			AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex );
+			iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JE);
+			AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+			AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+			AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex);
 
 			// Push 0
 
-			iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-			AddIntICodeOp ( g_iCurrScope, iInstrIndex, 0 );
+			iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
+			AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
 
 			// Jmp L1
 
-			iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JMP );
-			AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iExitJumpTargetIndex );
+			iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JMP);
+			AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iExitJumpTargetIndex);
 
 			// L0: (True)
 
-			AddICodeJumpTarget ( g_iCurrScope, iTrueJumpTargetIndex );
+			AddICodeJumpTarget (g_iCurrScope, iTrueJumpTargetIndex);
 
 			// Push 1
 
-			iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-			AddIntICodeOp ( g_iCurrScope, iInstrIndex, 1 );
+			iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
+			AddIntICodeOp (g_iCurrScope, iInstrIndex, 1);
 
 			// L1: (Exit)
 
-			AddICodeJumpTarget ( g_iCurrScope, iExitJumpTargetIndex );
+			AddICodeJumpTarget (g_iCurrScope, iExitJumpTargetIndex);
 		}
 		else
 		{
 			int iOpIndex;
-			switch ( iOpType )
+			switch (iOpType)
 			{
 				// Negation
 
@@ -1372,13 +1365,13 @@ void ParseFactor ()
 
 			// Add the instruction's operand
 
-			iInstrIndex = AddICodeInstr ( g_iCurrScope, iOpIndex );
-			AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
+			iInstrIndex = AddICodeInstr (g_iCurrScope, iOpIndex);
+			AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 
 			// Push the result onto the stack
 
-			iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_PUSH );
-			AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
+			iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
+			AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 		}
 	}
 }
@@ -1389,8 +1382,8 @@ void ParseFactor ()
 *
 *   Parses an if block.
 *
-*       if ( <Expression> ) <Statement>
-*       if ( <Expression> ) <Statement> else <Statement>
+*       if (<Expression>) <Statement>
+*       if (<Expression>) <Statement> else <Statement>
 */
 
 void ParseIf ()
@@ -1399,77 +1392,77 @@ void ParseIf ()
 
 	// Make sure we're inside a function
 
-	if ( g_iCurrScope == SCOPE_GLOBAL )
-		ExitOnCodeError ( "if illegal in global scope" );
+	if (g_iCurrScope == SCOPE_GLOBAL)
+		ExitOnCodeError("if illegal in global scope");
 
 	// Annotate the line
 
-	AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
+	AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
 
 	// Create a jump target to mark the beginning of the false block
 
-	int iFalseJumpTargetIndex = GetNextJumpTargetIndex ();
+	int iFalseJumpTargetIndex = GetNextJumpTargetIndex();
 
 	// Read the opening parenthesis
 
-	ReadToken ( TOKEN_TYPE_OPEN_PAREN );
+	ReadToken(TOKEN_TYPE_OPEN_PAREN);
 
 	// Parse the expression and leave the result on the stack
 
-	ParseExpr ();
+	ParseExpr();
 
 	// Read the closing parenthesis
 
-	ReadToken ( TOKEN_TYPE_CLOSE_PAREN );
+	ReadToken(TOKEN_TYPE_CLOSE_PAREN);
 
 	// Pop the result into _T0 and compare it to zero
 
-	iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_POP );
-	AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
+	iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_POP);
+	AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 
 	// If the result is zero, jump to the false target
 
-	iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JE );
-	AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
-	AddIntICodeOp ( g_iCurrScope, iInstrIndex, 0 );
-	AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex );
+	iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JE);
+	AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+	AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+	AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex);
 
 	// Parse the true block
 
-	ParseStatement ();
+	ParseStatement();
 
 	// Look for an else clause
 
-	if ( GetNextToken () == TOKEN_TYPE_RSRVD_ELSE )
+	if (GetNextToken() == TOKEN_TYPE_RSRVD_ELSE)
 	{
 		// If it's found, append the true block with an unconditional jump past the false
 		// block
 
-		int iSkipFalseJumpTargetIndex = GetNextJumpTargetIndex ();
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JMP );
-		AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iSkipFalseJumpTargetIndex );
+		int iSkipFalseJumpTargetIndex = GetNextJumpTargetIndex();
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JMP);
+		AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iSkipFalseJumpTargetIndex);
 
 		// Place the false target just before the false block
 
-		AddICodeJumpTarget ( g_iCurrScope, iFalseJumpTargetIndex );
+		AddICodeJumpTarget (g_iCurrScope, iFalseJumpTargetIndex);
 
 		// Parse the false block
 
-		ParseStatement ();
+		ParseStatement();
 
 		// Set a jump target beyond the false block
 
-		AddICodeJumpTarget ( g_iCurrScope, iSkipFalseJumpTargetIndex );
+		AddICodeJumpTarget (g_iCurrScope, iSkipFalseJumpTargetIndex);
 	}
 	else
 	{
 		// Otherwise, put the token back
 
-		RewindTokenStream ();
+		RewindTokenStream();
 
 		// Place the false target after the true block
 
-		AddICodeJumpTarget ( g_iCurrScope, iFalseJumpTargetIndex );
+		AddICodeJumpTarget (g_iCurrScope, iFalseJumpTargetIndex);
 	}
 }
 
@@ -1479,7 +1472,7 @@ void ParseIf ()
 *
 *   Parses a while loop block.
 *
-*       while ( <Expression> ) <Statement>
+*       while (<Expression>) <Statement>
 */
 
 void ParseWhile ()
@@ -1488,47 +1481,47 @@ void ParseWhile ()
 
 	// Make sure we're inside a function
 
-	if ( g_iCurrScope == SCOPE_GLOBAL )
-		ExitOnCodeError ( "Statement illegal in global scope" );
+	if (g_iCurrScope == SCOPE_GLOBAL)
+		ExitOnCodeError("Statement illegal in global scope");
 
 	// Annotate the line
 
-	AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
+	AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
 
 	// Get two jump targets; for the top and bottom of the loop
 
 	int iStartTargetIndex = GetNextJumpTargetIndex (),
-		iEndTargetIndex = GetNextJumpTargetIndex ();
+		iEndTargetIndex = GetNextJumpTargetIndex();
 
 	// Set a jump target at the top of the loop
 
-	AddICodeJumpTarget ( g_iCurrScope, iStartTargetIndex );
+	AddICodeJumpTarget (g_iCurrScope, iStartTargetIndex);
 
 	// Read the opening parenthesis
 
-	ReadToken ( TOKEN_TYPE_OPEN_PAREN );
+	ReadToken(TOKEN_TYPE_OPEN_PAREN);
 
 	// Parse the expression and leave the result on the stack
 
-	ParseExpr ();
+	ParseExpr();
 
 	// Read the closing parenthesis
 
-	ReadToken ( TOKEN_TYPE_CLOSE_PAREN );
+	ReadToken(TOKEN_TYPE_CLOSE_PAREN);
 
 	// Pop the result into _T0 and jump out of the loop if it's nonzero
 
-	iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_POP );
-	AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
+	iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_POP);
+	AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 
-	iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JE );
-	AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
-	AddIntICodeOp ( g_iCurrScope, iInstrIndex, 0 );
-	AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iEndTargetIndex );
+	iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JE);
+	AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+	AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+	AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iEndTargetIndex);
 
 	// Create a new loop instance structure
 
-	Loop * pLoop = ( Loop * ) malloc ( sizeof ( Loop ) );
+	Loop * pLoop = (Loop *) malloc (sizeof (Loop));
 
 	// Set the starting and ending jump target indices
 
@@ -1537,24 +1530,24 @@ void ParseWhile ()
 
 	// Push the loop structure onto the stack
 
-	Push ( & g_LoopStack, pLoop );
+	Push (& g_LoopStack, pLoop);
 
 	// Parse the loop body
 
-	ParseStatement ();
+	ParseStatement();
 
 	// Pop the loop instance off the stack
 
-	Pop ( & g_LoopStack );
+	Pop (& g_LoopStack);
 
 	// Unconditionally jump back to the start of the loop
 
-	iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JMP );
-	AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iStartTargetIndex );
+	iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JMP);
+	AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iStartTargetIndex);
 
 	// Set a jump target for the end of the loop
 
-	AddICodeJumpTarget ( g_iCurrScope, iEndTargetIndex );
+	AddICodeJumpTarget (g_iCurrScope, iEndTargetIndex);
 }
 
 /******************************************************************************************
@@ -1563,17 +1556,17 @@ void ParseWhile ()
 *
 *   Parses a for loop block.
 *
-*       for ( <Initializer>; <Condition>; <Perpetuator> ) <Statement>
+*       for (<Initializer>; <Condition>; <Perpetuator>) <Statement>
 */
 
 void ParseFor ()
 {
-	if ( g_iCurrScope == SCOPE_GLOBAL )
-		ExitOnCodeError ( "for illegal in global scope" );
+	if (g_iCurrScope == SCOPE_GLOBAL)
+		ExitOnCodeError("for illegal in global scope");
 
 	// Annotate the line
 
-	AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
+	AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
 
 	/*
 	A for loop parser implementation could go here
@@ -1591,25 +1584,25 @@ void ParseBreak ()
 {
 	// Make sure we're in a loop
 
-	if ( IsStackEmpty ( & g_LoopStack ) )
-		ExitOnCodeError ( "break illegal outside loops" );
+	if (IsStackEmpty (& g_LoopStack))
+		ExitOnCodeError("break illegal outside loops");
 
 	// Annotate the line
 
-	AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
+	AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
 
 	// Attempt to read the semicolon
 
-	ReadToken ( TOKEN_TYPE_SEMICOLON );
+	ReadToken(TOKEN_TYPE_SEMICOLON);
 
 	// Get the jump target index for the end of the loop
 
-	int iTargetIndex = ( ( Loop * ) Peek ( & g_LoopStack ) )->iEndTargetIndex;
+	int iTargetIndex = ((Loop *) Peek (& g_LoopStack))->iEndTargetIndex;
 
 	// Unconditionally jump to the end of the loop
 
-	int iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JMP );
-	AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iTargetIndex );
+	int iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JMP);
+	AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iTargetIndex);
 }
 
 /******************************************************************************************
@@ -1623,25 +1616,25 @@ void ParseContinue ()
 {
 	// Make sure we're inside a function
 
-	if ( IsStackEmpty ( & g_LoopStack ) )
-		ExitOnCodeError ( "continue illegal outside loops" );
+	if (IsStackEmpty (& g_LoopStack))
+		ExitOnCodeError("continue illegal outside loops");
 
 	// Annotate the line
 
-	AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
+	AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
 
 	// Attempt to read the semicolon
 
-	ReadToken ( TOKEN_TYPE_SEMICOLON );
+	ReadToken(TOKEN_TYPE_SEMICOLON);
 
 	// Get the jump target index for the start of the loop
 
-	int iTargetIndex = ( ( Loop * ) Peek ( & g_LoopStack ) )->iStartTargetIndex;
+	int iTargetIndex = ((Loop *) Peek (& g_LoopStack))->iStartTargetIndex;
 
 	// Unconditionally jump to the end of the loop
 
-	int iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_JMP );
-	AddJumpTargetICodeOp ( g_iCurrScope, iInstrIndex, iTargetIndex );
+	int iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_JMP);
+	AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iTargetIndex);
 }
 
 
@@ -1662,33 +1655,33 @@ void ParseReturn()
 
 	// Make sure we're inside a function
 
-	if ( g_iCurrScope == SCOPE_GLOBAL )
-		ExitOnCodeError ( "return illegal in global scope" );
+	if (g_iCurrScope == SCOPE_GLOBAL)
+		ExitOnCodeError("return illegal in global scope");
 
 	// Annotate the line
 
-	AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
+	AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
 
 	// If a semicolon doesn't appear to follow, parse the expression and place it in
 	// _RetVal
 
-	if ( GetLookAheadChar () != ';' )
+	if (GetLookAheadChar() != ';')
 	{
 		// Parse the expression to calculate the return value and leave the result on the stack.
 
-		ParseExpr ();
+		ParseExpr();
 
 		// Pop the result into the _RetVal register
 
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_POP );
-		AddRegICodeOp ( g_iCurrScope, iInstrIndex, REG_CODE_RETVAL );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_POP);
+		AddRegICodeOp (g_iCurrScope, iInstrIndex, REG_CODE_RETVAL);
 	}
 
-	AddICodeInstr ( g_iCurrScope, INSTR_RET );
+	AddICodeInstr (g_iCurrScope, INSTR_RET);
 
 	// Validate the presence of the semicolon
 
-	ReadToken ( TOKEN_TYPE_SEMICOLON );
+	ReadToken(TOKEN_TYPE_SEMICOLON);
 
 	g_iGotReturnStmt = TRUE;
 }
@@ -1707,8 +1700,8 @@ void ParseAssign ()
 {
 	// Make sure we're inside a function
 
-	if ( g_iCurrScope == SCOPE_GLOBAL )
-		ExitOnCodeError ( "Assignment illegal in global scope" );
+	if (g_iCurrScope == SCOPE_GLOBAL)
+		ExitOnCodeError("Assignment illegal in global scope");
 
 	int iInstrIndex;
 
@@ -1718,30 +1711,30 @@ void ParseAssign ()
 
 	// Annotate the line
 
-	AddICodeAnnotationLine ( g_iCurrScope, GetCurrSourceLine () );
+	AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
 
 	// ---- Parse the variable or array
 
-	SymbolNode * pSymbol = GetSymbolByIdent ( GetCurrLexeme (), g_iCurrScope );
+	SymbolNode * pSymbol = GetSymbolByIdent (GetCurrLexeme(), g_iCurrScope);
 
 	// Does an array index follow the identifier?
 
 	int iIsArray = FALSE;
-	if ( GetLookAheadChar () == '[' )
+	if (GetLookAheadChar() == '[')
 	{
 		// Ensure the variable is an array
 
-		if ( pSymbol->iSize == 1 )
-			ExitOnCodeError ( "Invalid array" );
+		if (pSymbol->iSize == 1)
+			ExitOnCodeError("Invalid array");
 
 		// Verify the opening brace
 
-		ReadToken ( TOKEN_TYPE_OPEN_BRACE );
+		ReadToken(TOKEN_TYPE_OPEN_BRACE);
 
 		// Make sure an expression is present
 
-		if ( GetLookAheadChar () == ']' )
-			ExitOnCodeError ( "Invalid expression" );
+		if (GetLookAheadChar() == ']')
+			ExitOnCodeError("Invalid expression");
 
 		// Parse the index as an expression
 
@@ -1749,7 +1742,7 @@ void ParseAssign ()
 
 		// Make sure the index is closed
 
-		ReadToken ( TOKEN_TYPE_CLOSE_BRACE );
+		ReadToken(TOKEN_TYPE_CLOSE_BRACE);
 
 		// Set the array flag
 
@@ -1759,13 +1752,13 @@ void ParseAssign ()
 	{
 		// Make sure the variable isn't an array
 
-		if ( pSymbol->iSize > 1 )
-			ExitOnCodeError ( "Arrays must be indexed" );
+		if (pSymbol->iSize > 1)
+			ExitOnCodeError("Arrays must be indexed");
 	}
 
 	// ---- Parse the assignment operator
 
-	if (GetNextToken() != TOKEN_TYPE_OP && !IsAssignOp(GetCurrOp()))
+	if (GetNextToken() != TOKEN_TYPE_OP && !IsOpAssign(GetCurrOp()))
 		ExitOnCodeError("Illegal assignment operator");
 	else
 		iAssignOp = GetCurrOp();
@@ -1776,114 +1769,114 @@ void ParseAssign ()
 
 	// Validate the presence of the semicolon
 
-	ReadToken ( TOKEN_TYPE_SEMICOLON );
+	ReadToken(TOKEN_TYPE_SEMICOLON);
 
 	// Pop the value into _T0
 
-	iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_POP );
-	AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
+	iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_POP);
+	AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 
 	// If the variable was an array, pop the top of the stack into _T1 for use as the index
 
-	if ( iIsArray )
+	if (iIsArray)
 	{
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_POP );
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_POP);
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
 	}
 
 	// ---- Generate the I-code for the assignment instruction
 
-	switch ( iAssignOp )
+	switch (iAssignOp)
 	{
 		// =
 
 	case OP_TYPE_ASSIGN:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_MOV );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_MOV);
 		break;
 
 		// +=
 
 	case OP_TYPE_ASSIGN_ADD:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_ADD );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_ADD);
 		break;
 
 		// -=
 
 	case OP_TYPE_ASSIGN_SUB:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_SUB );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_SUB);
 		break;
 
 		// *=
 
 	case OP_TYPE_ASSIGN_MUL:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_MUL );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_MUL);
 		break;
 
 		// /=
 
 	case OP_TYPE_ASSIGN_DIV:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_DIV );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_DIV);
 		break;
 
 		// %=
 
 	case OP_TYPE_ASSIGN_MOD:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_MOD );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_MOD);
 		break;
 
 		// ^=
 
 	case OP_TYPE_ASSIGN_EXP:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_EXP );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_EXP);
 		break;
 
 		// $=
 
 	case OP_TYPE_ASSIGN_CONCAT:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_CONCAT );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_CONCAT);
 		break;
 
 		// &=
 
 	case OP_TYPE_ASSIGN_AND:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_AND );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_AND);
 		break;
 
 		// |=
 
 	case OP_TYPE_ASSIGN_OR:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_OR );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_OR);
 		break;
 
 		// #=
 
 	case OP_TYPE_ASSIGN_XOR:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_XOR );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_XOR);
 		break;
 
 		// <<=
 
 	case OP_TYPE_ASSIGN_SHIFT_LEFT:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_SHL );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_SHL);
 		break;
 
 		// >>=
 
 	case OP_TYPE_ASSIGN_SHIFT_RIGHT:
-		iInstrIndex = AddICodeInstr ( g_iCurrScope, INSTR_SHR );
+		iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_SHR);
 		break;
 	}
 
 	// Generate the destination operand
 
-	if ( iIsArray )
-		AddArrayIndexVarICodeOp ( g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1SymbolIndex );
+	if (iIsArray)
+		AddArrayIndexVarICodeOp (g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1SymbolIndex);
 	else
-		AddVarICodeOp ( g_iCurrScope, iInstrIndex, pSymbol->iIndex );
+		AddVarICodeOp (g_iCurrScope, iInstrIndex, pSymbol->iIndex);
 
 	// Generate the source
 
-	AddVarICodeOp ( g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex );
+	AddVarICodeOp (g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 }
 
 /******************************************************************************************
@@ -1892,20 +1885,20 @@ void ParseAssign ()
 *
 *   Parses a function call
 *
-*   <Ident> ( <Expr>, <Expr> );
+*   <Ident> (<Expr>, <Expr>);
 */
 
 void ParseFuncCall ()
 {
 	// Get the function by it's identifier
 
-	FuncNode * pFunc = GetFuncByName ( GetCurrLexeme() );
+	FuncNode * pFunc = GetFuncByName (GetCurrLexeme());
 
 	// 第一次调用宿主函数
 	if (pFunc == NULL)
 	{
 		if (AddFunc(GetCurrLexeme(), TRUE) == -1)
-			ExitOnCodeError ( "Function redefinition" );
+			ExitOnCodeError("Function redefinition");
 		pFunc = GetFuncByName(GetCurrLexeme());
 	}
 
@@ -1915,15 +1908,15 @@ void ParseFuncCall ()
 
 	// Attempt to read the opening parenthesis
 
-	ReadToken ( TOKEN_TYPE_OPEN_PAREN );
+	ReadToken(TOKEN_TYPE_OPEN_PAREN);
 
 	// Parse each parameter and push it onto the stack
 
-	while ( TRUE )
+	while (TRUE)
 	{
 		// Find out if there's another parameter to push
 
-		if ( GetLookAheadChar () != ')' )
+		if (GetLookAheadChar() != ')')
 		{
 			// There is, so parse it as an expression
 
@@ -1933,13 +1926,13 @@ void ParseFuncCall ()
 			// accepted by the function (unless it's a host API function
 
 			++ iParamCount;
-			if (!pFunc->iIsHostAPI && iParamCount > pFunc->iParamCount )
-				ExitOnCodeError ( "Too many parameters" );
+			if (!pFunc->iIsHostAPI && iParamCount > pFunc->iParamCount)
+				ExitOnCodeError("Too many parameters");
 
 			// Unless this is the final parameter, attempt to read a comma
 
-			if ( GetLookAheadChar () != ')' )
-				ReadToken ( TOKEN_TYPE_COMMA );
+			if (GetLookAheadChar() != ')')
+				ReadToken(TOKEN_TYPE_COMMA);
 		}
 		else
 		{
@@ -1957,21 +1950,21 @@ void ParseFuncCall ()
 
 	// Attempt to read the closing parenthesis
 
-	ReadToken ( TOKEN_TYPE_CLOSE_PAREN );
+	ReadToken(TOKEN_TYPE_CLOSE_PAREN);
 
 	// Make sure the parameter wasn't passed too few parameters (unless
 	// it's a host API function)
 
 	if (!pFunc->iIsHostAPI && iParamCount < pFunc->iParamCount)
-		ExitOnCodeError ( "Too few parameters" );
+		ExitOnCodeError("Too few parameters");
 
 	// Call the function, but make sure the right call instruction is used
 
 	int iCallInstr = INSTR_CALL;
-	//if ( pFunc->iIsHostAPI )
+	//if (pFunc->iIsHostAPI)
 	//	iCallInstr = INSTR_CALLHOST;
 
-	int iInstrIndex = AddICodeInstr ( g_iCurrScope, iCallInstr );
+	int iInstrIndex = AddICodeInstr (g_iCurrScope, iCallInstr);
 
 	AddFuncICodeOp(g_iCurrScope, iInstrIndex, pFunc->iIndex);
 }

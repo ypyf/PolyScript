@@ -85,13 +85,13 @@ void Init ()
 
 	// Initialize the source code list
 
-	InitLinkedList ( & g_SourceCode );
+	InitLinkedList (& g_SourceCode);
 
 	// Initialize the tables
 
-	InitLinkedList ( & g_FuncTable );
-	InitLinkedList ( & g_SymbolTable );
-	InitLinkedList ( & g_StringTable );
+	InitLinkedList (& g_FuncTable);
+	InitLinkedList (& g_SymbolTable);
+	InitLinkedList (& g_StringTable);
 }
 
 /******************************************************************************************
@@ -105,13 +105,13 @@ void ShutDown ()
 {
 	// Free the source code
 
-	FreeLinkedList ( & g_SourceCode );
+	FreeLinkedList (& g_SourceCode);
 
 	// Free the tables
 
-	FreeLinkedList ( & g_FuncTable );
-	FreeLinkedList ( & g_SymbolTable );
-	FreeLinkedList ( & g_StringTable );
+	FreeLinkedList (& g_FuncTable);
+	FreeLinkedList (& g_SymbolTable);
+	FreeLinkedList (& g_StringTable);
 }
 
 /******************************************************************************************
@@ -127,18 +127,18 @@ void LoadSourceFile ()
 
 	FILE * pSourceFile;
 
-	if ( ! ( pSourceFile = fopen ( g_pstrSourceFilename, "r" ) ) )
-		ExitOnError ( "Could not open source file for input" );
+	if (! (pSourceFile = fopen (g_pstrSourceFilename, "r")))
+		ExitOnError ("Could not open source file for input");
 
 	// ---- Load the source code
 
 	// Loop through each line of code in the file
 
-	while ( ! feof ( pSourceFile ) )
+	while (! feof (pSourceFile))
 	{
 		// Allocate space for the next line
 
-		char * pstrCurrLine = ( char * ) malloc ( MAX_SOURCE_LINE_SIZE + 1 );
+		char * pstrCurrLine = (char *) malloc (MAX_SOURCE_LINE_SIZE + 1);
 
 		// Clear the string buffer in case the next line is empty or invalid
 
@@ -146,31 +146,31 @@ void LoadSourceFile ()
 
 		// Read the line from the file
 
-		fgets ( pstrCurrLine, MAX_SOURCE_LINE_SIZE, pSourceFile );
+		fgets (pstrCurrLine, MAX_SOURCE_LINE_SIZE, pSourceFile);
 
 		// Add it to the source code linked list
 
-		AddNode ( & g_SourceCode, pstrCurrLine );
+		AddNode (& g_SourceCode, pstrCurrLine);
 	}
 
 	// ---- Close the file
 
-	fclose ( pSourceFile );
+	fclose (pSourceFile);
 }
 
 /******************************************************************************************
 *
-*   CompileSourceFile ()
+*   CompileSourceFile()
 *
 *   Compiles the high-level source file to its XVM assembly equivelent.
 */
 
-void CompileSourceFile ()
+void CompileSourceFile()
 {
 	// Add two temporary variables for evaluating expressions
 
-	g_iTempVar0SymbolIndex = AddSymbol ( TEMP_VAR_0, 1, SCOPE_GLOBAL, SYMBOL_TYPE_VAR );
-	g_iTempVar1SymbolIndex = AddSymbol ( TEMP_VAR_1, 1, SCOPE_GLOBAL, SYMBOL_TYPE_VAR );
+	g_iTempVar0SymbolIndex = AddSymbol(TEMP_VAR_0, 1, SCOPE_GLOBAL, SYMBOL_TYPE_VAR);
+	g_iTempVar1SymbolIndex = AddSymbol(TEMP_VAR_1, 1, SCOPE_GLOBAL, SYMBOL_TYPE_VAR);
 
 	// Parse the source file to create an I-code representation
 	ParseSourceCode();
@@ -179,7 +179,7 @@ void CompileSourceFile ()
 
 /******************************************************************************************
 *
-*   Exit ()
+*   Exit()
 *
 *   Exits the program.
 */

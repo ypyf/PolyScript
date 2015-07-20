@@ -25,21 +25,21 @@ void PreprocessSourceFile ()
 
 	// Traverse the source code
 
-	while ( TRUE )
+	while (TRUE)
 	{
 		// Create local copy of the current line
 
-		char * pstrCurrLine = ( char * ) pNode->pData;
+		char * pstrCurrLine = (char *) pNode->pData;
 
 		// ---- Scan for comments
 
-		for ( int iCurrCharIndex = 0; iCurrCharIndex < ( int ) strlen ( pstrCurrLine ); ++ iCurrCharIndex )
+		for (int iCurrCharIndex = 0; iCurrCharIndex < (int) strlen (pstrCurrLine); ++ iCurrCharIndex)
 		{
 			// If the current character is a quote, toggle the in string flag
 
-			if ( pstrCurrLine [ iCurrCharIndex ] == '"' )
+			if (pstrCurrLine [ iCurrCharIndex ] == '"')
 			{
-				if ( iInString )
+				if (iInString)
 					iInString = FALSE;
 				else
 					iInString = TRUE;
@@ -48,9 +48,9 @@ void PreprocessSourceFile ()
 			// Check for a single-line comment, and terminate the rest of the line if one is
 			// found
 
-			if ( pstrCurrLine [ iCurrCharIndex ] == '/' &&
+			if (pstrCurrLine [ iCurrCharIndex ] == '/' &&
 				pstrCurrLine [ iCurrCharIndex + 1 ] == '/' &&
-				! iInString && ! iInBlockComment )
+				! iInString && ! iInBlockComment)
 			{
 				pstrCurrLine [ iCurrCharIndex ] = '\n';
 				pstrCurrLine [ iCurrCharIndex + 1 ] = '\0';
@@ -59,18 +59,18 @@ void PreprocessSourceFile ()
 
 			// Check for a block comment
 
-			if ( pstrCurrLine [ iCurrCharIndex ] == '/' &&
+			if (pstrCurrLine [ iCurrCharIndex ] == '/' &&
 				pstrCurrLine [ iCurrCharIndex + 1 ] == '*' &&
-				! iInString && ! iInBlockComment )
+				! iInString && ! iInBlockComment)
 			{
 				iInBlockComment = TRUE;
 			}
 
 			// Check for the end of a block comment
 
-			if ( pstrCurrLine [ iCurrCharIndex ] == '*' &&
+			if (pstrCurrLine [ iCurrCharIndex ] == '*' &&
 				pstrCurrLine [ iCurrCharIndex + 1 ] == '/' &&
-				iInBlockComment )
+				iInBlockComment)
 			{
 				pstrCurrLine [ iCurrCharIndex ] = ' ';
 				pstrCurrLine [ iCurrCharIndex + 1 ] = ' ';
@@ -80,9 +80,9 @@ void PreprocessSourceFile ()
 			// If we're inside a block comment, replace the current character with
 			// whitespace
 
-			if ( iInBlockComment )
+			if (iInBlockComment)
 			{
-				if ( pstrCurrLine [ iCurrCharIndex ] != '\n' )
+				if (pstrCurrLine [ iCurrCharIndex ] != '\n')
 					pstrCurrLine [ iCurrCharIndex ] = ' ';
 			}
 		}
@@ -90,7 +90,7 @@ void PreprocessSourceFile ()
 		// ---- Move to the next node, and exit the loop if the end of the code is reached
 
 		pNode = pNode->pNext;
-		if ( ! pNode )
+		if (! pNode)
 			break;
 	}
 

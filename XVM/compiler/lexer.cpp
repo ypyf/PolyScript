@@ -227,29 +227,6 @@ OpState GetOpState(int iCharIndex, int iStateIndex)
 }
 
 
-int IsAssignOp(int iOp)
-{
-	switch (iOp)
-	{
-	case OP_TYPE_ASSIGN:
-	case OP_TYPE_ASSIGN_ADD:
-	case OP_TYPE_ASSIGN_SUB:
-	case OP_TYPE_ASSIGN_MUL:
-	case OP_TYPE_ASSIGN_DIV:
-	case OP_TYPE_ASSIGN_MOD:
-	case OP_TYPE_ASSIGN_EXP:
-	case OP_TYPE_ASSIGN_CONCAT:
-	case OP_TYPE_ASSIGN_AND:
-	case OP_TYPE_ASSIGN_OR:
-	case OP_TYPE_ASSIGN_XOR:
-	case OP_TYPE_ASSIGN_SHIFT_LEFT:
-	case OP_TYPE_ASSIGN_SHIFT_RIGHT:
-		return TRUE;
-	default:
-		return FALSE;
-	}
-}
-
 /******************************************************************************************
 *
 *   IsCharDelim ()
@@ -385,7 +362,7 @@ char GetNextChar()
 
 /******************************************************************************************
 *
-*   GetNextToken ()
+*   GetNextToken()
 *
 *   Returns the next token in the source buffer.
 */
@@ -947,7 +924,7 @@ Token GetCurrToken()
 
 /******************************************************************************************
 *
-*   GetCurrLexeme ()
+*   GetCurrLexeme()
 *
 *   Returns a pointer to the current lexeme.
 */
@@ -959,7 +936,7 @@ char * GetCurrLexeme()
 
 /******************************************************************************************
 *
-*   CopyCurrLexeme ()
+*   CopyCurrLexeme()
 *
 *   Makes a physical copy of the current lexeme into the specified string buffer.
 */
@@ -983,7 +960,7 @@ int GetCurrOp()
 
 /******************************************************************************************
 *
-*   GetLookAheadChar ()
+*   GetLookAheadChar()
 *
 *   Returns the first character of the next token.
 */

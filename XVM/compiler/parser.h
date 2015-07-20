@@ -32,6 +32,7 @@ Loop;
 
 void ReadToken(Token ReqToken);
 
+int IsOpAssign(int iOpType);
 int IsOpRelational(int iOpType);
 int IsOpLogical(int iOpType);
 

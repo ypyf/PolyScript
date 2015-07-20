@@ -364,7 +364,7 @@ void TrimWhitespace(char *pstrString);
 //int IsStringWhitespace(char *pstrString);
 int IsStringIdent(char *pstrString);
 int IsStringInteger(char *pstrString);
-int IsStringFloat( char *pstrString);
+int IsStringFloat(char *pstrString);
 
 // ----Misc ------------------------------------------------------------------------------
 
@@ -438,7 +438,7 @@ void StripComments(char *pstrSourceLine)
     iInString = 0;
     for (iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrSourceLine) - 1; ++iCurrCharIndex)
     {
-        // Look out for ( strings; they can contain semicolons
+        // Look out for (strings; they can contain semicolons
 
         if (pstrSourceLine[iCurrCharIndex] == '"')
             if (iInString)
@@ -473,9 +473,9 @@ int IsIdentStart(char cChar)
     // Return true if the character is between 0 or 9 inclusive or is an uppercase or
     // lowercase letter or underscore
 
-    if (( cChar >= '0' && cChar <= '9') ||
-        ( cChar >= 'A' && cChar <= 'Z') ||
-        ( cChar >= 'a' && cChar <= 'z') ||
+    if ((cChar >= '0' && cChar <= '9') ||
+        (cChar >= 'A' && cChar <= 'Z') ||
+        (cChar >= 'a' && cChar <= 'z') ||
         cChar == '_')
         return TRUE;
     else
@@ -713,7 +713,7 @@ int IsStringInteger(char *pstrString)
 *    otherwise.
 */
 
-int IsStringFloat( char *pstrString)
+int IsStringFloat(char *pstrString)
 {
     if (!pstrString)
         return FALSE;
@@ -819,7 +819,7 @@ void LoadSourceFile(const char* file)
     // Allocate an array of strings to hold each source line
 
     if (!(g_ppstrSourceCode = (char **) malloc(g_iSourceCodeSize * sizeof(char *))))
-        ASM_ExitOnError("Could not allocate space for ( source code");
+        ASM_ExitOnError("Could not allocate space for (source code");
 
     // Read the source code in from the file
 
@@ -828,7 +828,7 @@ void LoadSourceFile(const char* file)
         // Allocate space for the line
 
         if (!(g_ppstrSourceCode[iCurrLineIndex] = (char *) malloc(MAX_SOURCE_LINE_SIZE + 1)))
-            ASM_ExitOnError("Could not allocate space for ( source line");
+            ASM_ExitOnError("Could not allocate space for (source line");
 
         // Read in the current line
 
@@ -1286,7 +1286,7 @@ int AddInstrLookup(char *pstrMnemonic, int iOpcode, int iOpCount)
     g_InstrTable[iInstrIndex].Opcode = iOpcode;
     g_InstrTable[iInstrIndex].OpCount = iOpCount;
 
-    // Allocate space for ( the operand list
+    // Allocate space for (the operand list
 
     g_InstrTable[iInstrIndex].OpTypeList = (OpTypes *) malloc(iOpCount * sizeof(OpTypes));
 
@@ -1294,7 +1294,7 @@ int AddInstrLookup(char *pstrMnemonic, int iOpcode, int iOpCount)
 
     int iReturnInstrIndex = iInstrIndex;
 
-    // Increment the index for ( the next instruction
+    // Increment the index for (the next instruction
 
     ++iInstrIndex;
 
@@ -1307,7 +1307,7 @@ int AddInstrLookup(char *pstrMnemonic, int iOpcode, int iOpCount)
 *
 *   SetOpType()
 *
-*   Sets the operand type for ( the specified operand in the specified instruction.
+*   Sets the operand type for (the specified operand in the specified instruction.
 */
 
 void SetOpType(int iInstrIndex, int iOpIndex, OpTypes iOpType)
@@ -1716,7 +1716,7 @@ char ASM_GetLookAheadChar()
 
     if (g_Lexer.CurrLexState != LEX_STATE_IN_STRING)
     {
-        // Scan through the whitespace and check for ( the end of the line
+        // Scan through the whitespace and check for (the end of the line
 
         while (TRUE)
         {
@@ -2210,7 +2210,7 @@ void AssmblSourceFile()
 
         switch(g_Lexer.CurrToken)
         {
-            // ----Start by checking for ( directives
+            // ----Start by checking for (directives
 
             // SetStackSize
 
@@ -2237,7 +2237,7 @@ void AssmblSourceFile()
 
             g_ASMScriptHeader.iStackSize = strtol(ASM_GetCurrLexeme(), 0, g_Lexer.CurrBase);
 
-            // Mark the presence of SetStackSize for ( future encounters
+            // Mark the presence of SetStackSize for (future encounters
 
             g_iIsSetStackSizeFound = TRUE;
 
@@ -2316,7 +2316,7 @@ void AssmblSourceFile()
                 ASM_ExitOnCodeError(ERROR_MSSG_INVALID_PRIORITY);
             }
 
-            // Mark the presence of SetStackSize for ( future encounters
+            // Mark the presence of SetStackSize for (future encounters
 
             g_iIsSetPriorityFound = TRUE;
 
@@ -2443,7 +2443,7 @@ void AssmblSourceFile()
                     g_ASMScriptHeader.iMainFuncIndex = iFuncIndex;
                 }
 
-                // Set the function flag to true for ( any future encounters and re-initialize
+                // Set the function flag to true for (any future encounters and re-initialize
                 // function tracking variables
 
                 iIsFuncActive = TRUE;
@@ -2687,7 +2687,7 @@ void AssmblSourceFile()
 
                 // Calculate the parameter's stack index
 
-                int iStackIndex = -( pCurrFunc->iLocalDataSize + 2 +(iCurrFuncParamCount + 1));
+                int iStackIndex = -(pCurrFunc->iLocalDataSize + 2 +(iCurrFuncParamCount + 1));
 
                 // Add the parameter to the symbol table
 
@@ -2881,7 +2881,7 @@ void AssmblSourceFile()
                             {
                                 // Whether the memory reference is a variable or array
                                 // index, the current lexeme is the identifier so save a
-                                // copy of it for ( later
+                                // copy of it for (later
 
                                 char pstrIdent[MAX_IDENT_SIZE];
                                 strcpy(pstrIdent, ASM_GetCurrLexeme());
@@ -3134,7 +3134,7 @@ void BuildXSE(const char* file)
 	//time_t now = time(0);
 	//fwrite(&now, sizeof now, 1, pExecFile);
 
-    // Write the version(1 byte for ( each component, 2 total)
+    // Write the version(1 byte for (each component, 2 total)
 
     char cVersionMajor = VERSION_MAJOR,
          cVersionMinor = VERSION_MINOR;
@@ -3197,7 +3197,7 @@ void BuildXSE(const char* file)
 
             Op CurrOp = g_pInstrStream[iCurrInstrIndex].OpList[iCurrOpIndex];
 
-            // Create a character for ( holding operand types(1 byte)
+            // Create a character for (holding operand types(1 byte)
 
             char cOpType = CurrOp.Type;
             fwrite(& cOpType, 1, 1, pExecFile);
@@ -3264,7 +3264,7 @@ void BuildXSE(const char* file)
         }
     }
 
-    // Create a node pointer for ( traversing the lists
+    // Create a node pointer for (traversing the lists
 
     int iCurrNode;
     LinkedListNode *pNode;
@@ -3279,7 +3279,7 @@ void BuildXSE(const char* file)
 
     pNode = g_ASMStringTable.pHead;
 
-    // Create a character for ( writing parameter counts
+    // Create a character for (writing parameter counts
 
     char cParamCount;
 

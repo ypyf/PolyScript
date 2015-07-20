@@ -78,7 +78,7 @@ FuncNode * GetFuncByName(char * pstrName)
 
 /******************************************************************************************
 *
-*   AddFunc ()
+*   AddFunc()
 *
 *   Adds a function to the function table.
 */
@@ -135,7 +135,7 @@ int AddFunc(char* pstrName, int iIsHostAPI)
 
 /******************************************************************************************
 *
-*   SetFuncParamCount ()
+*   SetFuncParamCount()
 *
 *   Sets a preexisting function's parameter count
 */
