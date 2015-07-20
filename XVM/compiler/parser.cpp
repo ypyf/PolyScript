@@ -403,31 +403,31 @@ void ParseStatement ()
 		{
 			// What kind of identifier is it?
 
-			if (GetSymbolByIdent (GetCurrLexeme(), g_iCurrScope))
+			if (GetSymbolByIdent(GetCurrLexeme(), g_iCurrScope))
 			{
 				// It's an identifier, so treat the statement as an assignment
 
 				ParseAssign();
 			}
-			else //if (GetFuncByName (GetCurrLexeme()))
+			else if (GetLookAheadChar() == '(')
 			{
 				// It's a function
 
 				// Annotate the line and parse the call
 
-				AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
+				AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine ());
 				ParseFuncCall();
 
 				// Verify the presence of the semicolon
 
 				ReadToken(TOKEN_TYPE_SEMICOLON);
 			}
-			//else
-			//{
-			//	// It's invalid
+			else
+			{
+				// It's invalid
 
-			//	ExitOnCodeError("Invalid identifier");
-			//}
+				ExitOnCodeError("Invalid identifier");
+			}
 
 			break;
 		}
@@ -668,6 +668,9 @@ void ParseExpr ()
 	// The current operator type
 
 	int iOpType;
+
+	// 解析函数调用表达式
+	//ParseFuncCall();
 
 	// Parse the subexpression
 
@@ -1141,29 +1144,24 @@ void ParseFactor ()
 	int iUnaryOpPending = FALSE;
 	int iOpType;
 
-	// First check for a unary operator
+	int iCurrToken = GetNextToken();
 
-	if (GetNextToken() == TOKEN_TYPE_OP &&
+	// First check for a unary operator
+	if (iCurrToken == TOKEN_TYPE_OP &&
 		(GetCurrOp () == OP_TYPE_ADD ||
 		GetCurrOp () == OP_TYPE_SUB ||
 		GetCurrOp () == OP_TYPE_BITWISE_NOT ||
 		GetCurrOp () == OP_TYPE_LOGICAL_NOT))
 	{
 		// If it was found, save it and set the unary operator flag
-
 		iUnaryOpPending = TRUE;
 		iOpType = GetCurrOp();
-	}
-	else
-	{
-		// Otherwise rewind the token stream
-
-		RewindTokenStream();
+		iCurrToken = GetNextToken();
 	}
 
 	// Determine which type of factor we're dealing with based on the next token
 
-	switch (GetNextToken())
+	switch (iCurrToken)
 	{
 		// It's a true or false constant, so push either 0 and 1 onto the stack
 
@@ -1206,7 +1204,7 @@ void ParseFactor ()
 		{
 			// First find out if the identifier is a variable or array
 
-			SymbolNode * pSymbol = GetSymbolByIdent (GetCurrLexeme(), g_iCurrScope);
+			SymbolNode * pSymbol = GetSymbolByIdent(GetCurrLexeme(), g_iCurrScope);
 			if (pSymbol)
 			{
 				// Does an array index follow the identifier?
@@ -1267,7 +1265,7 @@ void ParseFactor ()
 				// The identifier wasn't a variable or array, so find out if it's a
 				// function
 
-				if (GetFuncByName (GetCurrLexeme()))
+				if (GetLookAheadChar() == '(')
 				{
 					// It is, so parse the call
 
@@ -1397,7 +1395,7 @@ void ParseIf ()
 
 	// Annotate the line
 
-	AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
+	AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine ());
 
 	// Create a jump target to mark the beginning of the false block
 
@@ -1486,7 +1484,7 @@ void ParseWhile ()
 
 	// Annotate the line
 
-	AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
+	AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine ());
 
 	// Get two jump targets; for the top and bottom of the loop
 
@@ -1566,7 +1564,7 @@ void ParseFor ()
 
 	// Annotate the line
 
-	AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
+	AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine ());
 
 	/*
 	A for loop parser implementation could go here
@@ -1589,7 +1587,7 @@ void ParseBreak ()
 
 	// Annotate the line
 
-	AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
+	AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine ());
 
 	// Attempt to read the semicolon
 
@@ -1621,7 +1619,7 @@ void ParseContinue ()
 
 	// Annotate the line
 
-	AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
+	AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine ());
 
 	// Attempt to read the semicolon
 
@@ -1660,7 +1658,7 @@ void ParseReturn()
 
 	// Annotate the line
 
-	AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
+	AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine ());
 
 	// If a semicolon doesn't appear to follow, parse the expression and place it in
 	// _RetVal
@@ -1689,14 +1687,14 @@ void ParseReturn()
 
 /******************************************************************************************
 *
-*   ParseAssign ()
+*   ParseAssign()
 *
 *   Parses an assignment statement.
 *
 *   <Ident> <Assign-Op> <Expr>;
 */
 
-void ParseAssign ()
+void ParseAssign()
 {
 	// Make sure we're inside a function
 
@@ -1711,11 +1709,11 @@ void ParseAssign ()
 
 	// Annotate the line
 
-	AddICodeAnnotation (g_iCurrScope, GetCurrSourceLine ());
+	AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine ());
 
 	// ---- Parse the variable or array
 
-	SymbolNode * pSymbol = GetSymbolByIdent (GetCurrLexeme(), g_iCurrScope);
+	SymbolNode * pSymbol = GetSymbolByIdent(GetCurrLexeme(), g_iCurrScope);
 
 	// Does an array index follow the identifier?
 
@@ -1888,11 +1886,11 @@ void ParseAssign ()
 *   <Ident> (<Expr>, <Expr>);
 */
 
-void ParseFuncCall ()
+void ParseFuncCall()
 {
 	// Get the function by it's identifier
 
-	FuncNode * pFunc = GetFuncByName (GetCurrLexeme());
+	FuncNode * pFunc = GetFuncByName(GetCurrLexeme());
 
 	// 第一次调用宿主函数
 	if (pFunc == NULL)
@@ -1941,12 +1939,6 @@ void ParseFuncCall ()
 			break;
 		}
 	}
-
-	//// 重新按照从右到左的顺序压入参数
-	//for (int i = 0; i < iParamCount; i++)
-	//{
-
-	//}
 
 	// Attempt to read the closing parenthesis
 

@@ -48,7 +48,7 @@ SymbolNode * GetSymbolByIndex(int iIndex)
 
 /******************************************************************************************
 *
-*   GetSymbolByIdent ()
+*   GetSymbolByIdent()
 *
 *   Returns a pointer to the symbol structure corresponding to the identifier and scope.
 */

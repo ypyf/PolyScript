@@ -69,13 +69,11 @@ struct ICodeNode                           // An I-code node
 // ---- Function Prototypes -------------------------------------------------------------------
 
 ICodeNode* GetICodeNodeByImpIndex(int iFuncIndex, int iInstrIndex);
+Op* GetICodeOpByIndex(ICodeNode * pInstr, int iOpIndex);
 
 void AddICodeAnnotation(int iFuncIndex, char * pstrSourceLine);
-
 int AddICodeInstr(int iFuncIndex, int iOpcode);
-Op* GetICodeOpByIndex(ICodeNode * pInstr, int iOpIndex);
 void AddICodeOp(int iFuncIndex, int iInstrIndex, Op Value);
-
 void AddIntICodeOp(int iFuncIndex, int iInstrIndex, int iValue);
 void AddFloatICodeOp(int iFuncIndex, int iInstrIndex, float fValue);
 void AddStringICodeOp(int iFuncIndex, int iInstrIndex, int iStringIndex);
