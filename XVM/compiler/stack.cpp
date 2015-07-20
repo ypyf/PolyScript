@@ -73,7 +73,7 @@ void Pop(Stack * pStack)
 {
 	// Free the tail node of the list and it's data
 
-	DelNode(&pStack->ElmntList, pStack->ElmntList.pTail);
+	RemoveNode(&pStack->ElmntList, pStack->ElmntList.pTail);
 }
 
 /******************************************************************************************

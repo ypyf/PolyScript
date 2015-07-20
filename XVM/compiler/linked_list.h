@@ -28,7 +28,7 @@ void InitLinkedList(LinkedList * pList);
 void FreeLinkedList(LinkedList * pList);
 
 int AddNode(LinkedList * pList, void * pData);
-void DelNode(LinkedList * pList, LinkedListNode * pNode);
+void RemoveNode(LinkedList * pList, LinkedListNode * pNode);
 
 int AddString(LinkedList * pList, char * pstrString);
 char * GetStringByIndex(LinkedList * pList, int iIndex);

@@ -81,7 +81,7 @@ void FreeLinkedList(LinkedList * pList)
 
 /******************************************************************************************
 *
-*   AddNode ()
+*   AddNode()
 *
 *   Adds a node to a linked list and returns its index.
 */
@@ -134,12 +134,12 @@ int AddNode(LinkedList * pList, void * pData)
 
 /******************************************************************************************
 *
-*   DelNode ()
+*   RemoveNode()
 *
 *   Deletes a node from a linked list.
 */
 
-void DelNode(LinkedList * pList, LinkedListNode * pNode)
+void RemoveNode(LinkedList * pList, LinkedListNode * pNode)
 {
 	// If the list is empty, return
 

@@ -82,7 +82,7 @@ void AddICodeAnnotation(int iFuncIndex, char * pstrSourceLine)
 
 /******************************************************************************************
 *
-*   AddICodeInstr ()
+*   AddICodeInstr()
 *
 *   Adds an instruction to the local I-code stream of the specified function.
 */
