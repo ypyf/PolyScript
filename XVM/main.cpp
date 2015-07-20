@@ -149,16 +149,29 @@ int RunScript(char* pstrFilename)
     return iExitCode;
 }
 
+#include <windows.h>
+
+inline unsigned long GetCurrTime()
+{
+	unsigned long theTick;
+
+	theTick = GetTickCount();
+	return theTick;
+}
+
 int main(int argc, char* argv[])
 {
-    if (argc < 2) 
+	unsigned long start = GetCurrTime();
+	if (argc < 2) 
 	{
-        printf("XVM: No input files\n");
-        exit(0);
-    }
+		printf("XVM: No input files\n");
+		exit(0);
+	}
 
-    // 运行脚本并返回
-    RunScript(argv[1]);
+	// 运行脚本并返回
+	RunScript(argv[1]);
+
+	printf("耗时 %lums\n", GetCurrTime() - start);
 }
 
 #endif

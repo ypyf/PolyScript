@@ -11,8 +11,6 @@ typedef struct _FuncNode
 	int iIsHostAPI;                              // Is this a host API function? (XSC专用)
 	int iParamCount;                             // The number of accepted parameters
 	LinkedList ICodeStream;                      // Local I-code stream (XSC专用)
-	int iEntryPoint;                             // Entry point (XASM专用
-	int iLocalDataSize;                          // Local data size (XASM专用)
 } FuncNode;
 
 
