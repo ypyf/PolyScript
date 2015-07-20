@@ -1,17 +1,16 @@
-#ifndef XSC_FUNC_TABLE
-#define XSC_FUNC_TABLE
+#ifndef XSC_FUNC_TABLE_H
+#define XSC_FUNC_TABLE_H
 
 #include "xsc.h"
 
-// 函数表节点
-typedef struct _FuncNode
+struct FuncNode
 {
 	int iIndex;									 // Index
 	char pstrName[MAX_IDENT_SIZE];               // Name
-	int iIsHostAPI;                              // Is this a host API function? (XSC专用)
+	int iIsHostAPI;                              // Is this a host API function?
 	int iParamCount;                             // The number of accepted parameters
-	LinkedList ICodeStream;                      // Local I-code stream (XSC专用)
-} FuncNode;
+	LinkedList ICodeStream;                      // Local I-code stream
+};
 
 
 FuncNode* GetFuncByIndex(int iIndex);
@@ -19,4 +18,4 @@ FuncNode* GetFuncByName(char* pstrName);
 int AddFunc(char* pstrName, int iIsHostAPI);
 void SetFuncParamCount(int iIndex, int iParamCount);
 
-#endif
+#endif	// XSC_FUNC_TABLE_H

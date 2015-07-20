@@ -7,11 +7,10 @@
 
 int g_iCurrJumpTargetIndex = 0;                     // The current target index
 
-// ---- Functions -----------------------------------------------------------------------------
 
 /******************************************************************************************
 *
-*   GetICodeInstrByImpIndex ()
+*   GetICodeInstrByImpIndex()
 *
 *   Returns an I-code instruction structure based on its implicit index.
 */

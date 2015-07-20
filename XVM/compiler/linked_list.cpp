@@ -7,7 +7,7 @@
 
 /******************************************************************************************
 *
-*   InitLinkedList ()
+*   InitLinkedList()
 *
 *   Initializes a linked list.
 */
@@ -26,7 +26,7 @@ void InitLinkedList(LinkedList * pList)
 
 /******************************************************************************************
 *
-*   FreeLinkedList ()
+*   FreeLinkedList()
 *
 *   Frees a linked list.
 */
@@ -252,7 +252,7 @@ int AddString(LinkedList * pList, char * pstrString)
 *   Returns a string from a linked list based on its index.
 */
 
-char * GetStringByIndex(LinkedList * pList, int iIndex)
+char* GetStringByIndex(LinkedList* pList, int iIndex)
 {
 	// Create a node to traverse the list
 

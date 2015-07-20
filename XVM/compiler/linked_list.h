@@ -5,32 +5,30 @@
 
 // ---- Linked Lists ----------------------------------------------------------------------
 
-typedef struct _LinkedListNode                  // A linked list node
+struct LinkedListNode                  // A linked list node
 {
-	void * pData;                               // Pointer to the node's data
+	void* pData;                               // Pointer to the node's data
 
-	_LinkedListNode * pNext;                    // Pointer to the next node in the list
-}
-LinkedListNode;
+	LinkedListNode* pNext;                    // Pointer to the next node in the list
+};
 
-typedef struct _LinkedList                      // A linked list
+struct LinkedList                      // A linked list
 {
-	LinkedListNode * pHead,                     // Pointer to head node
-		*pTail;                     // Pointer to tail nail node
+	LinkedListNode *pHead,                     // Pointer to head node
+		           *pTail;                     // Pointer to tail nail node
 
 	int iNodeCount;                             // The number of nodes in the list
-}
-LinkedList;
+};
 
 // ---- Function Prototypes -------------------------------------------------------------------
 
-void InitLinkedList(LinkedList * pList);
-void FreeLinkedList(LinkedList * pList);
+void InitLinkedList(LinkedList* pList);
+void FreeLinkedList(LinkedList* pList);
 
-int AddNode(LinkedList * pList, void * pData);
-void RemoveNode(LinkedList * pList, LinkedListNode * pNode);
+int AddNode(LinkedList* pList, void* pData);
+void RemoveNode(LinkedList* pList, LinkedListNode* pNode);
 
-int AddString(LinkedList * pList, char * pstrString);
-char * GetStringByIndex(LinkedList * pList, int iIndex);
+int AddString(LinkedList* pList, char* pstrString);
+char* GetStringByIndex(LinkedList* pList, int iIndex);
 
 #endif

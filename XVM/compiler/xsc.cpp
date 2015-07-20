@@ -27,9 +27,9 @@ char g_pstrSourceFilename [ MAX_FILENAME_SIZE ],	// Source code filename
 
 LinkedList g_SourceCode;                        // Source code linked list
 
-// ---- Script ----------------------------------------------------------------------------
+// ---- Script header data ----------------------------------------------------------------------------
 
-ScriptHeader g_ScriptHeader;                    // Script header data
+ScriptHeader g_ScriptHeader;
 
 // ---- I-Code Stream ---------------------------------------------------------------------
 
@@ -60,12 +60,12 @@ int g_iTempVar0SymbolIndex,                     // Temporary variable symbol ind
 
 /******************************************************************************************
 *
-*	Init ()
+*	Init()
 *
 *	Initializes the compiler.
 */
 
-void Init ()
+void Init()
 {
 	// ---- Initialize the script header
 
@@ -85,64 +85,64 @@ void Init ()
 
 	// Initialize the source code list
 
-	InitLinkedList (& g_SourceCode);
+	InitLinkedList(&g_SourceCode);
 
 	// Initialize the tables
 
-	InitLinkedList (& g_FuncTable);
-	InitLinkedList (& g_SymbolTable);
-	InitLinkedList (& g_StringTable);
+	InitLinkedList(&g_FuncTable);
+	InitLinkedList(&g_SymbolTable);
+	InitLinkedList(&g_StringTable);
 }
 
 /******************************************************************************************
 *
-*	ShutDown ()
+*	ShutDown()
 *
 *	Shuts down the compiler.
 */
 
-void ShutDown ()
+void ShutDown()
 {
 	// Free the source code
 
-	FreeLinkedList (& g_SourceCode);
+	FreeLinkedList(&g_SourceCode);
 
 	// Free the tables
 
-	FreeLinkedList (& g_FuncTable);
-	FreeLinkedList (& g_SymbolTable);
-	FreeLinkedList (& g_StringTable);
+	FreeLinkedList(&g_FuncTable);
+	FreeLinkedList(&g_SymbolTable);
+	FreeLinkedList(&g_StringTable);
 }
 
 /******************************************************************************************
 *
-*   LoadSourceFile ()
+*   LoadSourceFile()
 *
 *   Loads the source file into memory.
 */
 
-void LoadSourceFile ()
+void LoadSourceFile()
 {
 	// ---- Open the input file
 
 	FILE * pSourceFile;
 
 	if (! (pSourceFile = fopen (g_pstrSourceFilename, "r")))
-		ExitOnError ("Could not open source file for input");
+		ExitOnError("Could not open source file for input");
 
 	// ---- Load the source code
 
 	// Loop through each line of code in the file
 
-	while (! feof (pSourceFile))
+	while (!feof (pSourceFile))
 	{
 		// Allocate space for the next line
 
-		char * pstrCurrLine = (char *) malloc (MAX_SOURCE_LINE_SIZE + 1);
+		char* pstrCurrLine = (char *) malloc (MAX_SOURCE_LINE_SIZE + 1);
 
 		// Clear the string buffer in case the next line is empty or invalid
 
-		pstrCurrLine [ 0 ] = '\0';
+		pstrCurrLine[0] = '\0';
 
 		// Read the line from the file
 
@@ -150,12 +150,12 @@ void LoadSourceFile ()
 
 		// Add it to the source code linked list
 
-		AddNode (& g_SourceCode, pstrCurrLine);
+		AddNode(&g_SourceCode, pstrCurrLine);
 	}
 
 	// ---- Close the file
 
-	fclose (pSourceFile);
+	fclose(pSourceFile);
 }
 
 /******************************************************************************************
@@ -197,10 +197,9 @@ void XSC_CompileScript(char* pstrFilename, char* pstrExecFilename)
 	strcpy(g_pstrSourceFilename, pstrFilename);
 	strupr(g_pstrSourceFilename);
 
-	// 构造 .xasm文件名
-
 	if (strstr(g_pstrSourceFilename, SOURCE_FILE_EXT))
 	{
+		// 构造 .xasm文件名
 		int ExtOffset = strrchr(g_pstrSourceFilename, '.') - g_pstrSourceFilename;
 		strncpy(g_pstrOutputFilename, g_pstrSourceFilename, ExtOffset);
 		g_pstrOutputFilename[ExtOffset] = '\0';

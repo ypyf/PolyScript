@@ -6,7 +6,7 @@
 
 /******************************************************************************************
 *
-*   ExitOnError ()
+*   ExitOnError()
 *
 *   Prints a general error message and exits.
 */

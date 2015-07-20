@@ -279,7 +279,7 @@ void ParseSourceCode()
 
 	// Initialize the loop stack
 
-	InitStack (& g_LoopStack);
+	InitStack (&g_LoopStack);
 
 	// Set the current scope to global
 
@@ -303,7 +303,7 @@ void ParseSourceCode()
 
 	// Free the loop stack
 
-	FreeStack (& g_LoopStack);
+	FreeStack (&g_LoopStack);
 }
 
 /******************************************************************************************
@@ -1194,7 +1194,7 @@ void ParseFactor ()
 
 	case TOKEN_TYPE_STRING:
 		{
-			int iStringIndex = AddString (& g_StringTable, GetCurrLexeme());
+			int iStringIndex = AddString (&g_StringTable, GetCurrLexeme());
 			iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
 			AddStringICodeOp (g_iCurrScope, iInstrIndex, iStringIndex);
 			break;
@@ -1530,7 +1530,7 @@ void ParseWhile ()
 
 	// Push the loop structure onto the stack
 
-	Push (& g_LoopStack, pLoop);
+	Push (&g_LoopStack, pLoop);
 
 	// Parse the loop body
 
@@ -1538,7 +1538,7 @@ void ParseWhile ()
 
 	// Pop the loop instance off the stack
 
-	Pop (& g_LoopStack);
+	Pop (&g_LoopStack);
 
 	// Unconditionally jump back to the start of the loop
 
@@ -1584,7 +1584,7 @@ void ParseBreak ()
 {
 	// Make sure we're in a loop
 
-	if (IsStackEmpty (& g_LoopStack))
+	if (IsStackEmpty (&g_LoopStack))
 		ExitOnCodeError("break illegal outside loops");
 
 	// Annotate the line
@@ -1597,7 +1597,7 @@ void ParseBreak ()
 
 	// Get the jump target index for the end of the loop
 
-	int iTargetIndex = ((Loop *) Peek (& g_LoopStack))->iEndTargetIndex;
+	int iTargetIndex = ((Loop *) Peek (&g_LoopStack))->iEndTargetIndex;
 
 	// Unconditionally jump to the end of the loop
 
@@ -1616,7 +1616,7 @@ void ParseContinue ()
 {
 	// Make sure we're inside a function
 
-	if (IsStackEmpty (& g_LoopStack))
+	if (IsStackEmpty (&g_LoopStack))
 		ExitOnCodeError("continue illegal outside loops");
 
 	// Annotate the line
@@ -1629,7 +1629,7 @@ void ParseContinue ()
 
 	// Get the jump target index for the start of the loop
 
-	int iTargetIndex = ((Loop *) Peek (& g_LoopStack))->iStartTargetIndex;
+	int iTargetIndex = ((Loop *) Peek (&g_LoopStack))->iStartTargetIndex;
 
 	// Unconditionally jump to the end of the loop
 
