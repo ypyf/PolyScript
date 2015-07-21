@@ -85,6 +85,9 @@ END_OF_TOKEN_STREAM,          // The end of the stream has been reached
 #define OP_FLAG_TYPE_ATTR_NAME        64          // 对象属性名
 #define OP_FLAG_TYPE_REG              128         // Register
 
+#define OP_FLAG_TYPE_RVALUE			(OP_FLAG_TYPE_INT | OP_FLAG_TYPE_FLOAT | OP_FLAG_TYPE_STRING | OP_FLAG_TYPE_MEM_REF | OP_FLAG_TYPE_REG)
+#define OP_FLAG_TYPE_LVALUE			(OP_FLAG_TYPE_MEM_REF | OP_FLAG_TYPE_REG)
+
 // ----Assembled Instruction Stream ------------------------------------------------------
 
 #define OP_TYPE_INT                     0           // Integer literal value
@@ -880,99 +883,48 @@ void InitInstrTable()
 
     // ----Main
 
-
-    // NEW cnt
-    iInstrIndex = AddInstrLookup("NEW", INSTR_NEW, 1);
-    SetOpType(iInstrIndex, 0, 
-        OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_MEM_REF | 
-        OP_FLAG_TYPE_REG);
-
-
-    // Print Object
-    iInstrIndex = AddInstrLookup("Print", INSTR_PRINT, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF | 
-        OP_FLAG_TYPE_REG);
-
     // Mov Destination, Source
 
     iInstrIndex = AddInstrLookup("Mov", INSTR_MOV, 2);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF | OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // ----Arithmetic
 
     // Add Destination, Source
 
     iInstrIndex = AddInstrLookup("Add", INSTR_ADD, 2);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // Sub Destination, Source
 
     iInstrIndex = AddInstrLookup("Sub", INSTR_SUB, 2);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // Mul Destination, Source
 
     iInstrIndex = AddInstrLookup("Mul", INSTR_MUL, 2);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // Div Destination, Source
 
     iInstrIndex = AddInstrLookup("Div", INSTR_DIV, 2);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // Mod Destination, Source
 
     iInstrIndex = AddInstrLookup("Mod", INSTR_MOD, 2);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // Exp Destination, Source
     iInstrIndex = AddInstrLookup("Exp", INSTR_EXP, 2);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // Sqrt    Destination 
     iInstrIndex = AddInstrLookup("Sqrt", INSTR_SQRT, 1);
@@ -984,83 +936,54 @@ void InitInstrTable()
     // Neg Destination
 
     iInstrIndex = AddInstrLookup("Neg", INSTR_NEG, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
 
     // Inc Destination
 
     iInstrIndex = AddInstrLookup("Inc", INSTR_INC, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
 
     // Dec Destination
 
     iInstrIndex = AddInstrLookup("Dec", INSTR_DEC, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
 
     // ----Bitwise
 
     // And Destination, Source
 
     iInstrIndex = AddInstrLookup("And", INSTR_AND, 2);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // Or  Destination, Source
 
     iInstrIndex = AddInstrLookup("Or", INSTR_OR, 2);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // XOr Destination, Source
 
     iInstrIndex = AddInstrLookup("XOr", INSTR_XOR, 2);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // Not Destination
 
     iInstrIndex = AddInstrLookup("Not", INSTR_NOT, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
 
     // ShL Destination, Source
 
     iInstrIndex = AddInstrLookup("ShL", INSTR_SHL, 2);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // ShR Destination, Source
 
     iInstrIndex = AddInstrLookup("ShR", INSTR_SHR, 2);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // ----String Manipulation
 
@@ -1108,91 +1031,43 @@ void InitInstrTable()
     // JE           Op0, Op1, Label
 
     iInstrIndex = AddInstrLookup("JE", INSTR_JE, 3);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
     SetOpType(iInstrIndex, 2, OP_FLAG_TYPE_LINE_LABEL);
 
     // JNE          Op0, Op1, Label
 
     iInstrIndex = AddInstrLookup("JNE", INSTR_JNE, 3);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
     SetOpType(iInstrIndex, 2, OP_FLAG_TYPE_LINE_LABEL);
 
     // JG           Op0, Op1, Label
 
     iInstrIndex = AddInstrLookup("JG", INSTR_JG, 3);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
     SetOpType(iInstrIndex, 2, OP_FLAG_TYPE_LINE_LABEL);
 
     // JL           Op0, Op1, Label
 
     iInstrIndex = AddInstrLookup("JL", INSTR_JL, 3);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
     SetOpType(iInstrIndex, 2, OP_FLAG_TYPE_LINE_LABEL);
 
     // JGE          Op0, Op1, Label
 
     iInstrIndex = AddInstrLookup("JGE", INSTR_JGE, 3);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
     SetOpType(iInstrIndex, 2, OP_FLAG_TYPE_LINE_LABEL);
 
     // JLE           Op0, Op1, Label
 
     iInstrIndex = AddInstrLookup("JLE", INSTR_JLE, 3);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
+	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
     SetOpType(iInstrIndex, 2, OP_FLAG_TYPE_LINE_LABEL);
 
     // ----The Stack Interface
@@ -1200,16 +1075,12 @@ void InitInstrTable()
     // Push          Source
 
     iInstrIndex = AddInstrLookup("Push", INSTR_PUSH, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
 
     // Pop  Destination
 
     iInstrIndex = AddInstrLookup("Pop", INSTR_POP, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF | OP_FLAG_TYPE_REG);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
 
     // ----The Function Interface
 
@@ -1228,36 +1099,32 @@ void InitInstrTable()
 	AddInstrLookup("IConst1", INSTR_FCONST_0, 0);
 	AddInstrLookup("IConst1", INSTR_FCONST_1, 0);
 
-    // Clone Object
-    iInstrIndex = AddInstrLookup("ThisCall", INSTR_THISCALL, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_ATTR_NAME);
-
-    // CallHost      FunctionName
-
-    //iInstrIndex = AddInstrLookup("CallHost", INSTR_CALLHOST, 1);
-    //SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_HOST_API_CALL);
-
     // ----Miscellaneous
 
-	AddInstrLookup("Nop", INSTR_NOP, 0);
+	// Print Object
+	iInstrIndex = AddInstrLookup("Print", INSTR_PRINT, 1);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
 
     // Pause        Duration
 
     iInstrIndex = AddInstrLookup("Pause", INSTR_PAUSE, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_STRING |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
 
-    // Exit         Code
+	// Nop instruction
 
-    //iInstrIndex = AddInstrLookup("Exit", INSTR_EXIT, 1);
-    //SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
-    //    OP_FLAG_TYPE_FLOAT |
-    //    OP_FLAG_TYPE_STRING |
-    //    OP_FLAG_TYPE_MEM_REF |
-    //    OP_FLAG_TYPE_REG);
+	AddInstrLookup("Nop", INSTR_NOP, 0);
+
+	// ---- Object System
+
+	// NEW cnt
+	iInstrIndex = AddInstrLookup("NEW", INSTR_NEW, 1);
+	SetOpType(iInstrIndex, 0, 
+		OP_FLAG_TYPE_INT |
+		OP_FLAG_TYPE_MEM_REF | 
+		OP_FLAG_TYPE_REG);
+
+	//iInstrIndex = AddInstrLookup("ThisCall", INSTR_THISCALL, 1);
+	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_ATTR_NAME);
 }
 
 /******************************************************************************************

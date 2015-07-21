@@ -9,24 +9,20 @@
 
 // ---- Constants -----------------------------------------------------------------------------
 
-#define MAX_FUNC_DECLARE_PARAM_COUNT        32      // The maximum number of parameters
-// that can appear in a function
-// declaration.
+#define MAX_FUNC_DECLARE_PARAM_COUNT        32      // 函数能够声明的最大参数个数
 
 // ---- Data Structures -----------------------------------------------------------------------
 
-typedef struct _Expr                                // Expression instance
+struct Expr                                // Expression instance
 {
 	int iStackOffset;                               // The current offset of the stack
-}
-Expr;
+};
 
-typedef struct Loop                                 // Loop instance
+struct Loop                                 // Loop instance
 {
 	int iStartTargetIndex;                          // The starting jump target
 	int iEndTargetIndex;                            // The ending jump target
-}
-Loop;
+};
 
 // ---- Function Prototypes -------------------------------------------------------------------
 
