@@ -1519,7 +1519,7 @@ static void ExecuteScript(VMState* vm, int iTimesliceDur)
                         }
                         else
                         {
-                            fprintf(stderr, "VM Error: 未定义的函数 '%s'\n", pstrFuncName);
+                            fprintf(stderr, "Runtime Error: 调用未定义的函数 '%s'\n", pstrFuncName);
                             exit(1);
                         }
                     }

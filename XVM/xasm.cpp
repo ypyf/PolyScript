@@ -2436,8 +2436,7 @@ void AssmblSourceFile()
                     ASM_ExitOnCodeError(ERROR_MSSG_FUNC_REDEFINITION);
 
                 // Is this the main() function?
-                // 默认主函数不存在，且索引为0
-                if (strcmp(pstrFuncName, MAIN_FUNC_NAME) == 0)
+                if (stricmp(pstrFuncName, MAIN_FUNC_NAME) == 0)
                 {
                     g_ASMScriptHeader.iIsMainFuncPresent = TRUE;
                     g_ASMScriptHeader.iMainFuncIndex = iFuncIndex;
@@ -3151,10 +3150,9 @@ void BuildXSE(const char* file)
 
     // Write the Main() flag(1 byte)
 
-    char cIsMainPresent = 0;
-    if (g_ASMScriptHeader.iIsMainFuncPresent)
-        cIsMainPresent = 1;
-    fwrite(& cIsMainPresent, 1, 1, pExecFile);
+    char cIsMainPresent = g_ASMScriptHeader.iIsMainFuncPresent;
+
+    fwrite(&cIsMainPresent, 1, 1, pExecFile);
 
     // Write the Main() function index(4 bytes)
 
@@ -3163,7 +3161,7 @@ void BuildXSE(const char* file)
     // Write the priority type(1 byte)
 
     char cPriorityType = g_ASMScriptHeader.iPriorityType;
-    fwrite(& cPriorityType, 1, 1, pExecFile);
+    fwrite(&cPriorityType, 1, 1, pExecFile);
 
     // Write the user-defined priority(4 bytes)
 
