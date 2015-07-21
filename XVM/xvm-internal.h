@@ -54,11 +54,4 @@ struct MetaObject
     struct MetaObject *NextObject; // 指向下一个元对象
 };
 
-// -------- Object Interface ----------------------
-
-Value GC_AllocObject(int iSize, MetaObject **ppPrevious);
-void GC_Mark(Value val);
-int GC_Sweep(MetaObject **ppObjects);
-void GC_FreeAllObjects(MetaObject *pObjects);
-
 #endif /* XVM_INTERNAL_H_ */

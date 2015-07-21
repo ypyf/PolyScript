@@ -75,6 +75,9 @@
     <ClInclude Include="Compiler\linked_list.h">
       <Filter>编译器</Filter>
     </ClInclude>
+    <ClInclude Include="gc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mathlib.cpp">
@@ -84,9 +87,6 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="xvm.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="xvm-gc.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="xasm.cpp">
@@ -124,6 +124,9 @@
     </ClCompile>
     <ClCompile Include="Compiler\xsc.cpp">
       <Filter>编译器</Filter>
+    </ClCompile>
+    <ClCompile Include="gc.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

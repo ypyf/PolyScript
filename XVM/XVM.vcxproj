@@ -92,6 +92,7 @@
     <ClInclude Include="Compiler\string_table.h" />
     <ClInclude Include="Compiler\symbol_table.h" />
     <ClInclude Include="Compiler\xsc.h" />
+    <ClInclude Include="gc.h" />
     <ClInclude Include="mathlib.h" />
     <ClInclude Include="xasm.h" />
     <ClInclude Include="xqueue.h" />
@@ -113,7 +114,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mathlib.cpp" />
     <ClCompile Include="xasm.cpp" />
-    <ClCompile Include="xvm-gc.cpp" />
+    <ClCompile Include="gc.cpp" />
     <ClCompile Include="xvm.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,5 +1,4 @@
-﻿#include "xvm-internal.h"
-
+﻿#include "gc.h"
 
 // 分配一个有n个字段的新对象
 // ppPrevious指向上一次分配的对象的地址
@@ -8,7 +7,7 @@ Value GC_AllocObject(int iSize, MetaObject **ppPrevious)
     Value r;
     size_t byteCount;
     
-    assert (iSize > 0);
+    assert(iSize > 0);
 
     // Allocate memory
     byteCount = sizeof(MetaObject) + iSize*sizeof(Value);

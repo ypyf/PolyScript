@@ -2,6 +2,7 @@
 
 #include "bytecode.h"
 #include "xvm-internal.h"
+#include "gc.h"
 #include "xvm.h"
 #include "compiler/xsc.h"
 #include "mathlib.h"
@@ -1461,7 +1462,7 @@ static void ExecuteScript(VMState* vm, int iTimesliceDur)
             {
                 Value oprand = ResolveOpValue(vm, 0);
 
-                assert (oprand.Type == OP_TYPE_FUNC_INDEX ||
+                assert(oprand.Type == OP_TYPE_FUNC_INDEX ||
                         oprand.Type == OP_TYPE_HOST_CALL_INDEX);
 
                 switch (oprand.Type)
