@@ -11,5 +11,11 @@ A game script virtual machine.
     
     func main()
     {
-        Explode(50);
+        var i;
+        i = 10;
+        while (i > 0)
+        {
+            print "Hello World";
+            i -= 1;
+        }
     }
