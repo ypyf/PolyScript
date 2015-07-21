@@ -87,8 +87,8 @@ int AddFunc(char* pstrName, int iIsHostAPI)
 {
 	// If a function already exists with the specified name, exit and return an invalid
 	// index
-
-	if (GetFuncByName(pstrName))
+	// 脚本中定义的函数可以覆盖host api
+	if (GetFuncByName(pstrName) && iIsHostAPI)
 		return -1;
 
 	// Create a new function node

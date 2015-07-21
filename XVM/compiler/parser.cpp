@@ -1204,7 +1204,7 @@ void ParseFactor ()
 		{
 			// First find out if the identifier is a variable or array
 
-			SymbolNode * pSymbol = GetSymbolByIdent(GetCurrLexeme(), g_iCurrScope);
+			SymbolNode* pSymbol = GetSymbolByIdent(GetCurrLexeme(), g_iCurrScope);
 			if (pSymbol)
 			{
 				// Does an array index follow the identifier?
@@ -1276,6 +1276,10 @@ void ParseFactor ()
 					iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
 					AddRegICodeOp (g_iCurrScope, iInstrIndex, REG_CODE_RETVAL);
 				}
+				else
+				{
+					ExitOnCodeError("Undefined identifier");
+				}
 			}
 
 			break;
@@ -1322,8 +1326,7 @@ void ParseFactor ()
 
 			// Push 0
 
-			iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
-			AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+			AddICodeInstr (g_iCurrScope, INSTR_ICONST_0);
 
 			// Jmp L1
 
@@ -1336,8 +1339,7 @@ void ParseFactor ()
 
 			// Push 1
 
-			iInstrIndex = AddICodeInstr (g_iCurrScope, INSTR_PUSH);
-			AddIntICodeOp (g_iCurrScope, iInstrIndex, 1);
+			AddICodeInstr (g_iCurrScope, INSTR_ICONST_1);
 
 			// L1: (Exit)
 
@@ -1892,7 +1894,7 @@ void ParseFuncCall()
 
 	FuncNode * pFunc = GetFuncByName(GetCurrLexeme());
 
-	// 第一次调用宿主函数
+	// 假设调用的是一个宿主函数
 	if (pFunc == NULL)
 	{
 		if (AddFunc(GetCurrLexeme(), TRUE) == -1)
