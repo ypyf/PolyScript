@@ -42,7 +42,7 @@ void ParseStatement();
 void ParseBlock();
 
 void ParseVar();
-void ParseHost();
+void ParsePrint();
 void ParseFunc();
 
 void ParseExpr();

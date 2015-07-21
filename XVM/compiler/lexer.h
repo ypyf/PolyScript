@@ -61,6 +61,7 @@
 #define TOKEN_TYPE_RSRVD_WHILE          13      // while
 #define TOKEN_TYPE_RSRVD_FUNC           14      // func
 #define TOKEN_TYPE_RSRVD_RETURN         15      // return
+#define TOKEN_TYPE_RSRVD_PRINT			16		// print
 #define TOKEN_TYPE_RSRVD_PARAM			17		// param
 #define TOKEN_TYPE_RSRVD_SETSTACKSIZE	18		// setstacksize
 #define TOKEN_TYPE_RSRVD_SETPRIORITY	19		// setpriority
@@ -140,7 +141,7 @@
 
 typedef int Token;                                  // Token type
 
-typedef struct _LexerState                          // The lexer's state
+struct LexerState                          // The lexer's state
 {
 	int iCurrLineIndex;                             // Current line index
 	LinkedListNode * pCurrLine;                     // Current line node pointer
@@ -149,17 +150,15 @@ typedef struct _LexerState                          // The lexer's state
 	int iCurrLexemeStart;                           // Current lexeme's starting index
 	int iCurrLexemeEnd;                             // Current lexeme's ending index
 	int iCurrOp;                                    // Current operator
-}
-LexerState;
+};
 
-typedef struct _OpState                             // Operator state
+struct OpState                             // Operator state
 {
 	char cChar;                                     // State character
 	int iSubStateIndex;                             // Index into sub state array where sub
 	int iSubStateCount;                             // Number of substates
 	int iIndex;                                     // Operator index
-}
-OpState;
+};
 
 // ---- Function Prototypes -------------------------------------------------------------------
 
