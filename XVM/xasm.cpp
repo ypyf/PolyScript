@@ -1096,8 +1096,8 @@ void InitInstrTable()
 	// push const
 	AddInstrLookup("IConst0", INSTR_ICONST_0, 0);
 	AddInstrLookup("IConst1", INSTR_ICONST_1, 0);
-	AddInstrLookup("IConst1", INSTR_FCONST_0, 0);
-	AddInstrLookup("IConst1", INSTR_FCONST_1, 0);
+	AddInstrLookup("FConst0", INSTR_FCONST_0, 0);
+	AddInstrLookup("FConst1", INSTR_FCONST_1, 0);
 
     // ----Miscellaneous
 
@@ -1118,10 +1118,7 @@ void InitInstrTable()
 
 	// NEW cnt
 	iInstrIndex = AddInstrLookup("NEW", INSTR_NEW, 1);
-	SetOpType(iInstrIndex, 0, 
-		OP_FLAG_TYPE_INT |
-		OP_FLAG_TYPE_MEM_REF | 
-		OP_FLAG_TYPE_REG);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
 
 	//iInstrIndex = AddInstrLookup("ThisCall", INSTR_THISCALL, 1);
 	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_ATTR_NAME);
