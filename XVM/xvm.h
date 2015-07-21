@@ -111,7 +111,7 @@ XVM_API void XVM_ShutDown(XVM_State* vm);
 XVM_API void XVM_CompileScript(char *pstrFilename, char *pstrExecFilename);
 XVM_API int XVM_LoadXSE(XVM_State* vm, const char *pstrFilename);
 XVM_API void XVM_UnloadScript(XVM_State* vm);
-XVM_API void XVM_ResetScript(XVM_State* vm);
+XVM_API void XVM_ResetVM(XVM_State* vm);
 XVM_API void XVM_RunScript(XVM_State* vm, int iTimesliceDur);
 XVM_API void XVM_StartScript(XVM_State* vm);
 XVM_API void XVM_StopScript(XVM_State* vm);

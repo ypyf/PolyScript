@@ -92,12 +92,13 @@ struct HOST_API_FUNC                     // Host API function
 	HOST_API_FUNC* Next;                 // The next record
 };
 
-// ----Scripts ---------------------------------------------------------------------------
-struct VMState                            // Encapsulates a full script
+// ----Script Virtual Machine State ---------------------------------------------------------------------------
+
+struct VMState
 {
     int IsActive;                                // Is this script structure in use?
 
-    // Header data
+    // Header fields
     int GlobalDataSize;                        // The size of the script's global data
     int IsMainFuncPresent;                     // Is Main() present?
     int MainFuncIndex;                            // Main()'s function index
@@ -105,12 +106,10 @@ struct VMState                            // Encapsulates a full script
     int IsRunning;                                // Is the script running?
     int IsPaused;                                // Is the script currently paused?
     int PauseEndTime;                            // If so, when should it resume?
+	int ThreadActiveTime;						// 脚本运行的总时间			
 
     // Threading
     int TimesliceDur;                          // The thread's timeslice duration
-
-	// 脚本运行的总时间
-	int ThreadActiveTime;
 
 	// 脚本特定的宿主API
 	HOST_API_FUNC* HostAPIs;
@@ -132,7 +131,6 @@ struct VMState                            // Encapsulates a full script
     int iNumberOfObjects;           // 当前已分配的对象个数
     int iMaxObjects;                // 最大对象数，用于启动GC过程
 };
-
 
 
 // ----The Global Host API ----------------------------------------------------------------------
@@ -210,7 +208,7 @@ char* ResolveOpAsString(VMState* vm, int iOpIndex);
 int ResolveOpAsInstrIndex(VMState* vm, int iOpIndex);
 int ResolveOpAsFuncIndex(VMState* vm, int iOpIndex);
 char* ResolveOpAsHostAPICall(int iOpIndex);
-Value* ResolveOpPntr(VMState* vm, int iOpIndex);
+Value* ResolveOpPointer(VMState* vm, int iOpIndex);
 
 // ----Runtime Stack Interface -----------------------------------------------------------
 
@@ -268,27 +266,6 @@ VMState* XVM_Create()
 	thead->iMaxObjects = INITIAL_GC_THRESHOLD;
 
 	return thead;
-}
-
-/******************************************************************************************
-*
-*    XVM_ShutDown()
-*
-*    Shuts down the runtime environment.
-*/
-
-void XVM_ShutDown(VMState *vm)
-{
-    XVM_UnloadScript(vm);
-
-    while (g_HostAPIs != NULL) 
-	{
-        HOST_API_FUNC* p = g_HostAPIs;
-        g_HostAPIs = g_HostAPIs->Next;
-        free(p);
-    }
-
-	delete vm;
 }
 
 /******************************************************************************************
@@ -666,7 +643,6 @@ int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
 
     // Allocate the table
 
-    //if (!(vm->HostCallTable.Size*sizeof(char *))))
 	if (!(vm->HostCallTable.Calls = (char **)malloc(vm->HostCallTable.Size*sizeof(char *))))
         return XVM_LOAD_ERROR_OUT_OF_MEMORY;
 
@@ -705,11 +681,24 @@ int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
 
     // Reset the script
 
-    XVM_ResetScript(vm);
+    XVM_ResetVM(vm);
 
     // Return a success code
 
     return XVM_LOAD_OK;
+}
+
+/******************************************************************************************
+*
+*    XVM_ShutDown()
+*
+*    Shuts down the runtime environment.
+*/
+
+void XVM_ShutDown(VMState *vm)
+{
+	XVM_UnloadScript(vm);
+	delete vm;
 }
 
 /******************************************************************************************
@@ -768,6 +757,14 @@ void XVM_UnloadScript(VMState* vm)
     if (vm->FuncTable.Funcs)
         free(vm->FuncTable.Funcs);
 
+	// ---- Free registered host API
+	while (vm->HostAPIs != NULL) 
+	{
+		HOST_API_FUNC* pFunc = vm->HostAPIs;
+		vm->HostAPIs = vm->HostAPIs->Next;
+		free(pFunc);
+	}
+
     // ---Free the host API call table
 
     // First free each string in the table individually
@@ -784,33 +781,16 @@ void XVM_UnloadScript(VMState* vm)
 
 /******************************************************************************************
 *
-*    XVM_ResetScript()
+*    XVM_ResetVM()
 *
 *    Resets the script. This function accepts a thread index rather than relying on the
 *    currently active thread, because scripts can (and will) need to be reset arbitrarily.
 */
 
-void XVM_ResetScript(VMState* vm)
+void XVM_ResetVM(VMState* vm)
 {
-    // Get Main()'s function index in case we need it
-
-    int iMainFuncIndex = vm->MainFuncIndex;
-
-    // If the function table is present, set the entry point
-
-    if (vm->FuncTable.Funcs)
-    {
-        // 如果主函数存在，那么设置脚本入口地址为主函数入口
-        // 否则脚本从地址0开始执行
-		if (vm->IsMainFuncPresent)
-		{
-			vm->InstrStream.CurrInstr = vm->FuncTable.Funcs[iMainFuncIndex].EntryPoint;
-		}
-		else
-		{
-			vm->InstrStream.CurrInstr = 0;
-		}
-    }
+	// 重置指令指针
+	vm->InstrStream.CurrInstr = 0;
 
     // Clear the stack
     vm->Stack.TopIndex = 0;
@@ -840,12 +820,12 @@ void XVM_ResetScript(VMState* vm)
 
 /******************************************************************************************
 *
-*    XVM_ExecuteScript()
+*    ExecuteInstruction()
 *
-*    Runs the currenty loaded script array for a given timeslice duration.
+*    Runs the currenty loaded script for a given timeslice duration.
 */
 
-static void ExecuteScript(VMState* vm, int iTimesliceDur)
+static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 {
     // Begin a loop that runs until a keypress. The instruction pointer has already been
     // initialized with a prior call to ResetScripts(), so execution can begin
@@ -861,11 +841,10 @@ static void ExecuteScript(VMState* vm, int iTimesliceDur)
     // Create a variable to hold the current time
     int iCurrTime;
 
-    while (TRUE)
+	// Execution loop
+    while (vm->IsRunning)
     {
         // 检查线程是否已经终结，则退出执行循环
-		if (!vm->IsRunning)
-			break;
 
         // Update the current time
         iCurrTime = GetCurrTime();
@@ -890,10 +869,10 @@ static void ExecuteScript(VMState* vm, int iTimesliceDur)
         // 如果没有任何指令需要执行，则停止运行
 		if (vm->InstrStream.CurrInstr >= vm->InstrStream.Size)
 		{
-            vm->IsRunning = FALSE;
-            vm->ExitCode = XVM_EXIT_OK;
-            break;
-        }
+			vm->IsRunning = FALSE;
+			vm->ExitCode = XVM_EXIT_OK;
+			break;
+		}
 
         // 保存指令指针，用于之后的比较
         int iCurrInstr = vm->InstrStream.CurrInstr;
@@ -907,12 +886,6 @@ static void ExecuteScript(VMState* vm, int iTimesliceDur)
         switch (iOpcode)
         {
             // ----Binary Operations
-
-            // All of the binary operation instructions (move, arithmetic, and bitwise)
-            // are combined into a single case that keeps us from having to rewrite the
-            // otherwise redundant operand resolution and result storage phases over and
-            // over. We then use an additional switch block to determine which operation
-            // should be performed.
 
             // Move
 
@@ -950,7 +923,7 @@ static void ExecuteScript(VMState* vm, int iTimesliceDur)
                 case INSTR_MOV:
 
                     // Skip cases where the two operands are the same
-                    if (ResolveOpPntr(vm, 0) == ResolveOpPntr(vm, 1))
+                    if (ResolveOpPointer(vm, 0) == ResolveOpPointer(vm, 1))
                         break;
 
                     // Copy the source operand into the destination
@@ -1057,7 +1030,7 @@ static void ExecuteScript(VMState* vm, int iTimesliceDur)
                 // Use ResolveOpPntr() to get a pointer to the destination Value structure and
                 // move the result there
 
-                *ResolveOpPntr(vm, 0) = Dest;
+                *ResolveOpPointer(vm, 0) = Dest;
 
                 break;
             }
@@ -1128,7 +1101,7 @@ static void ExecuteScript(VMState* vm, int iTimesliceDur)
                 }
 
                 // Move the result to the destination
-                *ResolveOpPntr(vm, 0) = Dest;
+                *ResolveOpPointer(vm, 0) = Dest;
 
                 break;
             }
@@ -1172,7 +1145,7 @@ static void ExecuteScript(VMState* vm, int iTimesliceDur)
 
                 // Copy the concatenated string pointer to its destination
 
-                *ResolveOpPntr(vm, 0) = Dest;
+                *ResolveOpPointer(vm, 0) = Dest;
 
                 break;
             }
@@ -1223,7 +1196,7 @@ static void ExecuteScript(VMState* vm, int iTimesliceDur)
                 Dest.String = pstrNewString;
 
                 // Copy the concatenated string pointer to its destination
-                *ResolveOpPntr(vm, 0) = Dest;
+                *ResolveOpPointer(vm, 0) = Dest;
 
                 break;
             }
@@ -1241,7 +1214,7 @@ static void ExecuteScript(VMState* vm, int iTimesliceDur)
                 char *pstrSourceString = ResolveOpAsString(vm, 2);
 
                 // Set the specified character in the destination (operand index 0)
-                ResolveOpPntr(vm, 0)->String[iDestIndex] = pstrSourceString[0];
+                ResolveOpPointer(vm, 0)->String[iDestIndex] = pstrSourceString[0];
 
                 break;
             }
@@ -1413,7 +1386,7 @@ static void ExecuteScript(VMState* vm, int iTimesliceDur)
         case INSTR_POP:
             {
                 // Pop the top of the stack into the destination
-                *ResolveOpPntr(vm, 0) = Pop(vm);
+                *ResolveOpPointer(vm, 0) = Pop(vm);
                 break;
             }
 
@@ -2237,7 +2210,7 @@ inline char*ResolveOpAsHostAPICall(VMState* vm, int iOpIndex)
 *  Resolves an operand and returns a pointer to its Value structure.
 */
 
-inline Value* ResolveOpPntr(VMState* vm, int iOpIndex)
+inline Value* ResolveOpPointer(VMState* vm, int iOpIndex)
 {
     // Get the method of indirection
 
@@ -2569,7 +2542,7 @@ int XVM_CallScriptFunc(VMState* vm, char *pstrName)
 	CallFunc(vm, iFuncIndex, OP_TYPE_STACK_BASE_MARKER);
 
     // Allow the script code to execute uninterrupted until the function returns
-    ExecuteScript(vm, XVM_INFINITE_TIMESLICE);
+    ExecuteInstruction(vm, XVM_INFINITE_TIMESLICE);
 
     return TRUE;
 }
@@ -2611,6 +2584,9 @@ int XVM_RegisterHostFunc(XVM_State* vm, char *pstrName, XVM_HOST_FUNCTION fnFunc
 {
     HOST_API_FUNC** pCFuncTable;
 
+	if (pstrName == NULL)
+		return FALSE;
+
 	// 全局API
 	if (vm == XVM_GLOBAL_FUNC)
 		pCFuncTable = &g_HostAPIs;
@@ -2619,7 +2595,7 @@ int XVM_RegisterHostFunc(XVM_State* vm, char *pstrName, XVM_HOST_FUNCTION fnFunc
 
     while (*pCFuncTable != NULL)
     {
-        // 如果函数名已经存在，则更新它的属性
+        // 如果函数名已经注册，则更新它绑定的函数指针
         if (strcmp((*pCFuncTable)->Name, pstrName) == 0)
         {
             (*pCFuncTable)->FuncPtr = fnFunc;
@@ -2629,16 +2605,12 @@ int XVM_RegisterHostFunc(XVM_State* vm, char *pstrName, XVM_HOST_FUNCTION fnFunc
     }
 
     // 添加新的节点到函数列表
-    HOST_API_FUNC *node = (HOST_API_FUNC *)malloc(sizeof(HOST_API_FUNC));
-    *pCFuncTable = node;
-    memset(node, 0, sizeof(HOST_API_FUNC));
-    strcpy(node->Name, pstrName);
-    if (!node->Name)
-    {
-        return FALSE;
-    }
-    node->FuncPtr = fnFunc;
-    node->Next = NULL;
+    HOST_API_FUNC *pFunc = (HOST_API_FUNC *)malloc(sizeof(HOST_API_FUNC));
+    *pCFuncTable = pFunc;
+    memset(pFunc, 0, sizeof(HOST_API_FUNC));
+    strcpy(pFunc->Name, pstrName);
+    pFunc->FuncPtr = fnFunc;
+    pFunc->Next = NULL;
     return TRUE;
 }
 
