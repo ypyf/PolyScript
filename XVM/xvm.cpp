@@ -114,8 +114,8 @@ struct VMState
 	// 脚本特定的宿主API
 	HOST_API_FUNC* HostAPIs;
 
-    // Register file
-    Value _RetVal;                                // The _RetVal register
+    // Registers
+    Value _RetVal;                                // The _RetVal register (R0)
 
     // 脚本退出代码
     int ExitCode;

@@ -10,7 +10,7 @@
 // ---- Functions -------------------------------------------------------------------------
 
 int g_iCurrScope;                               // The current scope
-static int g_iGotReturnStmt = FALSE;					// 函数中是否有返回语句
+static int g_iGotReturnStmt = FALSE;			// 函数中是否有返回语句
 
 // ---- Loops -----------------------------------------------------------------------------
 
@@ -18,7 +18,7 @@ Stack g_LoopStack;                              // Loop handling stack
 
 // ---- Functions -----------------------------------------------------------------------------
 
-inline bool IsMainFunc()
+static bool IsMainFunc()
 {
 	return (g_ScriptHeader.iIsMainFuncPresent && 
 		g_ScriptHeader.iMainFuncIndex == g_iCurrScope);
