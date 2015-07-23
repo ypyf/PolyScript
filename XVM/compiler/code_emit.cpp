@@ -22,7 +22,7 @@ char ppstrMnemonics[][12] =
 	"call", "ret",
 	"pause",
 	"iconst0", "iconst1", "fconst0", "fconst1",
-	"print",
+	"print", "break",
 };
 
 // ---- Functions -----------------------------------------------------------------------------

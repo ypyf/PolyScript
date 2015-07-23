@@ -1070,6 +1070,9 @@ void InitInstrTable()
 	iInstrIndex = AddInstrLookup("Print", INSTR_PRINT, 1);
 	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
 
+	// Breakpoint
+	AddInstrLookup("Print", INSTR_BREAK, 1);
+
     // Pause        Duration
 
     iInstrIndex = AddInstrLookup("Pause", INSTR_PAUSE, 1);

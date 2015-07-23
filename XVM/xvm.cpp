@@ -1546,6 +1546,11 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 break;
             }
 
+		case INSTR_BREAK:
+			// 暂停虚拟机
+			vm->IsPaused = TRUE;
+			// TODO 调用调试例程
+			break;
         case INSTR_NEW:
             {
                 int iSize = ResolveOpAsInt(vm, 0);
