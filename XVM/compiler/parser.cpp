@@ -656,7 +656,7 @@ void ParseFunc()
 		{
 			int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_MOV);
 			AddRegICodeOp (g_iCurrScope, iInstrIndex, REG_CODE_RETVAL);
-			AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+			AddIntICodeOp(g_iCurrScope, iInstrIndex, 0);
 		}
 		AddICodeInstr(g_iCurrScope, INSTR_RET);
 
@@ -844,14 +844,14 @@ void ParseExpr()
 
 					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JE);
 					AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
-					AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+					AddIntICodeOp(g_iCurrScope, iInstrIndex, 0);
 					AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex);
 
 					// JE _T1, 0, True
 
 					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JE);
 					AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
-					AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+					AddIntICodeOp(g_iCurrScope, iInstrIndex, 0);
 					AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex);
 
 					// Push 1	返回的是布尔值0
@@ -891,20 +891,20 @@ void ParseExpr()
 
 					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JNE);
 					AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
-					AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+					AddIntICodeOp(g_iCurrScope, iInstrIndex, 0);
 					AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex);
 
 					// JNE _T1, 0, True
 
 					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JNE);
 					AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
-					AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+					AddIntICodeOp(g_iCurrScope, iInstrIndex, 0);
 					AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex);
 
 					// Push 0
 
 					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-					AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+					AddIntICodeOp(g_iCurrScope, iInstrIndex, 0);
 
 					// Jmp Exit
 
@@ -918,7 +918,7 @@ void ParseExpr()
 					// Push 1
 
 					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-					AddIntICodeOp (g_iCurrScope, iInstrIndex, 1);
+					AddIntICodeOp(g_iCurrScope, iInstrIndex, 1);
 
 					// L1: (Exit)
 
@@ -1191,14 +1191,14 @@ void ParseFactor ()
 
 	case TOKEN_TYPE_INT:
 		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-		AddIntICodeOp (g_iCurrScope, iInstrIndex, atoi (GetCurrLexeme()));
+		AddIntICodeOp(g_iCurrScope, iInstrIndex, atoi (GetCurrLexeme()));
 		break;
 
 		// It's a float literal, so push it onto the stack
 
 	case TOKEN_TYPE_FLOAT:
 		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-		AddFloatICodeOp (g_iCurrScope, iInstrIndex, (float) atof (GetCurrLexeme()));
+		AddFloatICodeOp(g_iCurrScope, iInstrIndex, (float) atof (GetCurrLexeme()));
 		break;
 
 		// It's a string literal, so add it to the string table and push the resulting
@@ -1256,7 +1256,7 @@ void ParseFactor ()
 					// with _T0
 
 					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-					AddArrayIndexVarICodeOp (g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar0SymbolIndex);
+					AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar0SymbolIndex);
 				}
 				else
 				{
@@ -1335,7 +1335,7 @@ void ParseFactor ()
 
 			iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JE);
 			AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
-			AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+			AddIntICodeOp(g_iCurrScope, iInstrIndex, 0);
 			AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex);
 
 			// Push 0
@@ -1438,7 +1438,7 @@ void ParseIf ()
 
 	iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JE);
 	AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
-	AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+	AddIntICodeOp(g_iCurrScope, iInstrIndex, 0);
 	AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex);
 
 	// Parse the true block
@@ -1530,7 +1530,7 @@ void ParseWhile ()
 
 	iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JE);
 	AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
-	AddIntICodeOp (g_iCurrScope, iInstrIndex, 0);
+	AddIntICodeOp(g_iCurrScope, iInstrIndex, 0);
 	AddJumpTargetICodeOp (g_iCurrScope, iInstrIndex, iEndTargetIndex);
 
 	// Create a new loop instance structure
@@ -1884,7 +1884,7 @@ void ParseAssign()
 	// Generate the destination operand
 
 	if (iIsArray)
-		AddArrayIndexVarICodeOp (g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1SymbolIndex);
+		AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1SymbolIndex);
 	else
 		AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
 

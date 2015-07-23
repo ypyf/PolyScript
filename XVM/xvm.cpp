@@ -1521,7 +1521,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 if (vm->IsMainFuncPresent &&
                     vm->MainFuncIndex == FuncIndex.FuncIndex)
                 {
-                    vm->_RetVal.Fixnum;
+                    vm->ExitCode = vm->_RetVal.Fixnum;
                 }
 
                 // Get the previous function index
@@ -1931,9 +1931,6 @@ char *CoerceValueToString(Value Val)
 {
     char *pstrCoercion;
 
-    if (Val.Type != OP_TYPE_STRING)
-        pstrCoercion = (char *)malloc(MAX_COERCION_STRING_SIZE + 1);
-
     // Determine which type the Value currently is
 
     switch (Val.Type)
@@ -1941,6 +1938,7 @@ char *CoerceValueToString(Value Val)
         // It's an integer, so convert it to a string
 
     case OP_TYPE_INT:
+		pstrCoercion = (char *)malloc(MAX_COERCION_STRING_SIZE + 1);
         sprintf(pstrCoercion, "%d", Val.Fixnum);
         return pstrCoercion;
 
@@ -1948,6 +1946,7 @@ char *CoerceValueToString(Value Val)
         // for converting floats to strings
 
     case OP_TYPE_FLOAT:
+		pstrCoercion = (char *)malloc(MAX_COERCION_STRING_SIZE + 1);
         sprintf(pstrCoercion, "%f", Val.Realnum);
         return pstrCoercion;
 
