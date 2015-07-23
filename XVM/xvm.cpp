@@ -188,6 +188,9 @@ void CopyValue(Value *pDest, Value* Source);
 int GetOpType(VMState* vm, int OpIndex);
 int ResolveOpRelStackIndex(VMState *vm, Value* OpValue);
 Value* ResolveOpValue(VMState* vm, int iOpIndex);
+Value* ResolveOp0(VMState* vm);
+Value* ResolveOp1(VMState* vm);
+Value* ResolveOp2(VMState* vm);
 int ResolveOpType(VMState* vm, int iOpIndex);
 int ResolveOpAsInt(VMState* vm, int iOpIndex);
 float ResolveOpAsFloat(VMState* vm, int iOpIndex);
@@ -884,11 +887,11 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             {
                 // Get a local copy of the destination operand (operand index 0)
 
-                Value* Dest = ResolveOpValue(vm, 0);
+                Value* Dest = ResolveOp0(vm);
 
                 // Get a local copy of the source operand (operand index 1)
 
-                Value* Source = ResolveOpValue(vm, 1);
+                Value* Source = ResolveOp1(vm);
 
                 // Depending on the instruction, perform a binary operation
 
@@ -1027,7 +1030,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                 // Get a local copy of the destination itself
 
-                Value* Dest = ResolveOpValue(vm, 0);
+                Value* Dest = ResolveOp0(vm);
 
                 switch (iOpcode)
                 {
@@ -1086,7 +1089,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             {
                 // Get a local copy of the destination operand (operand index 0)
 
-                Value* Dest = ResolveOpValue(vm, 0);
+                Value* Dest = ResolveOp0(vm);
 
                 // Get a local copy of the source string (operand index 1)
 
@@ -1128,7 +1131,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             {
                 // Get a local copy of the destination operand (operand index 0)
 
-                Value* Dest = ResolveOpValue(vm, 0);
+                Value* Dest = ResolveOp0(vm);
 
                 // Get a local copy of the source string (operand index 1)
 
@@ -1213,8 +1216,8 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_JGE:
         case INSTR_JLE:
             {
-                Value* Op0 = ResolveOpValue(vm, 0);  // 条件1
-                Value* Op1 = ResolveOpValue(vm, 1);  // 条件2
+                Value* Op0 = ResolveOp0(vm);  // 条件1
+                Value* Op1 = ResolveOp1(vm);  // 条件2
 
                 // Get the index of the target instruction (opcode index 2)
 
@@ -1349,7 +1352,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_PUSH:
             {
                 // Get a local copy of the source operand (operand index 0)
-                Value* Source = ResolveOpValue(vm, 0);
+                Value* Source = ResolveOp0(vm);
 
                 // Push the value onto the stack
                 Push(vm, Source);
@@ -1407,7 +1410,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             // ----The Function Call Interface
         case INSTR_CALL:
             {
-                Value* oprand = ResolveOpValue(vm, 0);
+                Value* oprand = ResolveOp0(vm);
 
                 assert(oprand->Type == OP_TYPE_FUNC_INDEX ||
                         oprand->Type == OP_TYPE_HOST_CALL_INDEX);
@@ -1519,7 +1522,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
         case INSTR_PRINT:
             {
-                Value* val = ResolveOpValue(vm, 0);
+                Value* val = ResolveOp0(vm);
                 switch (val->Type)
                 {
                 case OP_TYPE_NULL:
@@ -1958,6 +1961,66 @@ inline int ResolveOpRelStackIndex(VMState *vm, Value* OpValue)
 inline Value* ResolveOpValue(VMState *vm, int iOpIndex)
 {
 	Value* OpValue = &vm->InstrStream.Instrs[vm->InstrStream.CurrInstr].pOpList[iOpIndex];
+
+	switch (OpValue->Type)
+	{
+	case OP_TYPE_ABS_STACK_INDEX:
+		return GetStackValue(vm, OpValue->StackIndex);
+	case OP_TYPE_REL_STACK_INDEX:
+		{
+			int iAbsStackIndex = ResolveOpRelStackIndex(vm, OpValue);
+			return GetStackValue(vm, iAbsStackIndex);
+		}
+	case OP_TYPE_REG:
+		return &vm->_RetVal;
+	}
+
+	return OpValue;
+}
+
+inline Value* ResolveOp0(VMState* vm)
+{
+	Value* OpValue = &vm->InstrStream.Instrs[vm->InstrStream.CurrInstr].pOpList[0];
+
+	switch (OpValue->Type)
+	{
+	case OP_TYPE_ABS_STACK_INDEX:
+		return GetStackValue(vm, OpValue->StackIndex);
+	case OP_TYPE_REL_STACK_INDEX:
+		{
+			int iAbsStackIndex = ResolveOpRelStackIndex(vm, OpValue);
+			return GetStackValue(vm, iAbsStackIndex);
+		}
+	case OP_TYPE_REG:
+		return &vm->_RetVal;
+	}
+
+	return OpValue;
+}
+
+inline Value* ResolveOp1(VMState* vm)
+{
+	Value* OpValue = &vm->InstrStream.Instrs[vm->InstrStream.CurrInstr].pOpList[1];
+
+	switch (OpValue->Type)
+	{
+	case OP_TYPE_ABS_STACK_INDEX:
+		return GetStackValue(vm, OpValue->StackIndex);
+	case OP_TYPE_REL_STACK_INDEX:
+		{
+			int iAbsStackIndex = ResolveOpRelStackIndex(vm, OpValue);
+			return GetStackValue(vm, iAbsStackIndex);
+		}
+	case OP_TYPE_REG:
+		return &vm->_RetVal;
+	}
+
+	return OpValue;
+}
+
+inline Value* ResolveOp2(VMState* vm)
+{
+	Value* OpValue = &vm->InstrStream.Instrs[vm->InstrStream.CurrInstr].pOpList[2];
 
 	switch (OpValue->Type)
 	{
