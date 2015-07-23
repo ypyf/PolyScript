@@ -9,6 +9,7 @@
 #include <ctype.h>
 #include <time.h>
 
+
 // ----Script Loading --------------------------------------------------------------------
 
 #define XSE_ID_STRING               "XSE0"      // Used to validate an .MAX executable
@@ -185,7 +186,7 @@ char *CoerceValueToString(Value Val);
 void CopyValue(Value *pDest, Value Source);
 
 int GetOpType(VMState* vm, int OpIndex);
-int ResolveOpStackIndex(VMState* vm, int OpIndex);
+int ResolveOpRelStackIndex(VMState *vm, Value* OpValue);
 Value ResolveOpValue(VMState* vm, int iOpIndex);
 int ResolveOpType(VMState* vm, int iOpIndex);
 int ResolveOpAsInt(VMState* vm, int iOpIndex);
@@ -198,7 +199,7 @@ Value* ResolveOpPointer(VMState* vm, int iOpIndex);
 
 // ----Runtime Stack Interface -----------------------------------------------------------
 
-Value GetStackValue(VMState* vm, int iIndex);
+Value* GetStackValue(VMState* vm, int iIndex);
 void SetStackValue(VMState* vm, int iIndex, Value Val);
 void Push(VMState* vm, Value& Val);
 Value Pop(VMState* vm);
@@ -1503,15 +1504,15 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 // Read the return address structure from the stack, which is stored one
                 // index below the local data
                 int iIndexOfRA = vm->Stack.TopIndex - (CurrFunc->LocalDataSize + 1);
-                Value ReturnAddr = GetStackValue(vm, iIndexOfRA);
+                Value* ReturnAddr = GetStackValue(vm, iIndexOfRA);
                 //printf("OffsetIndex %d\n", FuncIndex.OffsetIndex);
-                assert(ReturnAddr.Type == OP_TYPE_INSTR_INDEX);
+                assert(ReturnAddr->Type == OP_TYPE_INSTR_INDEX);
 
                 // Pop the stack frame along with the return address
                 PopFrame(vm, CurrFunc->StackFrameSize);
 
                 // Make the jump to the return address
-                vm->InstrStream.CurrInstr = ReturnAddr.InstrIndex;
+                vm->InstrStream.CurrInstr = ReturnAddr->InstrIndex;
 
                 break;
             }
@@ -1918,55 +1919,33 @@ inline int GetOpType(VMState *vm, int iOpIndex)
 	return vm->InstrStream.Instrs[iCurrInstr].pOpList[iOpIndex].Type;
 }
 
-/******************************************************************************************
-*
-*  ResolveOpStackIndex()
-*
-*  Resolves an operand's stack index, whether it's absolute or relative.
-*/
-
-inline int ResolveOpStackIndex(VMState *vm, int iOpIndex)
+inline int ResolveOpRelStackIndex(VMState *vm, Value* OpValue)
 {
-    // Get the current instruction
+	assert(OpValue->Type == OP_TYPE_REL_STACK_INDEX);
+	
+	int iAbsIndex;
 
-    int iCurrInstr = vm->InstrStream.CurrInstr;
+	// Resolve the index and use it to return the corresponding stack element
+	// First get the base index
+	int iBaseIndex = OpValue->StackIndex;
 
-    // Get the operand type
+	// Now get the index of the variable
+	int iOffsetIndex = OpValue->OffsetIndex;
 
-    Value OpValue =vm->InstrStream.Instrs[iCurrInstr].pOpList[iOpIndex];
+	// Get the variable's value
+	Value* sv = GetStackValue(vm, iOffsetIndex);
 
-    // Resolve the stack index based on its type
+	assert(sv->Type == OP_TYPE_INT);
 
-    switch (OpValue.Type)
-    {
-    case OP_TYPE_ABS_STACK_INDEX:
-        // 操作数中存放的就是绝对地址，所以直接返回这个地址
-        return OpValue.StackIndex;
+	// 绝对地址 = 基址 + 偏移
+	// 全局变量基址是正数，从0开始增大
+	if (iBaseIndex >= 0)
+		iAbsIndex = iBaseIndex + sv->Fixnum;
+	else
+		// 局部变量基址是负数，从-1开始减小
+		iAbsIndex = iBaseIndex - sv->Fixnum;
 
-    case OP_TYPE_REL_STACK_INDEX:
-        {
-            // First get the base index
-            int iBaseIndex = OpValue.StackIndex;
-
-            // Now get the index of the variable
-            int iOffsetIndex = OpValue.OffsetIndex;
-
-            // Get the variable's value
-            Value sv = GetStackValue(vm, iOffsetIndex);
-
-            assert(sv.Type == OP_TYPE_INT);
-
-            // 绝对地址 = 基址 + 偏移
-            // 全局变量基址是正数，从0开始增大
-            if (iBaseIndex >= 0)
-                return iBaseIndex + sv.Fixnum;
-            else
-                // 局部变量基址是负数，从-1开始减小
-                return iBaseIndex - sv.Fixnum;
-        }
-    default:
-        return -1;    // unexpected
-    }
+	return iAbsIndex;
 }
 
 /******************************************************************************************
@@ -1978,35 +1957,21 @@ inline int ResolveOpStackIndex(VMState *vm, int iOpIndex)
 
 inline Value ResolveOpValue(VMState *vm, int iOpIndex)
 {
-    // Get the current instruction
-
-	int iCurrInstr = vm->InstrStream.CurrInstr;
-
-	// Get the operand type
-
-	Value OpValue = vm->InstrStream.Instrs[iCurrInstr].pOpList[iOpIndex];
+	Value OpValue = vm->InstrStream.Instrs[vm->InstrStream.CurrInstr].pOpList[iOpIndex];
 
     // Determine what to return based on the value's type
-
     switch (OpValue.Type)
     {
-        // It's a stack index so resolve it
-
     case OP_TYPE_ABS_STACK_INDEX:
+		return *GetStackValue(vm, OpValue.StackIndex);
     case OP_TYPE_REL_STACK_INDEX:
-        {
-            // Resolve the index and use it to return the corresponding stack element
-
-            int iAbsIndex = ResolveOpStackIndex(vm, iOpIndex);
-            OpValue = GetStackValue(vm, iAbsIndex);
-        }
-        break;
-
+		{
+			int iAbsStackIndex = ResolveOpRelStackIndex(vm, &OpValue);
+			return *GetStackValue(vm, iAbsStackIndex);
+		}
     case OP_TYPE_REG:
-        OpValue = vm->_RetVal;
-        break;
+		return vm->_RetVal;
     }
-
     return OpValue;
 }
 
@@ -2020,13 +1985,7 @@ inline Value ResolveOpValue(VMState *vm, int iOpIndex)
 
 inline int ResolveOpType(VMState* vm, int iOpIndex)
 {
-    // Resolve the operand's value
-
-    Value OpValue = ResolveOpValue(vm, iOpIndex);
-
-    // Return the value type
-
-    return OpValue.Type;
+    return ResolveOpValue(vm, iOpIndex).Type;
 }
 
 /******************************************************************************************
@@ -2154,21 +2113,19 @@ inline char*ResolveOpAsHostAPICall(VMState* vm, int iOpIndex)
 
 inline Value* ResolveOpPointer(VMState* vm, int iOpIndex)
 {
-    // Get the method of indirection
+    Value OpValue = vm->InstrStream.Instrs[vm->InstrStream.CurrInstr].pOpList[iOpIndex];
 
-    int iIndirMethod = GetOpType(vm, iOpIndex);
-
-    // Return a pointer to wherever the operand lies
-
-    switch (iIndirMethod)
+    switch (OpValue.Type)
     {
         // It's on the stack
 
     case OP_TYPE_ABS_STACK_INDEX:
+		return GetStackValue(vm, OpValue.StackIndex);
+		//return &vm->Stack.Elmnts[ResolveStackIndex(vm->Stack.FrameIndex, OpValue.StackIndex)];
     case OP_TYPE_REL_STACK_INDEX:
         {
-            int iStackIndex = ResolveOpStackIndex(vm, iOpIndex);
-			return &vm->Stack.Elmnts[ResolveStackIndex(vm->Stack.FrameIndex, iStackIndex)];
+            int iAbsStackIndex = ResolveOpRelStackIndex(vm, &OpValue);
+			return GetStackValue(vm, iAbsStackIndex);
         }
 
         // It's _RetVal
@@ -2190,11 +2147,11 @@ inline Value* ResolveOpPointer(VMState* vm, int iOpIndex)
 *    Returns the specified stack value.
 */
 
-inline Value GetStackValue(VMState *vm, int iIndex)
+inline Value* GetStackValue(VMState *vm, int iIndex)
 {
 	int iActualIndex = ResolveStackIndex(vm->Stack.FrameIndex, iIndex);
-	assert(iActualIndex < vm->Stack.Size);
-	return vm->Stack.Elmnts[ResolveStackIndex(vm->Stack.FrameIndex, iIndex)];
+	assert(iActualIndex < vm->Stack.Size && iActualIndex >= 0);
+	return &vm->Stack.Elmnts[iActualIndex];
 }
 
 /******************************************************************************************
@@ -2207,7 +2164,7 @@ inline Value GetStackValue(VMState *vm, int iIndex)
 inline void SetStackValue(VMState *vm, int iIndex, Value Val)
 {
     int iActualIndex = ResolveStackIndex(vm->Stack.FrameIndex, iIndex);
-    assert(iActualIndex < vm->Stack.Size);
+    assert(iActualIndex < vm->Stack.Size && iActualIndex >= 0);
     vm->Stack.Elmnts[iActualIndex] = Val;
 }
 

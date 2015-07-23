@@ -30,6 +30,7 @@ extern "C" {
 // The following Windows-specific includes are only here to implement GetCurrTime(); these
 // can be replaced when implementing the XVM on non-Windows platforms.
 
+
 // ----Constants -----------------------------------------------------------------------------
 
 // ----General ---------------------------------------------------------------------------
