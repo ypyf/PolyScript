@@ -179,15 +179,15 @@ static void RunGC(VMState *vm);
 
 // ----Operand Interface -----------------------------------------------------------------
 
-int CoerceValueToInt(Value Val);
-float CoerceValueToFloat(Value Val);
-char *CoerceValueToString(Value Val);
+int CoerceValueToInt(Value* Val);
+float CoerceValueToFloat(Value* Val);
+char *CoerceValueToString(Value* Val);
 
-void CopyValue(Value *pDest, Value Source);
+void CopyValue(Value *pDest, Value* Source);
 
 int GetOpType(VMState* vm, int OpIndex);
 int ResolveOpRelStackIndex(VMState *vm, Value* OpValue);
-Value ResolveOpValue(VMState* vm, int iOpIndex);
+Value* ResolveOpValue(VMState* vm, int iOpIndex);
 int ResolveOpType(VMState* vm, int iOpIndex);
 int ResolveOpAsInt(VMState* vm, int iOpIndex);
 float ResolveOpAsFloat(VMState* vm, int iOpIndex);
@@ -201,7 +201,7 @@ Value* ResolveOpPointer(VMState* vm, int iOpIndex);
 
 Value* GetStackValue(VMState* vm, int iIndex);
 void SetStackValue(VMState* vm, int iIndex, Value Val);
-void Push(VMState* vm, Value& Val);
+void Push(VMState* vm, Value* Val);
 Value Pop(VMState* vm);
 void PushFrame(VMState* vm, int iSize);
 void PopFrame(VMState* vm, int iSize);
@@ -884,11 +884,11 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             {
                 // Get a local copy of the destination operand (operand index 0)
 
-                Value Dest = ResolveOpValue(vm, 0);
+                Value* Dest = ResolveOpValue(vm, 0);
 
                 // Get a local copy of the source operand (operand index 1)
 
-                Value Source = ResolveOpValue(vm, 1);
+                Value* Source = ResolveOpValue(vm, 1);
 
                 // Depending on the instruction, perform a binary operation
 
@@ -901,7 +901,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                         break;
 
                     // Copy the source operand into the destination
-                    CopyValue(&Dest, Source);
+                    CopyValue(Dest, Source);
 
                     break;
 
@@ -911,37 +911,37 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                 case INSTR_ADD:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        Dest.Fixnum += ResolveOpAsInt(vm, 1);
+                    if (Dest->Type == OP_TYPE_INT)
+                        Dest->Fixnum += ResolveOpAsInt(vm, 1);
                     else
-                        Dest.Realnum += ResolveOpAsFloat(vm, 1);
+                        Dest->Realnum += ResolveOpAsFloat(vm, 1);
 
                     break;
 
                 case INSTR_SUB:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        Dest.Fixnum -= ResolveOpAsInt(vm, 1);
+                    if (Dest->Type == OP_TYPE_INT)
+                        Dest->Fixnum -= ResolveOpAsInt(vm, 1);
                     else
-                        Dest.Realnum -= ResolveOpAsFloat(vm, 1);
+                        Dest->Realnum -= ResolveOpAsFloat(vm, 1);
 
                     break;
 
                 case INSTR_MUL:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        Dest.Fixnum *= ResolveOpAsInt(vm, 1);
+                    if (Dest->Type == OP_TYPE_INT)
+                        Dest->Fixnum *= ResolveOpAsInt(vm, 1);
                     else
-                        Dest.Realnum *= ResolveOpAsFloat(vm, 1);
+                        Dest->Realnum *= ResolveOpAsFloat(vm, 1);
 
                     break;
 
                 case INSTR_DIV:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        Dest.Fixnum /= ResolveOpAsInt(vm, 1);
+                    if (Dest->Type == OP_TYPE_INT)
+                        Dest->Fixnum /= ResolveOpAsInt(vm, 1);
                     else
-                        Dest.Realnum /= ResolveOpAsFloat(vm, 1);
+                        Dest->Realnum /= ResolveOpAsFloat(vm, 1);
 
                     break;
 
@@ -949,17 +949,17 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                     // Remember, Mod works with integers only
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        Dest.Fixnum %= ResolveOpAsInt(vm, 1);
+                    if (Dest->Type == OP_TYPE_INT)
+                        Dest->Fixnum %= ResolveOpAsInt(vm, 1);
 
                     break;
 
                 case INSTR_EXP:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        Dest.Fixnum = math::IntPow(Dest.Fixnum, ResolveOpAsInt(vm, 1));
+                    if (Dest->Type == OP_TYPE_INT)
+                        Dest->Fixnum = math::IntPow(Dest->Fixnum, ResolveOpAsInt(vm, 1));
                     else
-                        Dest.Realnum = (float)pow(Dest.Realnum, ResolveOpAsFloat(vm, 1));
+                        Dest->Realnum = (float)pow(Dest->Realnum, ResolveOpAsFloat(vm, 1));
                     break;
 
                     // The bitwise instructions only work with integers. They do nothing
@@ -967,36 +967,36 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                 case INSTR_AND:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        Dest.Fixnum &= ResolveOpAsInt(vm, 1);
+                    if (Dest->Type == OP_TYPE_INT)
+                        Dest->Fixnum &= ResolveOpAsInt(vm, 1);
 
                     break;
 
                 case INSTR_OR:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        Dest.Fixnum |= ResolveOpAsInt(vm, 1);
+                    if (Dest->Type == OP_TYPE_INT)
+                        Dest->Fixnum |= ResolveOpAsInt(vm, 1);
 
                     break;
 
                 case INSTR_XOR:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        Dest.Fixnum ^= ResolveOpAsInt(vm, 1);
+                    if (Dest->Type == OP_TYPE_INT)
+                        Dest->Fixnum ^= ResolveOpAsInt(vm, 1);
 
                     break;
 
                 case INSTR_SHL:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        Dest.Fixnum <<= ResolveOpAsInt(vm, 1);
+                    if (Dest->Type == OP_TYPE_INT)
+                        Dest->Fixnum <<= ResolveOpAsInt(vm, 1);
 
                     break;
 
                 case INSTR_SHR:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        Dest.Fixnum >>= ResolveOpAsInt(vm, 1);
+                    if (Dest->Type == OP_TYPE_INT)
+                        Dest->Fixnum >>= ResolveOpAsInt(vm, 1);
 
                     break;
                 }
@@ -1004,7 +1004,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 // Use ResolveOpPntr() to get a pointer to the destination Value structure and
                 // move the result there
 
-                *ResolveOpPointer(vm, 0) = Dest;
+                *ResolveOpPointer(vm, 0) = *Dest;
 
                 break;
             }
@@ -1027,55 +1027,55 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                 // Get a local copy of the destination itself
 
-                Value Dest = ResolveOpValue(vm, 0);
+                Value* Dest = ResolveOpValue(vm, 0);
 
                 switch (iOpcode)
                 {
                 case INSTR_SQRT:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        Dest.Realnum = sqrtf((float)Dest.Fixnum);
+                    if (Dest->Type == OP_TYPE_INT)
+                        Dest->Realnum = sqrtf((float)Dest->Fixnum);
                     else
-                        Dest.Realnum = sqrtf(Dest.Realnum);
+                        Dest->Realnum = sqrtf(Dest->Realnum);
                     break;
 
                 case INSTR_NEG:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        Dest.Fixnum = -Dest.Fixnum;
+                    if (Dest->Type == OP_TYPE_INT)
+                        Dest->Fixnum = -Dest->Fixnum;
                     else
-                        Dest.Realnum = -Dest.Realnum;
+                        Dest->Realnum = -Dest->Realnum;
 
                     break;
 
                 case INSTR_NOT:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        Dest.Fixnum = ~Dest.Fixnum;
+                    if (Dest->Type == OP_TYPE_INT)
+                        Dest->Fixnum = ~Dest->Fixnum;
 
                     break;
 
                 case INSTR_INC:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        ++Dest.Fixnum;
+                    if (Dest->Type == OP_TYPE_INT)
+                        ++Dest->Fixnum;
                     else
-                        ++Dest.Realnum;
+                        ++Dest->Realnum;
 
                     break;
 
                 case INSTR_DEC:
 
-                    if (Dest.Type == OP_TYPE_INT)
-                        --Dest.Fixnum;
+                    if (Dest->Type == OP_TYPE_INT)
+                        --Dest->Fixnum;
                     else
-                        --Dest.Realnum;
+                        --Dest->Realnum;
 
                     break;
                 }
 
                 // Move the result to the destination
-                *ResolveOpPointer(vm, 0) = Dest;
+                *ResolveOpPointer(vm, 0) = *Dest;
 
                 break;
             }
@@ -1086,7 +1086,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             {
                 // Get a local copy of the destination operand (operand index 0)
 
-                Value Dest = ResolveOpValue(vm, 0);
+                Value* Dest = ResolveOpValue(vm, 0);
 
                 // Get a local copy of the source string (operand index 1)
 
@@ -1094,18 +1094,18 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                 // If the destination isn't a string, do nothing
 
-                if (Dest.Type != OP_TYPE_STRING)
+                if (Dest->Type != OP_TYPE_STRING)
                     break;
 
                 // Determine the length of the new string and allocate space for it (with a
                 // null terminator)
 
-                int iNewStringLength = strlen(Dest.String) + strlen(pstrSourceString);
+                int iNewStringLength = strlen(Dest->String) + strlen(pstrSourceString);
                 char *pstrNewString = (char *)malloc(iNewStringLength + 1);
 
                 // Copy the old string to the new one
 
-                strcpy(pstrNewString, Dest.String);
+                strcpy(pstrNewString, Dest->String);
 
                 // Concatenate the destination with the source
 
@@ -1114,12 +1114,12 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 // Free the existing string in the destination structure and replace it
                 // with the new string
 
-                free(Dest.String);
-                Dest.String = pstrNewString;
+                free(Dest->String);
+                Dest->String = pstrNewString;
 
                 // Copy the concatenated string pointer to its destination
 
-                *ResolveOpPointer(vm, 0) = Dest;
+                *ResolveOpPointer(vm, 0) = *Dest;
 
                 break;
             }
@@ -1128,7 +1128,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             {
                 // Get a local copy of the destination operand (operand index 0)
 
-                Value Dest = ResolveOpValue(vm, 0);
+                Value* Dest = ResolveOpValue(vm, 0);
 
                 // Get a local copy of the source string (operand index 1)
 
@@ -1137,18 +1137,18 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 // Find out whether or not the destination is already a string
 
                 char *pstrNewString;
-                if (Dest.Type == OP_TYPE_STRING)
+                if (Dest->Type == OP_TYPE_STRING)
                 {
                     // If it is, we can use it's existing string buffer as long as it's at
                     // least 1 character
 
-                    if (strlen(Dest.String) >= 1)
+                    if (strlen(Dest->String) >= 1)
                     {
-                        pstrNewString = Dest.String;
+                        pstrNewString = Dest->String;
                     }
                     else
                     {
-                        free(Dest.String);
+                        free(Dest->String);
                         pstrNewString = (char *)malloc(2);
                     }
                 }
@@ -1156,7 +1156,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 {
                     // Otherwise allocate a new string and set the type
                     pstrNewString = (char *)malloc(2);
-                    Dest.Type = OP_TYPE_STRING;
+                    Dest->Type = OP_TYPE_STRING;
                 }
 
                 // Get the index of the character (operand index 2)
@@ -1167,10 +1167,10 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 pstrNewString[1] = '\0';
 
                 // Set the string pointer in the destination Value structure
-                Dest.String = pstrNewString;
+                Dest->String = pstrNewString;
 
                 // Copy the concatenated string pointer to its destination
-                *ResolveOpPointer(vm, 0) = Dest;
+                *ResolveOpPointer(vm, 0) = *Dest;
 
                 break;
             }
@@ -1213,8 +1213,8 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_JGE:
         case INSTR_JLE:
             {
-                Value Op0 = ResolveOpValue(vm, 0);  // 条件1
-                Value Op1 = ResolveOpValue(vm, 1);  // 条件2
+                Value* Op0 = ResolveOpValue(vm, 0);  // 条件1
+                Value* Op1 = ResolveOpValue(vm, 1);  // 条件2
 
                 // Get the index of the target instruction (opcode index 2)
 
@@ -1229,20 +1229,20 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                     // Jump if Equal
                 case INSTR_JE:
                     {
-                        switch (Op0.Type)
+                        switch (Op0->Type)
                         {
                         case OP_TYPE_INT:
-                            if (Op0.Fixnum == Op1.Fixnum)
+                            if (Op0->Fixnum == Op1->Fixnum)
                                 iJump = TRUE;
                             break;
 
                         case OP_TYPE_FLOAT:
-                            if (Op0.Realnum == Op1.Realnum)
+                            if (Op0->Realnum == Op1->Realnum)
                                 iJump = TRUE;
                             break;
 
                         case OP_TYPE_STRING:
-                            if (strcmp(Op0.String, Op1.String) == 0)
+                            if (strcmp(Op0->String, Op1->String) == 0)
                                 iJump = TRUE;
                             break;
                         }
@@ -1252,20 +1252,20 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                     // Jump if Not Equal
                 case INSTR_JNE:
                     {
-                        switch (Op0.Type)
+                        switch (Op0->Type)
                         {
                         case OP_TYPE_INT:
-                            if (Op0.Fixnum != Op1.Fixnum)
+                            if (Op0->Fixnum != Op1->Fixnum)
                                 iJump = TRUE;
                             break;
 
                         case OP_TYPE_FLOAT:
-                            if (Op0.Realnum != Op1.Realnum)
+                            if (Op0->Realnum != Op1->Realnum)
                                 iJump = TRUE;
                             break;
 
                         case OP_TYPE_STRING:
-                            if (strcmp(Op0.String, Op1.String) != 0)
+                            if (strcmp(Op0->String, Op1->String) != 0)
                                 iJump = TRUE;
                             break;
                         }
@@ -1275,14 +1275,14 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                     // Jump if Greater
                 case INSTR_JG:
 
-                    if (Op0.Type == OP_TYPE_INT)
+                    if (Op0->Type == OP_TYPE_INT)
                     {
-                        if (Op0.Fixnum > Op1.Fixnum)
+                        if (Op0->Fixnum > Op1->Fixnum)
                             iJump = TRUE;
                     }
                     else
                     {
-                        if (Op0.Realnum > Op1.Realnum)
+                        if (Op0->Realnum > Op1->Realnum)
                             iJump = TRUE;
                     }
 
@@ -1291,14 +1291,14 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                     // Jump if Less
                 case INSTR_JL:
 
-                    if (Op0.Type == OP_TYPE_INT)
+                    if (Op0->Type == OP_TYPE_INT)
                     {
-                        if (Op0.Fixnum < Op1.Fixnum)
+                        if (Op0->Fixnum < Op1->Fixnum)
                             iJump = TRUE;
                     }
                     else
                     {
-                        if (Op0.Realnum < Op1.Realnum)
+                        if (Op0->Realnum < Op1->Realnum)
                             iJump = TRUE;
                     }
 
@@ -1307,14 +1307,14 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                     // Jump if Greater or Equal
                 case INSTR_JGE:
 
-                    if (Op0.Type == OP_TYPE_INT)
+                    if (Op0->Type == OP_TYPE_INT)
                     {
-                        if (Op0.Fixnum >= Op1.Fixnum)
+                        if (Op0->Fixnum >= Op1->Fixnum)
                             iJump = TRUE;
                     }
                     else
                     {
-                        if (Op0.Realnum >= Op1.Realnum)
+                        if (Op0->Realnum >= Op1->Realnum)
                             iJump = TRUE;
                     }
 
@@ -1323,14 +1323,14 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                     // Jump if Less or Equal
                 case INSTR_JLE:
 
-                    if (Op0.Type == OP_TYPE_INT)
+                    if (Op0->Type == OP_TYPE_INT)
                     {
-                        if (Op0.Fixnum <= Op1.Fixnum)
+                        if (Op0->Fixnum <= Op1->Fixnum)
                             iJump = TRUE;
                     }
                     else
                     {
-                        if (Op0.Realnum <= Op1.Realnum)
+                        if (Op0->Realnum <= Op1->Realnum)
                             iJump = TRUE;
                     }
 
@@ -1349,7 +1349,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_PUSH:
             {
                 // Get a local copy of the source operand (operand index 0)
-                Value Source = ResolveOpValue(vm, 0);
+                Value* Source = ResolveOpValue(vm, 0);
 
                 // Push the value onto the stack
                 Push(vm, Source);
@@ -1370,7 +1370,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				Value Source;
 				Source.Type = OP_TYPE_INT;
 				Source.Fixnum = 0;
-				Push(vm, Source);
+				Push(vm, &Source);
 				break;
 			}
 
@@ -1380,7 +1380,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				Value Source;
 				Source.Type = OP_TYPE_INT;
 				Source.Fixnum = 1;
-				Push(vm, Source);
+				Push(vm, &Source);
 				break;
 			}
 
@@ -1390,7 +1390,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				Value Source;
 				Source.Type = OP_TYPE_FLOAT;
 				Source.Realnum = 0.f;
-				Push(vm, Source);
+				Push(vm, &Source);
 				break;
 			}
 
@@ -1400,19 +1400,19 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				Value Source;
 				Source.Type = OP_TYPE_FLOAT;
 				Source.Realnum = 1.f;
-				Push(vm, Source);
+				Push(vm, &Source);
 				break;
 			}
 
             // ----The Function Call Interface
         case INSTR_CALL:
             {
-                Value oprand = ResolveOpValue(vm, 0);
+                Value* oprand = ResolveOpValue(vm, 0);
 
-                assert(oprand.Type == OP_TYPE_FUNC_INDEX ||
-                        oprand.Type == OP_TYPE_HOST_CALL_INDEX);
+                assert(oprand->Type == OP_TYPE_FUNC_INDEX ||
+                        oprand->Type == OP_TYPE_HOST_CALL_INDEX);
 
-                switch (oprand.Type)
+                switch (oprand->Type)
                 {
                      // 调用脚本函数
                 case OP_TYPE_FUNC_INDEX:
@@ -1432,7 +1432,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                         // Use operand zero to index into the host API call table and get the
                         // host API function name
 
-                        int iHostAPICallIndex = oprand.HostFuncIndex;
+                        int iHostAPICallIndex = oprand->HostFuncIndex;
 
                         // Get the name of the host API function
 
@@ -1519,30 +1519,30 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
         case INSTR_PRINT:
             {
-                Value val = ResolveOpValue(vm, 0);
-                switch (val.Type)
+                Value* val = ResolveOpValue(vm, 0);
+                switch (val->Type)
                 {
                 case OP_TYPE_NULL:
                     printf("<null>\n");
                     break;
                 case OP_TYPE_INT:
-                    printf("%d\n", val.Fixnum);
+                    printf("%d\n", val->Fixnum);
                     break;
                 case OP_TYPE_FLOAT:
-                    printf("%.16g\n", val.Realnum);
+                    printf("%.16g\n", val->Realnum);
                     break;
                 case OP_TYPE_STRING:
-                    printf("%s\n", val.String);
+                    printf("%s\n", val->String);
                     break;
                 case OP_TYPE_REG:
-                    printf("%i\n", val.Register);
+                    printf("%i\n", val->Register);
                     break;
                 case OP_TYPE_OBJECT:
-                    printf("<object at %p>\n", val.ObjectPtr);
+                    printf("<object at %p>\n", val->ObjectPtr);
                     break;
                 default:
                     // TODO 索引和其他调试信息
-                    fprintf(stderr, "VM Error: INSTR_PRINT: %d unexcepted data type.\n", val.Type);
+                    fprintf(stderr, "VM Error: INSTR_PRINT: %d unexcepted data type.\n", val->Type);
                 }
                 break;
             }
@@ -1560,7 +1560,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                     RunGC(vm);
                 Value val = GC_AllocObject(iSize, &vm->pLastObject);
                 vm->iNumberOfObjects++;
-                Push(vm, val);
+                Push(vm, &val);
                 break;
             }
 
@@ -1774,7 +1774,7 @@ static void RunGC(VMState *pScript)
 *  Copies a value structure to another, taking strings into account.
 */
 
-void CopyValue(Value *pDest, Value Source)
+void CopyValue(Value *pDest, Value* Source)
 {
     // If the destination already contains a string, make sure to free it first
 
@@ -1783,14 +1783,14 @@ void CopyValue(Value *pDest, Value Source)
 
     // Copy the object (浅拷贝)
 
-    *pDest = Source;
+    *pDest = *Source;
 
     // Make a physical copy of the source string, if necessary
 
-    if (Source.Type == OP_TYPE_STRING)
+    if (Source->Type == OP_TYPE_STRING)
     {
-        pDest->String = (char *)malloc(strlen(Source.String) + 1);
-        strcpy(pDest->String, Source.String);
+        pDest->String = (char *)malloc(strlen(Source->String) + 1);
+        strcpy(pDest->String, Source->String);
     }
 }
 
@@ -1801,26 +1801,26 @@ void CopyValue(Value *pDest, Value Source)
 *  Coerces a Value structure from it's current type to an integer value.
 */
 
-int CoerceValueToInt(Value Val)
+int CoerceValueToInt(Value* Val)
 {
     // Determine which type the Value currently is
 
-    switch (Val.Type)
+    switch (Val->Type)
     {
         // It's an integer, so return it as-is
 
     case OP_TYPE_INT:
-        return Val.Fixnum;
+        return Val->Fixnum;
 
         // It's a float, so cast it to an integer
 
     case OP_TYPE_FLOAT:
-        return (int)Val.Realnum;
+        return (int)Val->Realnum;
 
         // It's a string, so convert it to an integer
 
     case OP_TYPE_STRING:
-        return atoi(Val.String);
+        return atoi(Val->String);
 
         // Anything else is invalid
 
@@ -1836,26 +1836,26 @@ int CoerceValueToInt(Value Val)
 *  Coerces a Value structure from it's current type to an float value.
 */
 
-float CoerceValueToFloat(Value Val)
+float CoerceValueToFloat(Value* Val)
 {
     // Determine which type the Value currently is
 
-    switch (Val.Type)
+    switch (Val->Type)
     {
         // It's an integer, so cast it to a float
 
     case OP_TYPE_INT:
-        return (float)Val.Fixnum;
+        return (float)Val->Fixnum;
 
         // It's a float, so return it as-is
 
     case OP_TYPE_FLOAT:
-        return Val.Realnum;
+        return Val->Realnum;
 
         // It's a string, so convert it to an float
 
     case OP_TYPE_STRING:
-        return (float)atof(Val.String);
+        return (float)atof(Val->String);
 
         // Anything else is invalid
 
@@ -1871,19 +1871,19 @@ float CoerceValueToFloat(Value Val)
 *  Coerces a Value structure from it's current type to a string value.
 */
 
-char *CoerceValueToString(Value Val)
+char *CoerceValueToString(Value* Val)
 {
     char *pstrCoercion;
 
     // Determine which type the Value currently is
 
-    switch (Val.Type)
+    switch (Val->Type)
     {
         // It's an integer, so convert it to a string
 
     case OP_TYPE_INT:
 		pstrCoercion = (char *)malloc(MAX_COERCION_STRING_SIZE + 1);
-        sprintf(pstrCoercion, "%d", Val.Fixnum);
+        sprintf(pstrCoercion, "%d", Val->Fixnum);
         return pstrCoercion;
 
         // It's a float, so use sprintf() to convert it since there's no built-in function
@@ -1891,13 +1891,13 @@ char *CoerceValueToString(Value Val)
 
     case OP_TYPE_FLOAT:
 		pstrCoercion = (char *)malloc(MAX_COERCION_STRING_SIZE + 1);
-        sprintf(pstrCoercion, "%f", Val.Realnum);
+        sprintf(pstrCoercion, "%f", Val->Realnum);
         return pstrCoercion;
 
         // It's a string, so return it as-is
 
     case OP_TYPE_STRING:
-        return Val.String;
+        return Val->String;
 
         // Anything else is invalid
 
@@ -1955,24 +1955,24 @@ inline int ResolveOpRelStackIndex(VMState *vm, Value* OpValue)
 *    Resolves an operand and returns it's associated Value structure.
 */
 
-inline Value ResolveOpValue(VMState *vm, int iOpIndex)
+inline Value* ResolveOpValue(VMState *vm, int iOpIndex)
 {
-	Value OpValue = vm->InstrStream.Instrs[vm->InstrStream.CurrInstr].pOpList[iOpIndex];
+	Value* OpValue = &vm->InstrStream.Instrs[vm->InstrStream.CurrInstr].pOpList[iOpIndex];
 
-    // Determine what to return based on the value's type
-    switch (OpValue.Type)
-    {
-    case OP_TYPE_ABS_STACK_INDEX:
-		return *GetStackValue(vm, OpValue.StackIndex);
-    case OP_TYPE_REL_STACK_INDEX:
+	switch (OpValue->Type)
+	{
+	case OP_TYPE_ABS_STACK_INDEX:
+		return GetStackValue(vm, OpValue->StackIndex);
+	case OP_TYPE_REL_STACK_INDEX:
 		{
-			int iAbsStackIndex = ResolveOpRelStackIndex(vm, &OpValue);
-			return *GetStackValue(vm, iAbsStackIndex);
+			int iAbsStackIndex = ResolveOpRelStackIndex(vm, OpValue);
+			return GetStackValue(vm, iAbsStackIndex);
 		}
-    case OP_TYPE_REG:
-		return vm->_RetVal;
-    }
-    return OpValue;
+	case OP_TYPE_REG:
+		return &vm->_RetVal;
+	}
+
+	return OpValue;
 }
 
 /******************************************************************************************
@@ -1985,7 +1985,7 @@ inline Value ResolveOpValue(VMState *vm, int iOpIndex)
 
 inline int ResolveOpType(VMState* vm, int iOpIndex)
 {
-    return ResolveOpValue(vm, iOpIndex).Type;
+    return ResolveOpValue(vm, iOpIndex)->Type;
 }
 
 /******************************************************************************************
@@ -1999,7 +1999,7 @@ inline int ResolveOpAsInt(VMState* vm, int iOpIndex)
 {
     // Resolve the operand's value
 
-    Value OpValue = ResolveOpValue(vm, iOpIndex);
+    Value* OpValue = ResolveOpValue(vm, iOpIndex);
 
     // Coerce it to an int and return it
 
@@ -2018,7 +2018,7 @@ inline float ResolveOpAsFloat(VMState* vm, int iOpIndex)
 {
     // Resolve the operand's value
 
-    Value OpValue = ResolveOpValue(vm, iOpIndex);
+    Value* OpValue = ResolveOpValue(vm, iOpIndex);
 
     // Coerce it to a float and return it
 
@@ -2038,7 +2038,7 @@ inline char*ResolveOpAsString(VMState* vm, int iOpIndex)
 {
     // Resolve the operand's value
 
-    Value OpValue = ResolveOpValue(vm, iOpIndex);
+    Value* OpValue = ResolveOpValue(vm, iOpIndex);
 
     // Coerce it to a string and return it
 
@@ -2057,11 +2057,11 @@ inline int ResolveOpAsInstrIndex(VMState* vm, int iOpIndex)
 {
     // Resolve the operand's value
 
-    Value OpValue = ResolveOpValue(vm, iOpIndex);
+    Value* OpValue = ResolveOpValue(vm, iOpIndex);
 
     // Return it's instruction index
 
-    return OpValue.InstrIndex;
+    return OpValue->InstrIndex;
 }
 
 /******************************************************************************************
@@ -2075,11 +2075,11 @@ inline int ResolveOpAsFuncIndex(VMState* vm, int iOpIndex)
 {
     // Resolve the operand's value
 
-    Value OpValue = ResolveOpValue(vm, iOpIndex);
+    Value* OpValue = ResolveOpValue(vm, iOpIndex);
 
     // Return the function index
 
-    return OpValue.FuncIndex;
+    return OpValue->FuncIndex;
 }
 
 /******************************************************************************************
@@ -2093,11 +2093,11 @@ inline char*ResolveOpAsHostAPICall(VMState* vm, int iOpIndex)
 {
     // Resolve the operand's value
 
-    Value OpValue = ResolveOpValue(vm, iOpIndex);
+    Value* OpValue = ResolveOpValue(vm, iOpIndex);
 
     // Get the value's host API call index
 
-    int iHostAPICallIndex = OpValue.HostFuncIndex;
+    int iHostAPICallIndex = OpValue->HostFuncIndex;
 
     // Return the host API call
 
@@ -2175,7 +2175,7 @@ inline void SetStackValue(VMState *vm, int iIndex, Value Val)
 *    Pushes an element onto the stack.
 */
 
-inline void Push(VMState* vm, Value& Val)
+inline void Push(VMState* vm, Value* Val)
 {
     // Get the current top element
 
@@ -2210,7 +2210,7 @@ inline Value Pop(VMState *vm)
     // Use this index to read the top element
 
     Value Val;
-    CopyValue(&Val, vm->Stack.Elmnts[iTopIndex]);
+    CopyValue(&Val, &vm->Stack.Elmnts[iTopIndex]);
 
     return Val;
 }
@@ -2321,7 +2321,7 @@ void CallFunc(VMState *vm, int iIndex, int type)
     Value ReturnAddr;
     ReturnAddr.Type = OP_TYPE_INSTR_INDEX;
     ReturnAddr.InstrIndex = vm->InstrStream.CurrInstr;
-    Push(vm, ReturnAddr);
+    Push(vm, &ReturnAddr);
 
     // 函数信息块,保存调用者的栈帧索引
     Value FuncIndex;
@@ -2356,7 +2356,7 @@ void XVM_PassIntParam(VMState* vm, int iInt)
     Param.Fixnum = iInt;
 
     // Push the parameter onto the stack
-    Push(vm, Param);
+    Push(vm, &Param);
 }
 
 /******************************************************************************************
@@ -2374,7 +2374,7 @@ void XVM_PassFloatParam(VMState* vm, float fFloat)
     Param.Realnum = fFloat;
 
     // Push the parameter onto the stack
-    Push(vm, Param);
+    Push(vm, &Param);
 }
 
 /******************************************************************************************
@@ -2393,7 +2393,7 @@ void XVM_PassStringParam(VMState* vm, char *pstrString)
     strcpy(Param.String, pstrString);
 
     // Push the parameter onto the stack
-    Push(vm, Param);
+    Push(vm, &Param);
 }
 
 /******************************************************************************************
@@ -2526,7 +2526,7 @@ int XVM_GetParamAsInt(VMState* vm, int iParamIndex)
     Value Param = XVM_GetParam(vm, iParamIndex);
 
     // Coerce the top element of the stack to an integer
-    int iInt = CoerceValueToInt(Param);
+    int iInt = CoerceValueToInt(&Param);
 
     // Return the value
     return iInt;
@@ -2545,7 +2545,7 @@ float XVM_GetParamAsFloat(VMState* vm, int iParamIndex)
     Value Param = XVM_GetParam(vm, iParamIndex);
 
     // Coerce the top element of the stack to a float
-    float fFloat = CoerceValueToFloat(Param);
+    float fFloat = CoerceValueToFloat(&Param);
 
     return fFloat;
 }
@@ -2563,7 +2563,7 @@ char* XVM_GetParamAsString(VMState* vm, int iParamIndex)
     Value Param = XVM_GetParam(vm, iParamIndex);
 
     // Coerce the top element of the stack to a string
-    char *pstrString = CoerceValueToString(Param);
+    char *pstrString = CoerceValueToString(&Param);
 
     return pstrString;
 }
@@ -2627,7 +2627,7 @@ void XVM_ReturnStringFromHost(VMState* vm, char *pstrString)
     Value ReturnValue;
     ReturnValue.Type = OP_TYPE_STRING;
     ReturnValue.String = pstrString;
-    CopyValue(&vm->_RetVal, ReturnValue);
+    CopyValue(&vm->_RetVal, &ReturnValue);
 
     // Clear the parameters off the stack
     XVM_ReturnFromHost(vm);

@@ -12,6 +12,14 @@
 
 #define MAX_PATH    260
 
+inline unsigned long GetCurrTime()
+{
+	unsigned long theTick;
+
+	theTick = GetTickCount();
+	return theTick;
+}
+
 void print_error_message(int iErrorCode)
 {
     // Print the error based on the code
@@ -149,15 +157,6 @@ int RunScript(char* pstrFilename)
     return iExitCode;
 }
 
-#include <windows.h>
-
-inline unsigned long GetCurrTime()
-{
-	unsigned long theTick;
-
-	theTick = GetTickCount();
-	return theTick;
-}
 
 int main(int argc, char* argv[])
 {
