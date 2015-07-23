@@ -68,7 +68,6 @@ struct INSTR_STREAM                     // An instruction stream
 {
     INSTR *Instrs;                            // The instructions themselves
     int Size;                                  // The number of instructions in the stream
-    int CurrInstr;                             // The instruction pointer
 };
 
 // ----Function Table --------------------------------------------------------------------
@@ -115,13 +114,19 @@ struct VMState
 
     // Registers
     Value _RetVal;                                // The _RetVal register (R0)
+	int CurrInstr;			// 当前指令
+
+	// 堆栈
+	Value *Stack;           // The stack elements
+	int iStackSize;          // The number of elements in the stack
+	int iTopIndex;          // 栈顶指针
+	int iFrameIndex;         // 总是指向当前栈帧
 
     // 脚本退出代码
     int ExitCode;
 
     // Script data
     INSTR_STREAM InstrStream;                    // The instruction stream
-    RUNTIME_STACK Stack;                        // The runtime stack
     FUNC_TABLE FuncTable;                        // The function table
     HOST_CALL_TABLE HostCallTable;            // The host API call table
 
@@ -198,7 +203,7 @@ char* ResolveOpAsString(VMState* vm, int iOpIndex);
 int ResolveOpAsInstrIndex(VMState* vm, int iOpIndex);
 int ResolveOpAsFuncIndex(VMState* vm, int iOpIndex);
 char* ResolveOpAsHostAPICall(int iOpIndex);
-Value* ResolveOpPointer(VMState* vm, int iOpIndex);
+//Value* ResolveOpValue(VMState* vm, int iOpIndex);
 
 // ----Runtime Stack Interface -----------------------------------------------------------
 
@@ -245,7 +250,7 @@ VMState* XVM_Create()
 	thead->IsPaused = FALSE;
 
 	thead->InstrStream.Instrs = NULL;
-	thead->Stack.Elmnts = NULL;
+	thead->Stack = NULL;
 	thead->FuncTable.Funcs = NULL;
 	thead->HostCallTable.Calls = NULL;
 	thead->HostAPIs = NULL;
@@ -333,17 +338,17 @@ int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
 
     // Read the stack size (4 bytes)
 
-    fread(&vm->Stack.Size, 4, 1, pScriptFile);
+    fread(&vm->iStackSize, 4, 1, pScriptFile);
 
     // Check for a default stack size request
 
-    if (vm->Stack.Size == 0)
-        vm->Stack.Size = DEF_STACK_SIZE;
+    if (vm->iStackSize == 0)
+        vm->iStackSize = DEF_STACK_SIZE;
 
     // Allocate the runtime stack
 
-    int iStackSize = vm->Stack.Size;
-    if (!(vm->Stack.Elmnts = (Value *)malloc(iStackSize*sizeof(Value))))
+    int iStackSize = vm->iStackSize;
+    if (!(vm->Stack = (Value *)malloc(iStackSize*sizeof(Value))))
         return XVM_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read the global data size (4 bytes)
@@ -720,14 +725,14 @@ void XVM_UnloadScript(VMState* vm)
 
     // Free any strings that are still on the stack
 
-	for (int i = 0; i < vm->Stack.Size; ++i)
-		if (vm->Stack.Elmnts[i].Type == OP_TYPE_STRING)
-			free(vm->Stack.Elmnts[i].String);
+	for (int i = 0; i < vm->iStackSize; ++i)
+		if (vm->Stack[i].Type == OP_TYPE_STRING)
+			free(vm->Stack[i].String);
 
     // Now free the stack itself
 
-    if (vm->Stack.Elmnts)
-        free(vm->Stack.Elmnts);
+    if (vm->Stack)
+        free(vm->Stack);
 
     // ----Free the function table
 
@@ -767,16 +772,16 @@ void XVM_UnloadScript(VMState* vm)
 void XVM_ResetVM(VMState* vm)
 {
 	// 重置指令指针
-	vm->InstrStream.CurrInstr = 0;
+	vm->CurrInstr = 0;
 
     // Clear the stack
-    vm->Stack.TopIndex = 0;
-    vm->Stack.FrameIndex = 0;
+    vm->iTopIndex = 0;
+    vm->iFrameIndex = 0;
 
     // Set the entire stack to null
 
-	for (int i = 0; i < vm->Stack.Size; ++i)
-		vm->Stack.Elmnts[i].Type = OP_TYPE_NULL;
+	for (int i = 0; i < vm->iStackSize; ++i)
+		vm->Stack[i].Type = OP_TYPE_NULL;
 
     // Free all allocated objects
     GC_FreeAllObjects(vm->pLastObject);
@@ -844,7 +849,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         }
 
         // 如果没有任何指令需要执行，则停止运行
-		if (vm->InstrStream.CurrInstr >= vm->InstrStream.Size)
+		if (vm->CurrInstr >= vm->InstrStream.Size)
 		{
 			vm->IsRunning = FALSE;
 			vm->ExitCode = XVM_EXIT_OK;
@@ -852,7 +857,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 		}
 
         // 保存指令指针，用于之后的比较
-        int iCurrInstr = vm->InstrStream.CurrInstr;
+        int iCurrInstr = vm->CurrInstr;
 
         // Get the current opcode
         int iOpcode = vm->InstrStream.Instrs[iCurrInstr].Opcode;
@@ -900,7 +905,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 case INSTR_MOV:
 
                     // Skip cases where the two operands are the same
-                    if (ResolveOpPointer(vm, 0) == ResolveOpPointer(vm, 1))
+                    if (ResolveOp0(vm) == ResolveOp1(vm))
                         break;
 
                     // Copy the source operand into the destination
@@ -1007,7 +1012,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 // Use ResolveOpPntr() to get a pointer to the destination Value structure and
                 // move the result there
 
-                *ResolveOpPointer(vm, 0) = *Dest;
+                *ResolveOp0(vm) = *Dest;
 
                 break;
             }
@@ -1078,7 +1083,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 }
 
                 // Move the result to the destination
-                *ResolveOpPointer(vm, 0) = *Dest;
+                *ResolveOp0(vm) = *Dest;
 
                 break;
             }
@@ -1122,7 +1127,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                 // Copy the concatenated string pointer to its destination
 
-                *ResolveOpPointer(vm, 0) = *Dest;
+                *ResolveOp0(vm) = *Dest;
 
                 break;
             }
@@ -1173,7 +1178,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 Dest->String = pstrNewString;
 
                 // Copy the concatenated string pointer to its destination
-                *ResolveOpPointer(vm, 0) = *Dest;
+                *ResolveOp0(vm) = *Dest;
 
                 break;
             }
@@ -1191,7 +1196,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 char *pstrSourceString = ResolveOpAsString(vm, 2);
 
                 // Set the specified character in the destination (operand index 0)
-                ResolveOpPointer(vm, 0)->String[iDestIndex] = pstrSourceString[0];
+                ResolveOp0(vm)->String[iDestIndex] = pstrSourceString[0];
 
                 break;
             }
@@ -1204,7 +1209,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 int iTargetIndex = ResolveOpAsInstrIndex(vm, 0);
 
                 // Move the instruction pointer to the target
-                vm->InstrStream.CurrInstr = iTargetIndex;
+                vm->CurrInstr = iTargetIndex;
 
                 break;
             }
@@ -1342,7 +1347,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                 // If the comparison evaluated to TRUE, make the jump
                 if (iJump)
-                    vm->InstrStream.CurrInstr = iTargetIndex;
+                    vm->CurrInstr = iTargetIndex;
 
                 break;
             }
@@ -1363,7 +1368,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_POP:
             {
                 // Pop the top of the stack into the destination
-                *ResolveOpPointer(vm, 0) = Pop(vm);
+                *ResolveOp0(vm) = Pop(vm);
                 break;
             }
 
@@ -1506,7 +1511,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                 // Read the return address structure from the stack, which is stored one
                 // index below the local data
-                int iIndexOfRA = vm->Stack.TopIndex - (CurrFunc->LocalDataSize + 1);
+                int iIndexOfRA = vm->iTopIndex - (CurrFunc->LocalDataSize + 1);
                 Value* ReturnAddr = GetStackValue(vm, iIndexOfRA);
                 //printf("OffsetIndex %d\n", FuncIndex.OffsetIndex);
                 assert(ReturnAddr->Type == OP_TYPE_INSTR_INDEX);
@@ -1515,7 +1520,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 PopFrame(vm, CurrFunc->StackFrameSize);
 
                 // Make the jump to the return address
-                vm->InstrStream.CurrInstr = ReturnAddr->InstrIndex;
+                vm->CurrInstr = ReturnAddr->InstrIndex;
 
                 break;
             }
@@ -1602,8 +1607,8 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
         // If the instruction pointer hasn't been changed by an instruction, increment it
         // 如果指令没有改变，执行下一条指令
-        if (iCurrInstr == vm->InstrStream.CurrInstr)
-            ++vm->InstrStream.CurrInstr;
+        if (iCurrInstr == vm->CurrInstr)
+            ++vm->CurrInstr;
 
         // 线程耗尽时间片
         if (iTimesliceDur != XVM_INFINITE_TIMESLICE)
@@ -1742,9 +1747,9 @@ char* XVM_GetReturnValueAsString(VMState* vm)
 static void MarkAll(VMState *pScript)
 {
     // 标记堆栈
-    for (int i = 0; i < pScript->Stack.TopIndex; i++) 
+    for (int i = 0; i < pScript->iTopIndex; i++) 
     {
-        GC_Mark(pScript->Stack.Elmnts[i]);
+        GC_Mark(pScript->Stack[i]);
     }
 
     // 标记寄存器
@@ -1918,7 +1923,7 @@ char *CoerceValueToString(Value* Val)
 
 inline int GetOpType(VMState *vm, int iOpIndex)
 {
-	int iCurrInstr = vm->InstrStream.CurrInstr;
+	int iCurrInstr = vm->CurrInstr;
 	return vm->InstrStream.Instrs[iCurrInstr].pOpList[iOpIndex].Type;
 }
 
@@ -1960,7 +1965,7 @@ inline int ResolveOpRelStackIndex(VMState *vm, Value* OpValue)
 
 inline Value* ResolveOpValue(VMState *vm, int iOpIndex)
 {
-	Value* OpValue = &vm->InstrStream.Instrs[vm->InstrStream.CurrInstr].pOpList[iOpIndex];
+	Value* OpValue = &vm->InstrStream.Instrs[vm->CurrInstr].pOpList[iOpIndex];
 
 	switch (OpValue->Type)
 	{
@@ -1980,7 +1985,7 @@ inline Value* ResolveOpValue(VMState *vm, int iOpIndex)
 
 inline Value* ResolveOp0(VMState* vm)
 {
-	Value* OpValue = &vm->InstrStream.Instrs[vm->InstrStream.CurrInstr].pOpList[0];
+	Value* OpValue = &vm->InstrStream.Instrs[vm->CurrInstr].pOpList[0];
 
 	switch (OpValue->Type)
 	{
@@ -2000,7 +2005,7 @@ inline Value* ResolveOp0(VMState* vm)
 
 inline Value* ResolveOp1(VMState* vm)
 {
-	Value* OpValue = &vm->InstrStream.Instrs[vm->InstrStream.CurrInstr].pOpList[1];
+	Value* OpValue = &vm->InstrStream.Instrs[vm->CurrInstr].pOpList[1];
 
 	switch (OpValue->Type)
 	{
@@ -2020,7 +2025,7 @@ inline Value* ResolveOp1(VMState* vm)
 
 inline Value* ResolveOp2(VMState* vm)
 {
-	Value* OpValue = &vm->InstrStream.Instrs[vm->InstrStream.CurrInstr].pOpList[2];
+	Value* OpValue = &vm->InstrStream.Instrs[vm->CurrInstr].pOpList[2];
 
 	switch (OpValue->Type)
 	{
@@ -2174,34 +2179,34 @@ inline char*ResolveOpAsHostAPICall(VMState* vm, int iOpIndex)
 *  Resolves an operand and returns a pointer to its Value structure.
 */
 
-inline Value* ResolveOpPointer(VMState* vm, int iOpIndex)
-{
-    Value OpValue = vm->InstrStream.Instrs[vm->InstrStream.CurrInstr].pOpList[iOpIndex];
-
-    switch (OpValue.Type)
-    {
-        // It's on the stack
-
-    case OP_TYPE_ABS_STACK_INDEX:
-		return GetStackValue(vm, OpValue.StackIndex);
-		//return &vm->Stack.Elmnts[ResolveStackIndex(vm->Stack.FrameIndex, OpValue.StackIndex)];
-    case OP_TYPE_REL_STACK_INDEX:
-        {
-            int iAbsStackIndex = ResolveOpRelStackIndex(vm, &OpValue);
-			return GetStackValue(vm, iAbsStackIndex);
-        }
-
-        // It's _RetVal
-
-    case OP_TYPE_REG:
-        return &vm->_RetVal;
-
-    }
-
-    // Return NULL for anything else
-
-    return NULL;
-}
+//inline Value* ResolveOpValue(VMState* vm, int iOpIndex)
+//{
+//    Value OpValue = vm->InstrStream.Instrs[vm->CurrInstr].pOpList[iOpIndex];
+//
+//    switch (OpValue.Type)
+//    {
+//        // It's on the stack
+//
+//    case OP_TYPE_ABS_STACK_INDEX:
+//		return GetStackValue(vm, OpValue.StackIndex);
+//		//return &vm->Stack[ResolveStackIndex(vm->FrameIndex, OpValue.StackIndex)];
+//    case OP_TYPE_REL_STACK_INDEX:
+//        {
+//            int iAbsStackIndex = ResolveOpRelStackIndex(vm, &OpValue);
+//			return GetStackValue(vm, iAbsStackIndex);
+//        }
+//
+//        // It's _RetVal
+//
+//    case OP_TYPE_REG:
+//        return &vm->_RetVal;
+//
+//    }
+//
+//    // Return NULL for anything else
+//
+//    return NULL;
+//}
 
 /******************************************************************************************
 *
@@ -2212,9 +2217,9 @@ inline Value* ResolveOpPointer(VMState* vm, int iOpIndex)
 
 inline Value* GetStackValue(VMState *vm, int iIndex)
 {
-	int iActualIndex = ResolveStackIndex(vm->Stack.FrameIndex, iIndex);
-	assert(iActualIndex < vm->Stack.Size && iActualIndex >= 0);
-	return &vm->Stack.Elmnts[iActualIndex];
+	int iActualIndex = ResolveStackIndex(vm->iFrameIndex, iIndex);
+	assert(iActualIndex < vm->iStackSize && iActualIndex >= 0);
+	return &vm->Stack[iActualIndex];
 }
 
 /******************************************************************************************
@@ -2226,9 +2231,9 @@ inline Value* GetStackValue(VMState *vm, int iIndex)
 
 inline void SetStackValue(VMState *vm, int iIndex, Value Val)
 {
-    int iActualIndex = ResolveStackIndex(vm->Stack.FrameIndex, iIndex);
-    assert(iActualIndex < vm->Stack.Size && iActualIndex >= 0);
-    vm->Stack.Elmnts[iActualIndex] = Val;
+    int iActualIndex = ResolveStackIndex(vm->iFrameIndex, iIndex);
+    assert(iActualIndex < vm->iStackSize && iActualIndex >= 0);
+    vm->Stack[iActualIndex] = Val;
 }
 
 /******************************************************************************************
@@ -2240,17 +2245,8 @@ inline void SetStackValue(VMState *vm, int iIndex, Value Val)
 
 inline void Push(VMState* vm, Value* Val)
 {
-    // Get the current top element
-
-    int iTopIndex = vm->Stack.TopIndex;
-
     // Put the value into the current top index
-
-    CopyValue(&vm->Stack.Elmnts[iTopIndex], Val);
-
-    // Increment the top index
-
-    ++vm->Stack.TopIndex;
+    CopyValue(&vm->Stack[vm->iTopIndex++], Val);
 }
 
 /******************************************************************************************
@@ -2262,18 +2258,8 @@ inline void Push(VMState* vm, Value* Val)
 
 inline Value Pop(VMState *vm)
 {
-    // Decrement the top index to clear the old element for overwriting
-
-    --vm->Stack.TopIndex;
-
-    // Get the current top element
-
-    int iTopIndex = vm->Stack.TopIndex;
-
-    // Use this index to read the top element
-
     Value Val;
-    CopyValue(&Val, &vm->Stack.Elmnts[iTopIndex]);
+    CopyValue(&Val, &vm->Stack[--vm->iTopIndex]);
 
     return Val;
 }
@@ -2289,11 +2275,11 @@ inline void PushFrame(VMState *vm, int iSize)
 {
     // Increment the top index by the size of the frame
 
-    vm->Stack.TopIndex += iSize;
+    vm->iTopIndex += iSize;
 
     // Move the frame index to the new top of the stack
 
-    vm->Stack.FrameIndex = vm->Stack.TopIndex;
+    vm->iFrameIndex = vm->iTopIndex;
 }
 
 /******************************************************************************************
@@ -2305,8 +2291,8 @@ inline void PushFrame(VMState *vm, int iSize)
 
 inline void PopFrame(VMState *vm, int iSize)
 {
-    vm->Stack.TopIndex -= iSize;
-	vm->Stack.FrameIndex = vm->Stack.TopIndex;
+    vm->iTopIndex -= iSize;
+	vm->iFrameIndex = vm->iTopIndex;
 }
 
 /******************************************************************************************
@@ -2373,17 +2359,17 @@ void CallFunc(VMState *vm, int iIndex, int type)
     // Advance the instruction pointer so it points to the instruction
     // immediately following the call
 
-    ++vm->InstrStream.CurrInstr;
+    ++vm->CurrInstr;
 
     FUNC *DestFunc = GetFunc(vm, iIndex);
 
     // Save the current stack frame index
-    int iFrameIndex = vm->Stack.FrameIndex;
+    int iFrameIndex = vm->iFrameIndex;
 
     // 保存返回地址（RA）
     Value ReturnAddr;
     ReturnAddr.Type = OP_TYPE_INSTR_INDEX;
-    ReturnAddr.InstrIndex = vm->InstrStream.CurrInstr;
+    ReturnAddr.InstrIndex = vm->CurrInstr;
     Push(vm, &ReturnAddr);
 
     // 函数信息块,保存调用者的栈帧索引
@@ -2398,10 +2384,10 @@ void CallFunc(VMState *vm, int iIndex, int type)
 
     // Write the function index and old stack frame to the top of the stack
 
-    SetStackValue(vm, vm->Stack.TopIndex - 1, FuncIndex);
+    SetStackValue(vm, vm->iTopIndex - 1, FuncIndex);
 
     // Let the caller make the jump to the entry point
-    vm->InstrStream.CurrInstr = DestFunc->EntryPoint;
+    vm->CurrInstr = DestFunc->EntryPoint;
 }
 
 /******************************************************************************************
@@ -2571,8 +2557,8 @@ int XVM_RegisterHostFunc(XVM_State* vm, char *pstrName, XVM_HOST_FUNCTION fnFunc
 // 返回栈帧上指定的参数
 Value XVM_GetParam(VMState* vm, int iParamIndex)
 {
-    int iTopIndex = vm->Stack.TopIndex;
-    Value arg = vm->Stack.Elmnts[iTopIndex - (iParamIndex + 1)];
+    int iTopIndex = vm->iTopIndex;
+    Value arg = vm->Stack[iTopIndex - (iParamIndex + 1)];
     return arg;
 }
 
@@ -2641,7 +2627,7 @@ char* XVM_GetParamAsString(VMState* vm, int iParamIndex)
 void XVM_ReturnFromHost(VMState* vm)
 {
     // Clear the parameters off the stack
-    vm->Stack.TopIndex = vm->Stack.FrameIndex;
+    vm->iTopIndex = vm->iFrameIndex;
 }
 
 /******************************************************************************************
@@ -2699,7 +2685,7 @@ void XVM_ReturnStringFromHost(VMState* vm, char *pstrString)
 
 int XVM_GetParamCount(VMState* vm)
 {
-    return (vm->Stack.TopIndex - vm->Stack.FrameIndex);
+    return (vm->iTopIndex - vm->iFrameIndex);
 }
 
 
