@@ -96,8 +96,6 @@ struct HOST_API_FUNC                     // Host API function
 
 struct VMState
 {
-    int IsActive;                                // Is this script structure in use?
-
     // Header fields
     int GlobalDataSize;                        // The size of the script's global data
     int IsMainFuncPresent;                     // Is Main() present?
@@ -173,18 +171,6 @@ inline int ResolveStackIndex(int iFrameIndex, int iIndex)
 }
 
 
-/******************************************************************************************
-*
-*  IsThreadActive()
-*
-*  Returns TRUE if the specified thread is both a valid index and active, FALSE otherwise.
-*/
-
-inline int IsThreadActive(VMState* vm)
-{
-	return vm->IsActive;
-}
-
 // ----Function Prototypes -------------------------------------------------------------------
 
 // GC
@@ -248,7 +234,6 @@ VMState* XVM_Create()
 {
 	VMState* thead = new VMState;
 
-	thead->IsActive = FALSE;
 	thead->ThreadActiveTime = 0;
 
 	thead->IsRunning = FALSE;
@@ -307,9 +292,6 @@ time_t XVM_GetSourceTimestamp(const char* filename)
 
 int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
 {
-    // ----Find the next free script index
-    int iFreeThreadFound = FALSE;
-
     // ----Open the input file
 
     FILE *pScriptFile;
@@ -675,10 +657,6 @@ int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
 
     fclose(pScriptFile);
 
-    // The script is fully loaded and ready to go, so set the active flag
-
-    vm->IsActive = TRUE;
-
     // Reset the script
 
     XVM_ResetVM(vm);
@@ -710,11 +688,6 @@ void XVM_ShutDown(VMState *vm)
 
 void XVM_UnloadScript(VMState* vm)
 {
-    // Exit if the script isn't active
-
-    if (!vm->IsActive)
-        return;
-
     // ----Free The instruction stream
 
     // First check to see if any instructions have string operands, and free them if they
@@ -1656,11 +1629,6 @@ void XVM_RunScript(VMState* vm, int iTimesliceDur)
 
 void XVM_StartScript(VMState* vm)
 {
-	// Make sure the thread index is valid and active
-
-	if (!IsThreadActive(vm))
-		return;
-
 	// Set the thread's execution flag
 
 	vm->IsRunning = TRUE;
@@ -1683,11 +1651,6 @@ void XVM_StartScript(VMState* vm)
 
 void XVM_StopScript(VMState* vm)
 {
-    // Make sure the thread index is valid and active
-
-    if (!IsThreadActive(vm))
-        return;
-
     // Clear the thread's execution flag
 
     vm->IsRunning = FALSE;
@@ -1702,11 +1665,6 @@ void XVM_StopScript(VMState* vm)
 
 void XVM_PauseScript(VMState* vm, int iDur)
 {
-    // Make sure the thread index is valid and active
-
-    if (!IsThreadActive(vm))
-        return;
-
     // Set the pause flag
 
     vm->IsPaused = TRUE;
@@ -1725,11 +1683,6 @@ void XVM_PauseScript(VMState* vm, int iDur)
 
 void XVM_ResumeScript(VMState* vm)
 {
-    // Make sure the thread index is valid and active
-
-    if (!IsThreadActive(vm))
-        return;
-
     // Clear the pause flag
 
     vm->IsPaused = FALSE;
@@ -1744,11 +1697,6 @@ void XVM_ResumeScript(VMState* vm)
 
 int XVM_GetReturnValueAsInt(VMState* vm)
 {
-    // Make sure the thread index is valid and active
-
-    if (!IsThreadActive(vm))
-        return 0;
-
     // Return _RetVal's integer field
 
     return vm->_RetVal.Fixnum;
@@ -1763,11 +1711,6 @@ int XVM_GetReturnValueAsInt(VMState* vm)
 
 float XVM_GetReturnValueAsFloat(VMState* vm)
 {
-    // Make sure the thread index is valid and active
-
-    if (!IsThreadActive(vm))
-        return 0;
-
     // Return _RetVal's floating-point field
 
     return vm->_RetVal.Realnum;
@@ -1782,11 +1725,6 @@ float XVM_GetReturnValueAsFloat(VMState* vm)
 
 char* XVM_GetReturnValueAsString(VMState* vm)
 {
-    // Make sure the thread index is valid and active
-
-    if (!IsThreadActive(vm))
-        return NULL;
-
     // Return _RetVal's string field
 
     return vm->_RetVal.String;
@@ -2526,10 +2464,6 @@ int GetFuncIndexByName(VMState* vm, char *pstrName)
 
 int XVM_CallScriptFunc(VMState* vm, char *pstrName)
 {
-    // Make sure the thread index is valid and active
-    if (!IsThreadActive(vm))
-        return FALSE;
-
     // Get the function's index based on it's name
     int iFuncIndex = GetFuncIndexByName(vm, pstrName);
 
@@ -2557,10 +2491,6 @@ int XVM_CallScriptFunc(VMState* vm, char *pstrName)
 
 void XVM_CallScriptFuncSync(VMState* vm, char *pstrName)
 {
-    // Make sure the thread index is valid and active
-    if (!IsThreadActive(vm))
-        return;
-
     // Get the function's index based on its name
     int iFuncIndex = GetFuncIndexByName(vm, pstrName);
 
@@ -2631,7 +2561,6 @@ Value XVM_GetParam(VMState* vm, int iParamIndex)
 int XVM_GetParamAsInt(VMState* vm, int iParamIndex)
 {
     // Get the current top element
-    int iTopIndex = vm->Stack.TopIndex;
     Value Param = XVM_GetParam(vm, iParamIndex);
 
     // Coerce the top element of the stack to an integer
@@ -2651,7 +2580,6 @@ int XVM_GetParamAsInt(VMState* vm, int iParamIndex)
 float XVM_GetParamAsFloat(VMState* vm, int iParamIndex)
 {
     // Get the current top element
-    int iTopIndex = vm->Stack.TopIndex;
     Value Param = XVM_GetParam(vm, iParamIndex);
 
     // Coerce the top element of the stack to a float
@@ -2670,7 +2598,6 @@ float XVM_GetParamAsFloat(VMState* vm, int iParamIndex)
 char* XVM_GetParamAsString(VMState* vm, int iParamIndex)
 {
     // Get the current top element
-    int iTopIndex = vm->Stack.TopIndex;
     Value Param = XVM_GetParam(vm, iParamIndex);
 
     // Coerce the top element of the stack to a string

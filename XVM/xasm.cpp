@@ -369,11 +369,6 @@ int IsStringIdent(char *pstrString);
 int IsStringInteger(char *pstrString);
 int IsStringFloat(char *pstrString);
 
-// ----Misc ------------------------------------------------------------------------------
-
-void PrintLogo();
-void PrintUsage();
-
 // ----Main ------------------------------------------------------------------------------
 void InitAssembler();
 void LoadSourceFile(const char* file);
@@ -419,7 +414,7 @@ SymbolNode *GetSymbolByFuncIndex(char *pstrIdent, int iFuncIndex);
 // 使用符号
 SymbolNode *GetSymbolByLevel(char *pstrIdent, int iLevel, int iFuncIndex);
 int GetStackIndexByIdent(char *pstrIdent, int iLevel, int iFuncIndex);
-int GetSizeByIdent(char *pstrIdent, int iLevel, int iFuncIndex);
+static int GetSizeByIdent(char *pstrIdent, int iLevel, int iFuncIndex);
 
 
 /******************************************************************************************
@@ -752,36 +747,6 @@ int IsStringFloat(char *pstrString)
     // If a radix point was found, return true; otherwise, it must be an integer so return false
 
 	return (iRadixPointFound ? TRUE : FALSE);
-}
-
-/******************************************************************************************
-*
-*   PrintLogo()
-*
-*   Prints out logo/credits information.
-*/
-
-void PrintLogo()
-{
-    printf("XASM\n");
-    printf("XtremeScript Assembler Version %d.%d\n", VERSION_MAJOR, VERSION_MINOR);
-    printf("Written by t34@qq.com\n");
-    printf("\n");
-}
-
-/******************************************************************************************
-*
-*   PrintUsage()
-*
-*   Prints out usage information.
-*/
-
-static void PrintUsage()
-{
-    printf("Usage:\tXASM Source.XASM [Executable.XSE]\n");
-    printf("\n");
-    printf("\t- File extensions are not required.\n");
-    printf("\t- Executable name is optional; source name is used by default.\n");
 }
 
 /******************************************************************************************
@@ -3044,12 +3009,12 @@ void BuildXSE(const char* file)
         // Write the opcode(2 bytes)
 
         short sOpcode = g_pInstrStream[iCurrInstrIndex].Opcode;
-        fwrite(& sOpcode, 2, 1, pExecFile);
+        fwrite(&sOpcode, 2, 1, pExecFile);
 
         // Write the operand count(1 byte)
 
         char iOpCount = g_pInstrStream[iCurrInstrIndex].OpCount;
-        fwrite(& iOpCount, 1, 1, pExecFile);
+        fwrite(&iOpCount, 1, 1, pExecFile);
 
         // Loop through the operand list and print each one out
 
@@ -3062,7 +3027,7 @@ void BuildXSE(const char* file)
             // Create a character for (holding operand types(1 byte)
 
             char cOpType = CurrOp.Type;
-            fwrite(& cOpType, 1, 1, pExecFile);
+            fwrite(&cOpType, 1, 1, pExecFile);
 
             // Write the operand depending on its type
 
@@ -3071,56 +3036,56 @@ void BuildXSE(const char* file)
                 // Integer literal
 
             case OP_TYPE_INT:
-                fwrite(& CurrOp.Fixnum, sizeof(int), 1, pExecFile);
+                fwrite(&CurrOp.Fixnum, sizeof(int), 1, pExecFile);
                 break;
 
                 // Floating-point literal
 
             case OP_TYPE_FLOAT:
-                fwrite(& CurrOp.FloatLiteral, sizeof(float), 1, pExecFile);
+                fwrite(&CurrOp.FloatLiteral, sizeof(float), 1, pExecFile);
                 break;
 
                 // String index
 
             case OP_TYPE_STRING_INDEX:
-                fwrite(& CurrOp.StringTableIndex, sizeof(int), 1, pExecFile);
+                fwrite(&CurrOp.StringTableIndex, sizeof(int), 1, pExecFile);
                 break;
 
                 // Instruction index
 
             case OP_TYPE_INSTR_INDEX:
-                fwrite(& CurrOp.InstrIndex, sizeof(int), 1, pExecFile);
+                fwrite(&CurrOp.InstrIndex, sizeof(int), 1, pExecFile);
                 break;
 
                 // Absolute stack index
 
             case OP_TYPE_ABS_STACK_INDEX:
-                fwrite(& CurrOp.StackIndex, sizeof(int), 1, pExecFile);
+                fwrite(&CurrOp.StackIndex, sizeof(int), 1, pExecFile);
                 break;
 
                 // Relative stack index
 
             case OP_TYPE_REL_STACK_INDEX:
-                fwrite(& CurrOp.StackIndex, sizeof(int), 1, pExecFile);
-                fwrite(& CurrOp.OffsetIndex, sizeof(int), 1, pExecFile);
+                fwrite(&CurrOp.StackIndex, sizeof(int), 1, pExecFile);
+                fwrite(&CurrOp.OffsetIndex, sizeof(int), 1, pExecFile);
                 break;
 
                 // Function index
 
             case OP_TYPE_FUNC_INDEX:
-                fwrite(& CurrOp.FuncIndex, sizeof(int), 1, pExecFile);
+                fwrite(&CurrOp.FuncIndex, sizeof(int), 1, pExecFile);
                 break;
 
                 // Host API call index
 
             case OP_TYPE_HOST_CALL_INDEX:
-                fwrite(& CurrOp.HostAPICallIndex, sizeof(int), 1, pExecFile);
+                fwrite(&CurrOp.HostAPICallIndex, sizeof(int), 1, pExecFile);
                 break;
 
                 // Register
 
             case OP_TYPE_REG:
-                fwrite(& CurrOp.Reg, sizeof(int), 1, pExecFile);
+                fwrite(&CurrOp.Reg, sizeof(int), 1, pExecFile);
                 break;
             }
         }
@@ -3141,10 +3106,6 @@ void BuildXSE(const char* file)
 
     pNode = g_ASMStringTable.pHead;
 
-    // Create a character for (writing parameter counts
-
-    char cParamCount;
-
     // Loop through each node in the list and write out its string
 
     for (iCurrNode = 0; iCurrNode < g_ASMStringTable.iNodeCount; ++iCurrNode)
@@ -3156,7 +3117,7 @@ void BuildXSE(const char* file)
 
         // Write the length(4 bytes), followed by the string data(N bytes)
 
-        fwrite(& iCurrStringLength, 4, 1, pExecFile);
+        fwrite(&iCurrStringLength, 4, 1, pExecFile);
         fwrite(pstrCurrString, strlen(pstrCurrString), 1, pExecFile);
 
         // Move to the next node
@@ -3184,25 +3145,29 @@ void BuildXSE(const char* file)
 
         // Write the entry point(4 bytes)
 
-        fwrite(& pFunc->iEntryPoint, sizeof(int), 1, pExecFile);
+        fwrite(&pFunc->iEntryPoint, sizeof(int), 1, pExecFile);
+
+		// Create a character for writing parameter counts
+
+		int cParamCount;
 
         // Write the parameter count(1 byte)
 
         cParamCount = pFunc->iParamCount;
-        fwrite(& cParamCount, 1, 1, pExecFile);
+        fwrite(&cParamCount, 1, 1, pExecFile);
 
         // Write the local data size(4 bytes)
 
-        fwrite(& pFunc->iLocalDataSize, sizeof(int), 1, pExecFile);
+        fwrite(&pFunc->iLocalDataSize, sizeof(int), 1, pExecFile);
 
         // Write the function name length(1 byte)
 
         char cFuncNameLength = strlen(pFunc->pstrName);
-        fwrite(& cFuncNameLength, 1, 1, pExecFile);
+        fwrite(&cFuncNameLength, 1, 1, pExecFile);
 
         // Write the function name(N bytes)
 
-        fwrite(& pFunc->pstrName, strlen(pFunc->pstrName), 1, pExecFile);
+        fwrite(&pFunc->pstrName, strlen(pFunc->pstrName), 1, pExecFile);
 
         // Move to the next node
 
@@ -3230,7 +3195,7 @@ void BuildXSE(const char* file)
 
         // Write the length(1 byte), followed by the string data(N bytes)
 
-        fwrite(& cCurrHostAPICallLength, 1, 1, pExecFile);
+        fwrite(&cCurrHostAPICallLength, 1, 1, pExecFile);
         fwrite(pstrCurrHostAPICall, strlen(pstrCurrHostAPICall), 1, pExecFile);
 
         // Move to the next node
