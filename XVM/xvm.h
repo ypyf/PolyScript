@@ -98,7 +98,6 @@ struct Value
 	// 例如 var1[var2], 则该字段保存的就是var2的地址
     // 对于OP_TYPE_FUNC_INDEX，该字段保存了调用者(caller)的栈帧索引(FP)
     int OffsetIndex;               // Index of the offset
-	int dummy_field;
 };
 
 // ----Function Prototypes -------------------------------------------------------------------
