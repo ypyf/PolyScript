@@ -10,131 +10,7 @@
 #include <time.h>
 
 
-// ----Script Loading --------------------------------------------------------------------
 
-#define XSE_ID_STRING               "XSE0"      // Used to validate an .MAX executable
-#define VERSION_MAJOR               0           // Major version number
-#define VERSION_MINOR               7           // Minor version number
-
-#define THREAD_MODE_SINGLE          1           // Single-threaded execution
-
-
-// 启动GC过程的临界对象数
-#define INITIAL_GC_THRESHOLD        25
-
-// ----Stack -----------------------------------------------------------------------------
-
-#define DEF_STACK_SIZE              1024        // The default stack size
-
-// ----Coercion --------------------------------------------------------------------------
-
-#define MAX_COERCION_STRING_SIZE    256         // The maximum allocated space for a string coercion
-
-// ----Functions -------------------------------------------------------------------------
-
-#define MAX_FUNC_NAME_SIZE          256         // Maximum size of a function's name
-
-// ----Data Structures -----------------------------------------------------------------------
-
-// ----Runtime Stack ---------------------------------------------------------------------
-struct RUNTIME_STACK         // A runtime stack
-{
-    Value *Elmnts;           // The stack elements
-    int Size;                // The number of elements in the stack
-
-    int TopIndex;            // 栈顶指针
-    int FrameIndex;          // 总是指向当前栈帧
-};
-
-// ----Functions -------------------------------------------------------------------------
-struct FUNC                            // A function
-{
-    int EntryPoint;                         // The entry point
-    int ParamCount;                         // The parameter count
-    int LocalDataSize;                      // Total size of all local data
-    int StackFrameSize;                     // Total size of the stack frame
-    char Name[MAX_FUNC_NAME_SIZE+1];		// The function's name
-};
-
-// ----Instructions ----------------------------------------------------------------------
-struct INSTR                           // An instruction
-{
-    int Opcode;                                // The opcode
-    int OpCount;                               // The number of operands
-    Value *pOpList;                            // The operand list
-};
-
-struct INSTR_STREAM                     // An instruction stream
-{
-    INSTR *Instrs;                            // The instructions themselves
-    int Size;                                  // The number of instructions in the stream
-};
-
-// ----Function Table --------------------------------------------------------------------
-struct FUNC_TABLE                       // A function table
-{
-    FUNC *Funcs;                              // Pointer to the function array
-    int Size;                                  // The number of functions in the array
-};
-
-// ----Host API Call Table ---------------------------------------------------------------
-struct HOST_CALL_TABLE                // A host API call table
-{
-    char **Calls;                            // Pointer to the call array
-    int Size;                                    // The number of calls in the array
-};
-
-// ----Host API --------------------------------------------------------------------------
-struct HOST_API_FUNC                     // Host API function
-{
-	char Name[MAX_FUNC_NAME_SIZE];       // The function name
-	XVM_HOST_FUNCTION FuncPtr;           // Pointer to the function definition
-	HOST_API_FUNC* Next;                 // The next record
-};
-
-// ----Script Virtual Machine State ---------------------------------------------------------------------------
-
-struct VMState
-{
-    // Header fields
-    int GlobalDataSize;                        // The size of the script's global data
-    int IsMainFuncPresent;                     // Is Main() present?
-    int MainFuncIndex;                            // Main()'s function index
-
-    int IsRunning;                                // Is the script running?
-    int IsPaused;                                // Is the script currently paused?
-    int PauseEndTime;                            // If so, when should it resume?
-	int ThreadActiveTime;						// 脚本运行的总时间			
-
-    // Threading
-    int TimesliceDur;                          // The thread's timeslice duration
-
-	// 脚本特定的宿主API
-	HOST_API_FUNC* HostAPIs;
-
-    // Registers
-    Value _RetVal;                                // The _RetVal register (R0)
-	int CurrInstr;			// 当前指令
-
-	// 堆栈
-	Value *Stack;           // The stack elements
-	int iStackSize;          // The number of elements in the stack
-	int iTopIndex;          // 栈顶指针
-	int iFrameIndex;         // 总是指向当前栈帧
-
-    // 脚本退出代码
-    int ExitCode;
-
-    // Script data
-    INSTR_STREAM InstrStream;                    // The instruction stream
-    FUNC_TABLE FuncTable;                        // The function table
-    HOST_CALL_TABLE HostCallTable;            // The host API call table
-
-    // 动态内存分配
-    MetaObject *pLastObject;        // 指向最近一个已分配的对象
-    int iNumberOfObjects;           // 当前已分配的对象个数
-    int iMaxObjects;                // 最大对象数，用于启动GC过程
-};
 
 
 // ----The Global Host API ----------------------------------------------------------------------
@@ -188,8 +64,6 @@ int CoerceValueToInt(Value* Val);
 float CoerceValueToFloat(Value* Val);
 char *CoerceValueToString(Value* Val);
 
-void CopyValue(Value *pDest, Value* Source);
-
 int GetOpType(VMState* vm, int OpIndex);
 int ResolveOpRelStackIndex(VMState *vm, Value* OpValue);
 Value* ResolveOpValue(VMState* vm, int iOpIndex);
@@ -206,10 +80,14 @@ char* ResolveOpAsHostAPICall(int iOpIndex);
 
 Value* GetStackValue(VMState* vm, int iIndex);
 void SetStackValue(VMState* vm, int iIndex, Value Val);
-void Push(VMState* vm, Value* Val);
-Value Pop(VMState* vm);
 void PushFrame(VMState* vm, int iSize);
 void PopFrame(VMState* vm, int iSize);
+
+// VM Instruction Implementation --------------------------------------
+#include "instruction.h"
+
+
+
 
 // ----Function Table Interface ----------------------------------------------------------
 
@@ -806,11 +684,6 @@ void XVM_ResetVM(VMState* vm)
 
 static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 {
-    // Begin a loop that runs until a keypress. The instruction pointer has already been
-    // initialized with a prior call to ResetScripts(), so execution can begin
-
-    // Create a flag that instructions can use to break the execution loop
-
     int iExitExecLoop = FALSE;
 
     // Create a variable to hold the time at which the main timeslice started
@@ -866,14 +739,32 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         {
             // ----Binary Operations
 
+		case INSTR_ADD:
+		case INSTR_SUB:
+			{
+				Value& op0 = Pop(vm);
+				Value& op1 = Pop(vm);
+				Value op2;
+
+				switch (iOpcode)
+				{
+				case INSTR_ADD:
+					exec_add(op0, op1, op2);
+					break;
+
+				case INSTR_SUB:
+					exec_sub(op0, op1, op2);
+					break;
+				}
+				Push(vm, &op2);
+				break;
+			}
+
             // Move
 
         case INSTR_MOV:
 
             // Arithmetic Operations
-
-        case INSTR_ADD:
-        case INSTR_SUB:
         case INSTR_MUL:
         case INSTR_DIV:
         case INSTR_MOD:
@@ -913,24 +804,6 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                     // The arithmetic instructions only work with destination types that
                     // are either integers or floats. They first check for integers and
                     // assume that anything else is a float. Mod only works with integers.
-
-                case INSTR_ADD:
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        Dest->Fixnum += ResolveOpAsInt(vm, 1);
-                    else
-                        Dest->Realnum += ResolveOpAsFloat(vm, 1);
-
-                    break;
-
-                case INSTR_SUB:
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        Dest->Fixnum -= ResolveOpAsInt(vm, 1);
-                    else
-                        Dest->Realnum -= ResolveOpAsFloat(vm, 1);
-
-                    break;
 
                 case INSTR_MUL:
 
@@ -1772,32 +1645,6 @@ static void RunGC(VMState *pScript)
 #endif
 }
 
-/******************************************************************************************
-*
-*  CopyValue()
-*
-*  Copies a value structure to another, taking strings into account.
-*/
-
-void CopyValue(Value *pDest, Value* Source)
-{
-    // If the destination already contains a string, make sure to free it first
-
-    if (pDest->Type == OP_TYPE_STRING)
-        free(pDest->String);
-
-    // Copy the object (浅拷贝)
-
-    *pDest = *Source;
-
-    // Make a physical copy of the source string, if necessary
-
-    if (Source->Type == OP_TYPE_STRING)
-    {
-        pDest->String = (char *)malloc(strlen(Source->String) + 1);
-        strcpy(pDest->String, Source->String);
-    }
-}
 
 /******************************************************************************************
 *
@@ -2174,33 +2021,6 @@ inline void SetStackValue(VMState *vm, int iIndex, Value Val)
     vm->Stack[iActualIndex] = Val;
 }
 
-/******************************************************************************************
-*
-*    Push()
-*
-*    Pushes an element onto the stack.
-*/
-
-inline void Push(VMState* vm, Value* Val)
-{
-    // Put the value into the current top index
-    CopyValue(&vm->Stack[vm->iTopIndex++], Val);
-}
-
-/******************************************************************************************
-*
-*    Pop()
-*
-*    Pops the element off the top of the stack.
-*/
-
-inline Value Pop(VMState *vm)
-{
-    Value Val;
-    CopyValue(&Val, &vm->Stack[--vm->iTopIndex]);
-
-    return Val;
-}
 
 /******************************************************************************************
 *

@@ -683,9 +683,6 @@ void ParseExpr()
 
 	int iOpType;
 
-	// 解析函数调用表达式
-	//ParseFuncCall();
-
 	// Parse the subexpression
 
 	ParseSubExpr();
@@ -697,8 +694,8 @@ void ParseExpr()
 		// Get the next token
 
 		if (GetNextToken() != TOKEN_TYPE_OP ||
-			(! IsOpRelational (GetCurrOp ()) &&
-			! IsOpLogical (GetCurrOp ())))
+			(! IsOpRelational(GetCurrOp ()) &&
+			! IsOpLogical(GetCurrOp ())))
 		{
 			RewindTokenStream();
 			break;
@@ -933,12 +930,12 @@ void ParseExpr()
 
 /******************************************************************************************
 *
-*   ParseSubExpr ()
+*   ParseSubExpr()
 *
 *   Parses a sub expression.
 */
 
-void ParseSubExpr ()
+void ParseSubExpr()
 {
 	int iInstrIndex;
 
@@ -975,13 +972,13 @@ void ParseSubExpr ()
 
 		// Pop the first operand into _T1
 
-		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
+		//iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
 
 		// Pop the second operand into _T0
 
-		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+		//iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 
 		// Perform the binary operation associated with the specified operator
 
@@ -1007,13 +1004,13 @@ void ParseSubExpr ()
 			break;
 		}
 		iInstrIndex = AddICodeInstr(g_iCurrScope, iOpInstr);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
+		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
 
 		// Push the result (stored in _T0)
 
-		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+		//iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
+		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 	}
 }
 
@@ -1785,10 +1782,24 @@ void ParseAssign()
 
 	ReadToken(TOKEN_TYPE_SEMICOLON);
 
-	// Pop the value into _T0
+	// 单独处理赋值 a = b
+	if (iAssignOp == OP_TYPE_ASSIGN)
+	{
+		// pop dest
+		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+		if (iIsArray)
+			AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1SymbolIndex);
+		else
+			AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
+		return;
+	}
 
-	iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-	AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+	// PUSH Dest
+	iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
+	if (iIsArray)
+		AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1SymbolIndex);
+	else
+		AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
 
 	// If the variable was an array, pop the top of the stack into _T1 for use as the index
 
@@ -1802,12 +1813,6 @@ void ParseAssign()
 
 	switch (iAssignOp)
 	{
-		// =
-
-	case OP_TYPE_ASSIGN:
-		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_MOV);
-		break;
-
 		// +=
 
 	case OP_TYPE_ASSIGN_ADD:
@@ -1881,16 +1886,12 @@ void ParseAssign()
 		break;
 	}
 
-	// Generate the destination operand
-
+	// POP Dest
+	iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
 	if (iIsArray)
 		AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1SymbolIndex);
 	else
 		AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
-
-	// Generate the source
-
-	AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
 }
 
 /******************************************************************************************

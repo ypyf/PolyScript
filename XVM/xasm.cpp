@@ -97,7 +97,7 @@ END_OF_TOKEN_STREAM,          // The end of the stream has been reached
 #define OP_TYPE_REL_STACK_INDEX         4           // Relative array index
 #define OP_TYPE_INSTR_INDEX             5           // Instruction index
 #define OP_TYPE_FUNC_INDEX              6           // Function index
-#define OP_TYPE_HOST_CALL_INDEX     7           // Host API call index
+#define OP_TYPE_HOST_CALL_INDEX			7           // Host API call index
 #define OP_TYPE_REG                     8           // Register
 
 
@@ -858,15 +858,15 @@ void InitInstrTable()
 
     // Add Destination, Source
 
-    iInstrIndex = AddInstrLookup("Add", INSTR_ADD, 2);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    iInstrIndex = AddInstrLookup("Add", INSTR_ADD, 0);
+	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // Sub Destination, Source
 
-    iInstrIndex = AddInstrLookup("Sub", INSTR_SUB, 2);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    iInstrIndex = AddInstrLookup("Sub", INSTR_SUB, 0);
+	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // Mul Destination, Source
 
@@ -954,12 +954,12 @@ void InitInstrTable()
 
     // Concat       String0, String1
 
-    iInstrIndex = AddInstrLookup("Concat", INSTR_CONCAT, 2);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG |
-        OP_FLAG_TYPE_STRING);
+    iInstrIndex = AddInstrLookup("Concat", INSTR_CONCAT, 0);
+    //SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
+    //    OP_FLAG_TYPE_REG);
+    //SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_MEM_REF |
+    //    OP_FLAG_TYPE_REG |
+    //    OP_FLAG_TYPE_STRING);
 
     // GetChar      Destination, Source, Index
 
@@ -1071,7 +1071,7 @@ void InitInstrTable()
 	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
 
 	// Breakpoint
-	AddInstrLookup("Print", INSTR_BREAK, 1);
+	AddInstrLookup("Print", INSTR_BREAK, 0);
 
     // Pause        Duration
 

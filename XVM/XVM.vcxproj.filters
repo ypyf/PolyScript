@@ -78,6 +78,9 @@
     <ClInclude Include="gc.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="instruction.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="mathlib.cpp">
@@ -126,6 +129,9 @@
       <Filter>编译器</Filter>
     </ClCompile>
     <ClCompile Include="gc.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="instruction.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

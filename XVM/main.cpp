@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
 	// 运行脚本并返回
 	RunScript(argv[1]);
 
-	printf("耗时 %lums\n", GetCurrTime() - start);
+	printf("耗时 %fs\n", (GetCurrTime()-start)/1000.0);
 }
 
 #endif

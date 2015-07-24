@@ -93,6 +93,7 @@
     <ClInclude Include="Compiler\symbol_table.h" />
     <ClInclude Include="Compiler\xsc.h" />
     <ClInclude Include="gc.h" />
+    <ClInclude Include="instruction.h" />
     <ClInclude Include="mathlib.h" />
     <ClInclude Include="xasm.h" />
     <ClInclude Include="xqueue.h" />
@@ -111,6 +112,7 @@
     <ClCompile Include="Compiler\stack.cpp" />
     <ClCompile Include="Compiler\symbol_table.cpp" />
     <ClCompile Include="Compiler\xsc.cpp" />
+    <ClCompile Include="instruction.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mathlib.cpp" />
     <ClCompile Include="xasm.cpp" />
