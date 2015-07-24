@@ -104,8 +104,8 @@ extern LinkedList g_StringTable;
 
 // ---- Expression Evaluation -------------------------------------------------------------
 
-extern int g_iTempVar0SymbolIndex,
-g_iTempVar1SymbolIndex;
+extern int g_iTempVar0,
+g_iTempVar1;
 
 // ---- Function Prototypes -------------------------------------------------------------------
 

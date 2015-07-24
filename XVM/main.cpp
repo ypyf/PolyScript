@@ -143,9 +143,6 @@ int RunScript(char* pstrFilename)
         exit(1);
     }
 
-    // 开始由线程索引指定的脚本
-    //XVM_StartScript(iThreadIndex);
-
     // Run we're loaded script from Main()
     XVM_RunScript(vm, XVM_INFINITE_TIMESLICE);
 
@@ -167,7 +164,6 @@ int main(int argc, char* argv[])
 		exit(0);
 	}
 
-	// 运行脚本并返回
 	RunScript(argv[1]);
 
 	printf("耗时 %fs\n", (GetCurrTime()-start)/1000.0);

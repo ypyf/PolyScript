@@ -54,8 +54,8 @@ int g_iGenerateXSE;                             // Generate an .XSE executable?
 
 // ---- Expression Evaluation -------------------------------------------------------------
 
-int g_iTempVar0SymbolIndex,                     // Temporary variable symbol indices
-	g_iTempVar1SymbolIndex;
+int g_iTempVar0,                     // Temporary variable symbol indices
+	g_iTempVar1;
 
 
 /******************************************************************************************
@@ -169,8 +169,8 @@ void CompileSourceFile()
 {
 	// Add two temporary variables for evaluating expressions
 
-	g_iTempVar0SymbolIndex = AddSymbol(TEMP_VAR_0, 1, SCOPE_GLOBAL, SYMBOL_TYPE_VAR);
-	g_iTempVar1SymbolIndex = AddSymbol(TEMP_VAR_1, 1, SCOPE_GLOBAL, SYMBOL_TYPE_VAR);
+	g_iTempVar0 = AddSymbol(TEMP_VAR_0, 1, SCOPE_GLOBAL, SYMBOL_TYPE_VAR);
+	g_iTempVar1 = AddSymbol(TEMP_VAR_1, 1, SCOPE_GLOBAL, SYMBOL_TYPE_VAR);
 
 	// Parse the source file to create an I-code representation
 	ParseSourceCode();

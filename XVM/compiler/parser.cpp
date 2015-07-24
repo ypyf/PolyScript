@@ -542,10 +542,10 @@ void ParsePrint()
 	ParseExpr();
 	// pop _T0
 	int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-	AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+	AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
 	//print _T0
 	iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PRINT);
-	AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+	AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
 
 	ReadToken(TOKEN_TYPE_SEMICOLON);
 }
@@ -689,6 +689,8 @@ void ParseFunc()
 *   Parses an expression.
 */
 
+// FIXME
+// 逻辑运算符、相等运算符和关系运算符应该有不同的优先级
 void ParseExpr()
 {
 	int iInstrIndex;
@@ -718,29 +720,9 @@ void ParseExpr()
 
 		iOpType = GetCurrOp();
 
+		// TODO
 		// 对逻辑与（&&）和逻辑或（||）运算符应用短路求值规则
-
-		switch (iOpType)
-		{
-		case OP_TYPE_LOGICAL_AND:
-			{
-				int iFalseJumpTargetIndex = GetNextJumpTargetIndex ();
-				// push 0
-				// JE label ; 如果 Op0 == 0 那么条件为假
-				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRF);
-				AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex);
-				break;
-			}
-
-		case OP_TYPE_LOGICAL_OR:
-			{
-				int iTrueJumpTargetIndex = GetNextJumpTargetIndex ();
-				// JNE _T0, 0, True
-				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRT);
-				AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex);
-				break;
-			}
-		}
+		// 即在对操作符右边的表达式求值之前让假值跳转
 
 		// Parse the second term
 
@@ -754,7 +736,7 @@ void ParseExpr()
 		{
 			// Get a pair of free jump target indices
 
-			int iTrueJumpTargetIndex = GetNextJumpTargetIndex (),
+			int iTrueJumpTargetIndex = GetNextJumpTargetIndex(),
 				iExitJumpTargetIndex = GetNextJumpTargetIndex();
 
 			// It's a relational operator
@@ -835,7 +817,7 @@ void ParseExpr()
 
 			// Set the jump target for the true outcome
 
-			AddICodeJumpTarget (g_iCurrScope, iTrueJumpTargetIndex);
+			AddICodeJumpTarget(g_iCurrScope, iTrueJumpTargetIndex);
 
 			// Generate the outcome for truth
 
@@ -843,32 +825,28 @@ void ParseExpr()
 
 			// Set the jump target for exiting the operand evaluation
 
-			AddICodeJumpTarget (g_iCurrScope, iExitJumpTargetIndex);
+			AddICodeJumpTarget(g_iCurrScope, iExitJumpTargetIndex);
 		}
 		else
 		{
-			// It must be a logical operator
-
 			switch (iOpType)
 			{
-				// And
-
 			case OP_TYPE_LOGICAL_AND:
 				{
 					// Get a pair of free jump target indices
 
-					int iFalseJumpTargetIndex = GetNextJumpTargetIndex (),
+					int iFalseJumpTargetIndex = GetNextJumpTargetIndex(),
 						iExitJumpTargetIndex = GetNextJumpTargetIndex();
 
 					// JE _T0, 0, True
 					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRF);
 					AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex);
 
-					// JE _T1, 0, True
+					//// JE _T1, 0, True
 					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRF);
 					AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex);
 
-					// Push 1	返回的是布尔值0
+					// Push 1	返回的是布尔值1
 
 					AddICodeInstr(g_iCurrScope, INSTR_ICONST_1);
 
@@ -879,7 +857,7 @@ void ParseExpr()
 
 					// L0: (False)
 
-					AddICodeJumpTarget (g_iCurrScope, iFalseJumpTargetIndex);
+					AddICodeJumpTarget(g_iCurrScope, iFalseJumpTargetIndex);
 
 					// Push 0	 返回的是布尔值0
 
@@ -887,7 +865,7 @@ void ParseExpr()
 
 					// L1: (Exit)
 
-					AddICodeJumpTarget (g_iCurrScope, iExitJumpTargetIndex);
+					AddICodeJumpTarget(g_iCurrScope, iExitJumpTargetIndex);
 
 					break;
 				}
@@ -898,7 +876,7 @@ void ParseExpr()
 				{
 					// Get a pair of free jump target indices
 
-					int iTrueJumpTargetIndex = GetNextJumpTargetIndex (),
+					int iTrueJumpTargetIndex = GetNextJumpTargetIndex(),
 						iExitJumpTargetIndex = GetNextJumpTargetIndex();
 
 					// JNE _T0, 0, True
@@ -921,7 +899,7 @@ void ParseExpr()
 
 					// L0: (True)
 
-					AddICodeJumpTarget (g_iCurrScope, iTrueJumpTargetIndex);
+					AddICodeJumpTarget(g_iCurrScope, iTrueJumpTargetIndex);
 
 					// Push 1
 
@@ -930,7 +908,7 @@ void ParseExpr()
 
 					// L1: (Exit)
 
-					AddICodeJumpTarget (g_iCurrScope, iExitJumpTargetIndex);
+					AddICodeJumpTarget(g_iCurrScope, iExitJumpTargetIndex);
 
 					break;
 				}
@@ -1068,12 +1046,12 @@ void ParseTerm()
 		// Pop the first operand into _T1
 
 		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
+		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1);
 
 		// Pop the second operand into _T0
 
 		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
 
 		// Perform the binary operation associated with the specified operator
 
@@ -1135,13 +1113,13 @@ void ParseTerm()
 			break;
 		}
 		iInstrIndex = AddICodeInstr(g_iCurrScope, iOpInstr);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
+		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
+		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1);
 
 		// Push the result (stored in _T0)
 
 		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
 	}
 }
 
@@ -1199,11 +1177,20 @@ void ParseUnary()
 			ReadToken(TOKEN_TYPE_SEMICOLON);
 
 			// Push Dest
-			int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
 			if (iIsArray)
-				AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1SymbolIndex);
+			{
+				// 复制数组索引到 T1
+				int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+				AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1);
+
+				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
+				AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1);
+			}
 			else
+			{
+				int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
 				AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
+			}
 
 			switch (iOpType)
 			{
@@ -1218,9 +1205,9 @@ void ParseUnary()
 			}
 
 			// POP Dest
-			iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+			int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
 			if (iIsArray)
-				AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1SymbolIndex);
+				AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1);
 			else
 				AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
 
@@ -1234,7 +1221,7 @@ void ParseUnary()
 			{
 				// Get a pair of free jump target indices
 
-				int iTrueJumpTargetIndex = GetNextJumpTargetIndex (),
+				int iTrueJumpTargetIndex = GetNextJumpTargetIndex(),
 					iExitJumpTargetIndex = GetNextJumpTargetIndex();
 
 				// JE _T0, 0, True
@@ -1252,7 +1239,7 @@ void ParseUnary()
 
 				// L0: (True)
 
-				AddICodeJumpTarget (g_iCurrScope, iTrueJumpTargetIndex);
+				AddICodeJumpTarget(g_iCurrScope, iTrueJumpTargetIndex);
 
 				// Push 1
 
@@ -1260,7 +1247,7 @@ void ParseUnary()
 
 				// L1: (Exit)
 
-				AddICodeJumpTarget (g_iCurrScope, iExitJumpTargetIndex);
+				AddICodeJumpTarget(g_iCurrScope, iExitJumpTargetIndex);
 			}
 		}
 
@@ -1382,13 +1369,13 @@ void ParseFactor()
 					// Pop the resulting value into _T0 and use it as the index variable
 
 					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-					AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
+					AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
 
 					// Push the original identifier onto the stack as an array, indexed
 					// with _T0
 
 					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-					AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar0SymbolIndex);
+					AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar0);
 				}
 				else
 				{
@@ -1506,7 +1493,7 @@ void ParseIf ()
 
 		// Place the false target just before the false block
 
-		AddICodeJumpTarget (g_iCurrScope, iFalseJumpTargetIndex);
+		AddICodeJumpTarget(g_iCurrScope, iFalseJumpTargetIndex);
 
 		// Parse the false block
 
@@ -1514,7 +1501,7 @@ void ParseIf ()
 
 		// Set a jump target beyond the false block
 
-		AddICodeJumpTarget (g_iCurrScope, iSkipFalseJumpTargetIndex);
+		AddICodeJumpTarget(g_iCurrScope, iSkipFalseJumpTargetIndex);
 	}
 	else
 	{
@@ -1524,7 +1511,7 @@ void ParseIf ()
 
 		// Place the false target after the true block
 
-		AddICodeJumpTarget (g_iCurrScope, iFalseJumpTargetIndex);
+		AddICodeJumpTarget(g_iCurrScope, iFalseJumpTargetIndex);
 	}
 }
 
@@ -1552,12 +1539,12 @@ void ParseWhile ()
 
 	// Get two jump targets; for the top and bottom of the loop
 
-	int iStartTargetIndex = GetNextJumpTargetIndex (),
+	int iStartTargetIndex = GetNextJumpTargetIndex(),
 		iEndTargetIndex = GetNextJumpTargetIndex();
 
 	// Set a jump target at the top of the loop
 
-	AddICodeJumpTarget (g_iCurrScope, iStartTargetIndex);
+	AddICodeJumpTarget(g_iCurrScope, iStartTargetIndex);
 
 	// Read the opening parenthesis
 
@@ -1587,7 +1574,7 @@ void ParseWhile ()
 
 	// Push the loop structure onto the stack
 
-	Push (&g_LoopStack, pLoop);
+	Push(&g_LoopStack, pLoop);
 
 	// Parse the loop body
 
@@ -1595,7 +1582,7 @@ void ParseWhile ()
 
 	// Pop the loop instance off the stack
 
-	Pop (&g_LoopStack);
+	Pop(&g_LoopStack);
 
 	// Unconditionally jump back to the start of the loop
 
@@ -1604,7 +1591,7 @@ void ParseWhile ()
 
 	// Set a jump target for the end of the loop
 
-	AddICodeJumpTarget (g_iCurrScope, iEndTargetIndex);
+	AddICodeJumpTarget(g_iCurrScope, iEndTargetIndex);
 }
 
 /******************************************************************************************
@@ -1797,6 +1784,10 @@ void ParseAssign()
 
 		ParseExpr();
 
+		// 保存数组索引
+		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
+
 		// Make sure the index is closed
 
 		ReadToken(TOKEN_TYPE_CLOSE_BRACE);
@@ -1828,31 +1819,34 @@ void ParseAssign()
 
 	ReadToken(TOKEN_TYPE_SEMICOLON);
 
-	// 单独处理赋值 a = b
+	// 简单赋值 a = b
 	if (iAssignOp == OP_TYPE_ASSIGN)
 	{
-		// pop dest
-		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
 		if (iIsArray)
-			AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1SymbolIndex);
+		{
+			iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+			AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar0);
+		}
 		else
+		{
+			iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
 			AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
+		}
+
 		return;
 	}
 
-	// PUSH Dest
-	iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-	if (iIsArray)
-		AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1SymbolIndex);
-	else
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
-
-	// If the variable was an array, pop the top of the stack into _T1 for use as the index
+	// PUSH dest
 
 	if (iIsArray)
 	{
-		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
+		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
+		AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar0);
+	}
+	else
+	{
+		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
+		AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
 	}
 
 	// ---- Generate the I-code for the assignment instruction
@@ -1935,7 +1929,7 @@ void ParseAssign()
 	// POP Dest
 	iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
 	if (iIsArray)
-		AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1SymbolIndex);
+		AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar0);
 	else
 		AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
 }
