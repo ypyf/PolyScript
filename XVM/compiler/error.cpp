@@ -34,7 +34,7 @@ void ExitOnCodeError(char * pstrErrorMssg)
 	// Print the message
 
 	printf("Error: %s.\n\n", pstrErrorMssg);
-	printf("Line %d\n", GetCurrSourceLineIndex());
+	printf("Line %d\n", GetCurrSourceLineIndex() + 1);
 
 	// Reduce all of the source line's spaces to tabs so it takes less space and so the
 	// karet lines up with the current token properly

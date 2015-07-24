@@ -899,13 +899,8 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_DEC:
         case INSTR_SQRT:
             {
-                // Get the destination type (operand index 0)
-
-                //int iDestStoreType = GetOpType(0);
-
-                // Get a local copy of the destination itself
-
-                Value* Dest = ResolveOpValue(vm, 0);
+				// 获取栈顶元素
+                Value* Dest = &vm->Stack[vm->iTopIndex - 1];
 
                 switch (iOpcode)
                 {
@@ -951,9 +946,6 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                     break;
                 }
-
-                // Move the result to the destination
-                *ResolveOpValue(vm, 0) = *Dest;
 
                 break;
             }
@@ -1091,12 +1083,12 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_JGE:
         case INSTR_JLE:
             {
-                Value* Op0 = ResolveOpValue(vm, 0);  // 条件1
-                Value* Op1 = ResolveOpValue(vm, 1);  // 条件2
+                Value* Op1 = &Pop(vm);  // 条件2
+                Value* Op0 = &Pop(vm);  // 条件1
 
                 // Get the index of the target instruction (opcode index 2)
 
-                int iTargetIndex = ResolveOpAsInstrIndex(vm, 2);
+                int iTargetIndex = ResolveOpAsInstrIndex(vm, 0);
 
                 // Perform the specified comparison and jump if it evaluates to true
 
@@ -1222,6 +1214,77 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 break;
             }
 
+		case INSTR_BRT:
+			{
+				Value* Op0 = &Pop(vm);  // 条件
+
+                // Get the index of the target instruction (opcode index 2)
+
+                int iTargetIndex = ResolveOpAsInstrIndex(vm, 0);
+
+                // Perform the specified comparison and jump if it evaluates to true
+
+                int iJump = FALSE;
+
+				switch (Op0->Type)
+                {
+                case OP_TYPE_INT:
+                    if (Op0->Fixnum != 0)
+                        iJump = TRUE;
+                    break;
+
+                case OP_TYPE_FLOAT:
+                    if (Op0->Realnum != 0)
+                        iJump = TRUE;
+                    break;
+
+                case OP_TYPE_STRING:
+                    if (strlen(Op0->String) > 0)
+                        iJump = TRUE;
+                    break;
+                }
+
+				 // If the comparison evaluated to TRUE, make the jump
+                if (iJump)
+                    vm->CurrInstr = iTargetIndex;
+
+                break;
+			}
+		case INSTR_BRF:
+			{
+				Value* Op0 = &Pop(vm);  // 条件
+
+                // Get the index of the target instruction (opcode index 2)
+
+                int iTargetIndex = ResolveOpAsInstrIndex(vm, 0);
+
+                // Perform the specified comparison and jump if it evaluates to true
+
+                int iJump = FALSE;
+
+				switch (Op0->Type)
+                {
+                case OP_TYPE_INT:
+                    if (Op0->Fixnum == 0)
+                        iJump = TRUE;
+                    break;
+
+                case OP_TYPE_FLOAT:
+                    if (Op0->Realnum == 0)
+                        iJump = TRUE;
+                    break;
+
+                case OP_TYPE_STRING:
+                    if (strlen(Op0->String) == 0)
+                        iJump = TRUE;
+                    break;
+                }
+				// If the comparison evaluated to TRUE, make the jump
+                if (iJump)
+                    vm->CurrInstr = iTargetIndex;
+
+                break;
+			}
             // ----The Stack Interface
 
         case INSTR_PUSH:

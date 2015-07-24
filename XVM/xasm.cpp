@@ -891,27 +891,26 @@ void InitInstrTable()
 	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
 	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
-    // Sqrt    Destination 
-    iInstrIndex = AddInstrLookup("Sqrt", INSTR_SQRT, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_INT |
-        OP_FLAG_TYPE_FLOAT |
-        OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
+	// ----- 一元运算符
+
+	// Sqrt    Destination 
+    iInstrIndex = AddInstrLookup("Sqrt", INSTR_SQRT, 0);
 
     // Neg Destination
 
-    iInstrIndex = AddInstrLookup("Neg", INSTR_NEG, 1);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+    iInstrIndex = AddInstrLookup("Neg", INSTR_NEG, 0);
 
     // Inc Destination
 
-    iInstrIndex = AddInstrLookup("Inc", INSTR_INC, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+    iInstrIndex = AddInstrLookup("Inc", INSTR_INC, 0);
 
     // Dec Destination
 
-    iInstrIndex = AddInstrLookup("Dec", INSTR_DEC, 1);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
+    iInstrIndex = AddInstrLookup("Dec", INSTR_DEC, 0);
+
+	// Not Destination
+
+    iInstrIndex = AddInstrLookup("Not", INSTR_NOT, 0);
 
     // ----Bitwise
 
@@ -932,11 +931,6 @@ void InitInstrTable()
     iInstrIndex = AddInstrLookup("XOr", INSTR_XOR, 2);
 	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
 	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
-
-    // Not Destination
-
-    iInstrIndex = AddInstrLookup("Not", INSTR_NOT, 1);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
 
     // ShL Destination, Source
 
@@ -995,45 +989,52 @@ void InitInstrTable()
 
     // JE           Op0, Op1, Label
 
-    iInstrIndex = AddInstrLookup("JE", INSTR_JE, 3);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
-    SetOpType(iInstrIndex, 2, OP_FLAG_TYPE_LINE_LABEL);
+    iInstrIndex = AddInstrLookup("JE", INSTR_JE, 1);
+	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
+	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
     // JNE          Op0, Op1, Label
 
-    iInstrIndex = AddInstrLookup("JNE", INSTR_JNE, 3);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
-    SetOpType(iInstrIndex, 2, OP_FLAG_TYPE_LINE_LABEL);
+    iInstrIndex = AddInstrLookup("JNE", INSTR_JNE, 1);
+	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
+	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
     // JG           Op0, Op1, Label
 
-    iInstrIndex = AddInstrLookup("JG", INSTR_JG, 3);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
-    SetOpType(iInstrIndex, 2, OP_FLAG_TYPE_LINE_LABEL);
+    iInstrIndex = AddInstrLookup("JG", INSTR_JG, 1);
+	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
+	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
     // JL           Op0, Op1, Label
 
-    iInstrIndex = AddInstrLookup("JL", INSTR_JL, 3);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
-    SetOpType(iInstrIndex, 2, OP_FLAG_TYPE_LINE_LABEL);
+    iInstrIndex = AddInstrLookup("JL", INSTR_JL, 1);
+	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
+	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
     // JGE          Op0, Op1, Label
 
-    iInstrIndex = AddInstrLookup("JGE", INSTR_JGE, 3);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
-    SetOpType(iInstrIndex, 2, OP_FLAG_TYPE_LINE_LABEL);
+    iInstrIndex = AddInstrLookup("JGE", INSTR_JGE, 1);
+	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
+	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
     // JLE           Op0, Op1, Label
 
-    iInstrIndex = AddInstrLookup("JLE", INSTR_JLE, 3);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
-    SetOpType(iInstrIndex, 2, OP_FLAG_TYPE_LINE_LABEL);
+    iInstrIndex = AddInstrLookup("JLE", INSTR_JLE, 1);
+	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
+	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
+
+	iInstrIndex = AddInstrLookup("brtrue", INSTR_BRT, 1);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
+
+	iInstrIndex = AddInstrLookup("brfalse", INSTR_BRF, 1);
+    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
+
 
     // ----The Stack Interface
 

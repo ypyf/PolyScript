@@ -28,6 +28,7 @@ struct Loop                                 // Loop instance
 
 void ReadToken(Token ReqToken);
 
+int IsOpUnary(int iOpType);
 int IsOpAssign(int iOpType);
 int IsOpRelational(int iOpType);
 int IsOpLogical(int iOpType);
@@ -44,6 +45,7 @@ void ParseFunc();
 void ParseExpr();
 void ParseSubExpr();
 void ParseTerm();
+void ParseUnary();
 void ParseFactor();
 
 void ParseIf();
