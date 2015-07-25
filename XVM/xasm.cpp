@@ -993,10 +993,10 @@ void InitInstrTable()
 	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
-	iInstrIndex = AddInstrLookup("brtrue", INSTR_BRT, 1);
+	iInstrIndex = AddInstrLookup("brtrue", INSTR_BRTRUE, 1);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
-	iInstrIndex = AddInstrLookup("brfalse", INSTR_BRF, 1);
+	iInstrIndex = AddInstrLookup("brfalse", INSTR_BRFALSE, 1);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
 
@@ -1032,8 +1032,7 @@ void InitInstrTable()
     // ----Miscellaneous
 
 	// Print Object
-	iInstrIndex = AddInstrLookup("Print", INSTR_PRINT, 1);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
+	iInstrIndex = AddInstrLookup("Print", INSTR_PRINT, 0);
 
 	// Breakpoint
 	AddInstrLookup("Print", INSTR_BREAK, 0);

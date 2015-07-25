@@ -117,6 +117,50 @@ int AddICodeInstr(int iFuncIndex, int iOpcode)
 	return iIndex;
 }
 
+int AddICodeInstr(int iFuncIndex, int iOpcode, Label label)
+{
+	// Get the function to which the instruction should be added
+
+	FuncNode * pFunc = GetFuncByIndex(iFuncIndex);
+
+	// Create an I-code node structure to hold the instruction
+
+	ICodeNode * pInstrNode = (ICodeNode *)malloc(sizeof(ICodeNode));
+
+	// Set the node type to instruction
+
+	pInstrNode->iType = ICODE_NODE_INSTR;
+
+	// Set the opcode
+
+	pInstrNode->Instr.iOpcode = iOpcode;
+
+	// Clear the operand list
+
+	pInstrNode->Instr.OpList.iNodeCount = 0;
+
+	// Add the instruction node to the list and get the index
+
+	int iIndex = AddNode(&pFunc->ICodeStream, pInstrNode);
+
+	// Create an operand structure to hold the new value
+
+	Op Value;
+
+	// Set the operand type to register and store the code (even though we'll ignore it)
+
+	Value.iType = OP_TYPE_JUMP_TARGET_INDEX;
+	Value.label = label;
+
+	// Add the operand to the instruction
+
+	AddICodeOp(iFuncIndex, iIndex, Value);
+
+	// Return the index
+
+	return iIndex;
+}
+
 /******************************************************************************************
 *
 *   GetICodeOpByIndex ()
@@ -368,12 +412,12 @@ void AddRegICodeOp(int iFuncIndex, int iInstrIndex, int iRegCode)
 
 /******************************************************************************************
 *
-*   AddJumpTargetICodeOp ()
+*   AddJumpTargetICodeOp()
 *
 *   Adds a jump target operand to the specified I-code instruction.
 */
 
-void AddJumpTargetICodeOp(int iFuncIndex, int iInstrIndex, int iTargetIndex)
+void AddJumpTargetICodeOp(int iFuncIndex, int iInstrIndex, Label iTargetIndex)
 {
 	// Create an operand structure to hold the new value
 
@@ -382,7 +426,7 @@ void AddJumpTargetICodeOp(int iFuncIndex, int iInstrIndex, int iTargetIndex)
 	// Set the operand type to register and store the code (even though we'll ignore it)
 
 	Value.iType = OP_TYPE_JUMP_TARGET_INDEX;
-	Value.iJumpTargetIndex = iTargetIndex;
+	Value.label = iTargetIndex;
 
 	// Add the operand to the instruction
 
@@ -391,26 +435,27 @@ void AddJumpTargetICodeOp(int iFuncIndex, int iInstrIndex, int iTargetIndex)
 
 /******************************************************************************************
 *
-*   GetNextJumpTargetIndex ()
+*   DefineLabel()
 *
 *   Returns the next target index.
 */
 
-int GetNextJumpTargetIndex()
+Label DefineLabel()
 {
 	// Return and increment the current target index
-
-	return g_iCurrJumpTargetIndex++;
+	Label new_label;
+	new_label.id = g_iCurrJumpTargetIndex++;
+	return new_label;
 }
 
 /******************************************************************************************
 *
-*   AddICodeJumpTarget ()
+*   AddICodeJumpTarget()
 *
 *   Adds a jump target to the I-code stream.
 */
 
-void AddICodeJumpTarget(int iFuncIndex, int iTargetIndex)
+void MarkLabel(int iFuncIndex, Label iTargetIndex)
 {
 	// Get the function to which the source line should be added
 

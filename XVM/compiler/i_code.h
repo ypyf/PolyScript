@@ -12,9 +12,9 @@
 
 // ---- I-Code Node Types -----------------------------------------------------------------
 
-#define ICODE_NODE_INSTR        0               // An I-code instruction
+#define ICODE_NODE_INSTR			0               // An I-code instruction
 #define ICODE_NODE_ANNOTATION_LINE  1               // Source-code annotation
-#define ICODE_NODE_JUMP_TARGET  2               // A jump target
+#define ICODE_NODE_JUMP_TARGET		2               // A jump target
 
 // ---- I-Code Opcode 采用了和执行体（XVM）相同的指令集
 
@@ -31,22 +31,28 @@
 //#define OP_TYPE_HOST_FUNC		    8           // Host Function
 #define OP_TYPE_REG                 9           // Register
 
+// 标号
+typedef struct _Label
+{
+	int id;
+} Label;
+
  // An I-code operand
 struct Op
 {
-	int iType;                                      // Type
-	union                                           // The value
+	int iType;                             // Type
+	union                                  // The value
 	{
-		int iIntLiteral;                            // Integer literal
-		float fFloatLiteral;                        // Float literal
-		int iStringIndex;                           // String table index
-		int iSymbolIndex;                           // Symbol table index
-		int iJumpTargetIndex;                       // Jump target index
-		int iFuncIndex;                             // Function index
-		int iRegCode;                               // Register code
+		int iIntLiteral;                   // Integer literal
+		float fFloatLiteral;               // Float literal
+		int iStringIndex;                  // String table index
+		int iSymbolIndex;                  // Symbol table index
+		Label label;					   // Jump target index
+		int iFuncIndex;					   // Function index
+		int iRegCode;                      // Register code
 	};
-	int iOffset;                                    // Immediate offset
-	int iOffsetSymbolIndex;                         // Offset symbol index
+	int iOffset;                           // Immediate offset
+	int iOffsetSymbolIndex;                // Offset symbol index
 };
 
 struct ICodeInstr                          // An I-code instruction
@@ -62,9 +68,10 @@ struct ICodeNode                           // An I-code node
 	{
 		ICodeInstr Instr;                          // The I-code instruction
 		char* pstrSourceLine;                      // The source line with which this instruction is annotated
-		int iJumpTargetIndex;                      // The jump target index
+		Label iJumpTargetIndex;                    // The jump target index
 	};
 };
+
 
 // ---- Function Prototypes -------------------------------------------------------------------
 
@@ -73,6 +80,7 @@ Op* GetICodeOpByIndex(ICodeNode * pInstr, int iOpIndex);
 
 void AddICodeAnnotation(int iFuncIndex, char * pstrSourceLine);
 int AddICodeInstr(int iFuncIndex, int iOpcode);
+int AddICodeInstr(int iFuncIndex, int iOpcode, Label label);
 void AddICodeOp(int iFuncIndex, int iInstrIndex, Op Value);
 void AddIntICodeOp(int iFuncIndex, int iInstrIndex, int iValue);
 void AddFloatICodeOp(int iFuncIndex, int iInstrIndex, float fValue);
@@ -82,9 +90,10 @@ void AddArrayIndexAbsICodeOp(int iFuncIndex, int iInstrIndex, int iArraySymbolIn
 void AddArrayIndexVarICodeOp(int iFuncIndex, int iInstrIndex, int iArraySymbolIndex, int iOffsetSymbolIndex);
 void AddFuncICodeOp(int iFuncIndex, int iInstrIndex, int iOpFuncIndex);
 void AddRegICodeOp(int iFuncIndex, int iInstrIndex, int iRegCode);
-void AddJumpTargetICodeOp(int iFuncIndex, int iInstrIndex, int iTargetIndex);
 
-int GetNextJumpTargetIndex();
-void AddICodeJumpTarget(int iFuncIndex, int iTargetIndex);
+Label DefineLabel();
+void MarkLabel(int iFuncIndex, Label iTargetIndex);
+void AddJumpTargetICodeOp(int iFuncIndex, int iInstrIndex, Label iTargetIndex);
+
 
 #endif

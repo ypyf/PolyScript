@@ -4,7 +4,6 @@
 #include "lexer.h"
 #include "symbol_table.h"
 #include "func_table.h"
-#include "i_code.h"
 
 
 // ---- Functions -------------------------------------------------------------------------
@@ -538,13 +537,7 @@ void ParseVar()
 void ParsePrint()
 {
 	ParseExpr();
-	// pop _T0
-	int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-	AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
-	//print _T0
-	iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PRINT);
-	AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
-
+	AddICodeInstr(g_iCurrScope, INSTR_PRINT);
 	ReadToken(TOKEN_TYPE_SEMICOLON);
 }
 
@@ -734,8 +727,8 @@ void ParseExpr()
 		{
 			// Get a pair of free jump target indices
 
-			int iTrueJumpTargetIndex = GetNextJumpTargetIndex(),
-				iExitJumpTargetIndex = GetNextJumpTargetIndex();
+			Label iTrueJumpTargetIndex = DefineLabel(),
+				iExitJumpTargetIndex = DefineLabel();
 
 			// It's a relational operator
 
@@ -815,7 +808,7 @@ void ParseExpr()
 
 			// Set the jump target for the true outcome
 
-			AddICodeJumpTarget(g_iCurrScope, iTrueJumpTargetIndex);
+			MarkLabel(g_iCurrScope, iTrueJumpTargetIndex);
 
 			// Generate the outcome for truth
 
@@ -823,7 +816,7 @@ void ParseExpr()
 
 			// Set the jump target for exiting the operand evaluation
 
-			AddICodeJumpTarget(g_iCurrScope, iExitJumpTargetIndex);
+			MarkLabel(g_iCurrScope, iExitJumpTargetIndex);
 		}
 		else
 		{
@@ -833,16 +826,14 @@ void ParseExpr()
 				{
 					// Get a pair of free jump target indices
 
-					int iFalseJumpTargetIndex = GetNextJumpTargetIndex(),
-						iExitJumpTargetIndex = GetNextJumpTargetIndex();
+					Label iFalseJumpTargetIndex = DefineLabel(),
+						iExitJumpTargetIndex = DefineLabel();
 
 					// JE _T0, 0, True
-					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRF);
-					AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex);
+					AddICodeInstr(g_iCurrScope, INSTR_BRFALSE, iFalseJumpTargetIndex);
 
 					// JE _T1, 0, True
-					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRF);
-					AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex);
+					AddICodeInstr(g_iCurrScope, INSTR_BRFALSE, iFalseJumpTargetIndex);
 
 					// Push 1	返回的是布尔值1
 
@@ -850,12 +841,11 @@ void ParseExpr()
 
 					// Jmp Exit
 
-					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JMP);
-					AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iExitJumpTargetIndex);
+					AddICodeInstr(g_iCurrScope, INSTR_JMP, iExitJumpTargetIndex);
 
 					// L0: (False)
 
-					AddICodeJumpTarget(g_iCurrScope, iFalseJumpTargetIndex);
+					MarkLabel(g_iCurrScope, iFalseJumpTargetIndex);
 
 					// Push 0	 返回的是布尔值0
 
@@ -863,7 +853,7 @@ void ParseExpr()
 
 					// L1: (Exit)
 
-					AddICodeJumpTarget(g_iCurrScope, iExitJumpTargetIndex);
+					MarkLabel(g_iCurrScope, iExitJumpTargetIndex);
 
 					break;
 				}
@@ -874,16 +864,14 @@ void ParseExpr()
 				{
 					// Get a pair of free jump target indices
 
-					int iTrueJumpTargetIndex = GetNextJumpTargetIndex(),
-						iExitJumpTargetIndex = GetNextJumpTargetIndex();
+					Label iTrueJumpTargetIndex = DefineLabel(),
+						iExitJumpTargetIndex = DefineLabel();
 
 					// JNE _T0, 0, True
-					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRT);
-					AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex);
+					AddICodeInstr(g_iCurrScope, INSTR_BRTRUE, iTrueJumpTargetIndex);
 
 					// JNE _T1, 0, True
-					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRT);
-					AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex);
+					AddICodeInstr(g_iCurrScope, INSTR_BRTRUE, iTrueJumpTargetIndex);
 
 					// Push 0
 
@@ -892,12 +880,11 @@ void ParseExpr()
 
 					// Jmp Exit
 
-					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JMP);
-					AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iExitJumpTargetIndex);
+					AddICodeInstr(g_iCurrScope, INSTR_JMP, iExitJumpTargetIndex);
 
 					// L0: (True)
 
-					AddICodeJumpTarget(g_iCurrScope, iTrueJumpTargetIndex);
+					MarkLabel(g_iCurrScope, iTrueJumpTargetIndex);
 
 					// Push 1
 
@@ -906,7 +893,7 @@ void ParseExpr()
 
 					// L1: (Exit)
 
-					AddICodeJumpTarget(g_iCurrScope, iExitJumpTargetIndex);
+					MarkLabel(g_iCurrScope, iExitJumpTargetIndex);
 
 					break;
 				}
@@ -1205,12 +1192,11 @@ void ParseUnary()
 			{
 				// Get a pair of free jump target indices
 
-				int iTrueJumpTargetIndex = GetNextJumpTargetIndex(),
-					iExitJumpTargetIndex = GetNextJumpTargetIndex();
+				Label iTrueJumpTargetIndex = DefineLabel(),
+					iExitJumpTargetIndex = DefineLabel();
 
 				// JE _T0, 0, True
-				int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRF);
-				AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex);
+				AddICodeInstr(g_iCurrScope, INSTR_BRFALSE, iTrueJumpTargetIndex);
 
 				// Push 0
 
@@ -1218,12 +1204,11 @@ void ParseUnary()
 
 				// Jmp L1
 
-				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JMP);
-				AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iExitJumpTargetIndex);
+				AddICodeInstr(g_iCurrScope, INSTR_JMP, iExitJumpTargetIndex);
 
 				// L0: (True)
 
-				AddICodeJumpTarget(g_iCurrScope, iTrueJumpTargetIndex);
+				MarkLabel(g_iCurrScope, iTrueJumpTargetIndex);
 
 				// Push 1
 
@@ -1231,7 +1216,7 @@ void ParseUnary()
 
 				// L1: (Exit)
 
-				AddICodeJumpTarget(g_iCurrScope, iExitJumpTargetIndex);
+				MarkLabel(g_iCurrScope, iExitJumpTargetIndex);
 			}
 		}
 
@@ -1442,7 +1427,7 @@ void ParseIf ()
 
 	// Create a jump target to mark the beginning of the false block
 
-	int iFalseJumpTargetIndex = GetNextJumpTargetIndex();
+	Label elseBegin = DefineLabel();
 
 	// Read the opening parenthesis
 
@@ -1457,8 +1442,7 @@ void ParseIf ()
 	ReadToken(TOKEN_TYPE_CLOSE_PAREN);
 
 	// If the result is zero, jump to the false target
-	iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRF);
-	AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex);
+	iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRFALSE, elseBegin);
 
 	// Parse the true block
 
@@ -1468,16 +1452,13 @@ void ParseIf ()
 
 	if (GetNextToken() == TOKEN_TYPE_RSRVD_ELSE)
 	{
-		// If it's found, append the true block with an unconditional jump past the false
-		// block
-
-		int iSkipFalseJumpTargetIndex = GetNextJumpTargetIndex();
-		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JMP);
-		AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iSkipFalseJumpTargetIndex);
+		// Then 分支执行后跳转到的目标位置
+		Label endIf = DefineLabel();
+		AddICodeInstr(g_iCurrScope, INSTR_JMP, endIf);
 
 		// Place the false target just before the false block
 
-		AddICodeJumpTarget(g_iCurrScope, iFalseJumpTargetIndex);
+		MarkLabel(g_iCurrScope, elseBegin);
 
 		// Parse the false block
 
@@ -1485,7 +1466,7 @@ void ParseIf ()
 
 		// Set a jump target beyond the false block
 
-		AddICodeJumpTarget(g_iCurrScope, iSkipFalseJumpTargetIndex);
+		MarkLabel(g_iCurrScope, endIf);
 	}
 	else
 	{
@@ -1495,7 +1476,7 @@ void ParseIf ()
 
 		// Place the false target after the true block
 
-		AddICodeJumpTarget(g_iCurrScope, iFalseJumpTargetIndex);
+		MarkLabel(g_iCurrScope, elseBegin);
 	}
 }
 
@@ -1510,8 +1491,6 @@ void ParseIf ()
 
 void ParseWhile ()
 {
-	int iInstrIndex;
-
 	// Make sure we're inside a function
 
 	if (g_iCurrScope == SCOPE_GLOBAL)
@@ -1523,12 +1502,12 @@ void ParseWhile ()
 
 	// Get two jump targets; for the top and bottom of the loop
 
-	int iStartTargetIndex = GetNextJumpTargetIndex(),
-		iEndTargetIndex = GetNextJumpTargetIndex();
+	Label whileBegin = DefineLabel();
+	Label whileEnd = DefineLabel();
 
 	// Set a jump target at the top of the loop
 
-	AddICodeJumpTarget(g_iCurrScope, iStartTargetIndex);
+	MarkLabel(g_iCurrScope, whileBegin);
 
 	// Read the opening parenthesis
 
@@ -1544,8 +1523,7 @@ void ParseWhile ()
 
 	// Pop the result into _T0 and jump out of the loop if it's nonzero
 
-	iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRF);
-	AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iEndTargetIndex);
+	AddICodeInstr(g_iCurrScope, INSTR_BRFALSE, whileEnd);
 
 	// Create a new loop instance structure
 
@@ -1553,8 +1531,8 @@ void ParseWhile ()
 
 	// Set the starting and ending jump target indices
 
-	pLoop->iStartTargetIndex = iStartTargetIndex;
-	pLoop->iEndTargetIndex = iEndTargetIndex;
+	pLoop->start = whileBegin;
+	pLoop->end = whileEnd;
 
 	// Push the loop structure onto the stack
 
@@ -1570,12 +1548,11 @@ void ParseWhile ()
 
 	// Unconditionally jump back to the start of the loop
 
-	iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JMP);
-	AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iStartTargetIndex);
+	AddICodeInstr(g_iCurrScope, INSTR_JMP, whileBegin);
 
 	// Set a jump target for the end of the loop
 
-	AddICodeJumpTarget(g_iCurrScope, iEndTargetIndex);
+	MarkLabel(g_iCurrScope, whileEnd);
 }
 
 /******************************************************************************************
@@ -1603,16 +1580,16 @@ void ParseFor()
 
 /******************************************************************************************
 *
-*   ParseBreak ()
+*   ParseBreak()
 *
 *   Parses a break statement.
 */
 
-void ParseBreak ()
+void ParseBreak()
 {
 	// Make sure we're in a loop
 
-	if (IsStackEmpty (&g_LoopStack))
+	if (IsStackEmpty(&g_LoopStack))
 		ExitOnCodeError("break illegal outside loops");
 
 	// Annotate the line
@@ -1625,26 +1602,25 @@ void ParseBreak ()
 
 	// Get the jump target index for the end of the loop
 
-	int iTargetIndex = ((Loop *) Peek (&g_LoopStack))->iEndTargetIndex;
+	Label iTargetIndex = ((Loop *) Peek(&g_LoopStack))->end;
 
 	// Unconditionally jump to the end of the loop
 
-	int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JMP);
-	AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iTargetIndex);
+	AddICodeInstr(g_iCurrScope, INSTR_JMP, iTargetIndex);
 }
 
 /******************************************************************************************
 *
-*   ParseContinue ()
+*   ParseContinue()
 *
 *   Parses a continue statement.
 */
 
-void ParseContinue ()
+void ParseContinue()
 {
 	// Make sure we're inside a function
 
-	if (IsStackEmpty (&g_LoopStack))
+	if (IsStackEmpty(&g_LoopStack))
 		ExitOnCodeError("continue illegal outside loops");
 
 	// Annotate the line
@@ -1657,7 +1633,7 @@ void ParseContinue ()
 
 	// Get the jump target index for the start of the loop
 
-	int iTargetIndex = ((Loop *) Peek (&g_LoopStack))->iStartTargetIndex;
+	Label iTargetIndex = ((Loop *) Peek(&g_LoopStack))->start;
 
 	// Unconditionally jump to the end of the loop
 

@@ -342,7 +342,7 @@ void EmitFunc(FuncNode * pFunc)
 						// Jump target index
 
 					case OP_TYPE_JUMP_TARGET_INDEX:
-						fprintf(g_pOutputFile, "_L%d", pOp->iJumpTargetIndex);
+						fprintf(g_pOutputFile, "_L%d", pOp->label.id);
 						break;
 					}
 

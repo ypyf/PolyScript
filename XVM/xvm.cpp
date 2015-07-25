@@ -1021,7 +1021,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 break;
             }
 
-		case INSTR_BRT:
+		case INSTR_BRTRUE:
 			{
 				Value* Op0 = &exec_pop(vm);  // 条件
 
@@ -1057,7 +1057,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                 break;
 			}
-		case INSTR_BRF:
+		case INSTR_BRFALSE:
 			{
 				Value* Op0 = &exec_pop(vm);  // 条件
 
@@ -1274,8 +1274,12 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 			break;
 
 		case INSTR_PRINT:
-			exec_print(*ResolveOpValue(vm, 0));
-			break;
+			{
+				Value op0 = vm->Stack[vm->iTopIndex - 1];
+				exec_print(op0);
+				exec_pop(vm);
+				break;
+			}
 
         case INSTR_NEW:
             {

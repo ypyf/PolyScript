@@ -3,7 +3,7 @@
 
 // ----Instruction Opcodes -----------------------------------------------------------
 
-enum InstrSet {
+enum Opcodes {
 	INSTR_NOP = 0,
 	INSTR_BREAK,
 	INSTR_MOV,
@@ -29,8 +29,8 @@ enum InstrSet {
 	INSTR_JL,
 	INSTR_JGE,
 	INSTR_JLE,
-	INSTR_BRT,
-	INSTR_BRF,
+	INSTR_BRTRUE,
+	INSTR_BRFALSE,
 	INSTR_PUSH,
 	INSTR_POP,
 	INSTR_CALL,

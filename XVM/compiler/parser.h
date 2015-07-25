@@ -6,6 +6,7 @@
 
 #include "xsc.h"
 #include "lexer.h"
+#include "i_code.h"
 
 // ---- Constants -----------------------------------------------------------------------------
 
@@ -20,8 +21,8 @@ struct Expr                                // Expression instance
 
 struct Loop                                 // Loop instance
 {
-	int iStartTargetIndex;                          // The starting jump target
-	int iEndTargetIndex;                            // The ending jump target
+	Label start;                          // The starting jump target
+	Label end;                            // The ending jump target
 };
 
 // ---- Function Prototypes -------------------------------------------------------------------
