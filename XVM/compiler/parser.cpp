@@ -1286,7 +1286,7 @@ void ParseFactor()
 
 	case TOKEN_TYPE_FLOAT:
 		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-		AddFloatICodeOp(g_iCurrScope, iInstrIndex, (float) atof (GetCurrLexeme()));
+		AddFloatICodeOp(g_iCurrScope, iInstrIndex, (float) atof(GetCurrLexeme()));
 		break;
 
 		// It's a string literal, so add it to the string table and push the resulting
@@ -1296,7 +1296,7 @@ void ParseFactor()
 		{
 			int iStringIndex = AddString (&g_StringTable, GetCurrLexeme());
 			iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-			AddStringICodeOp (g_iCurrScope, iInstrIndex, iStringIndex);
+			AddStringICodeOp(g_iCurrScope, iInstrIndex, iStringIndex);
 			break;
 		}
 
@@ -1404,7 +1404,7 @@ void ParseFactor()
 
 /******************************************************************************************
 *
-*   ParseIf ()
+*   ParseIf()
 *
 *   Parses an if block.
 *
@@ -1412,7 +1412,7 @@ void ParseFactor()
 *       if (<Expression>) <Statement> else <Statement>
 */
 
-void ParseIf ()
+void ParseIf()
 {
 	int iInstrIndex;
 
@@ -1482,14 +1482,14 @@ void ParseIf ()
 
 /******************************************************************************************
 *
-*   ParseWhile ()
+*   ParseWhile()
 *
 *   Parses a while loop block.
 *
 *       while (<Expression>) <Statement>
 */
 
-void ParseWhile ()
+void ParseWhile()
 {
 	// Make sure we're inside a function
 

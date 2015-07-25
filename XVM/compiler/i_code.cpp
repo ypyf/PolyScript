@@ -269,7 +269,7 @@ void AddFloatICodeOp(int iFuncIndex, int iInstrIndex, float fValue)
 
 /******************************************************************************************
 *
-*   AddStringICodeOp ()
+*   AddStringICodeOp()
 *
 *   Adds a string literal operand to the specified I-code instruction.
 */

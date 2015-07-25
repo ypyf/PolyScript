@@ -946,56 +946,46 @@ void InitInstrTable()
 
     // ----Conditional Branching
 
-    // Jmp          Label
+    // Jmp Label
 
     iInstrIndex = AddInstrLookup("Jmp", INSTR_JMP, 1);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
-    // JE           Op0, Op1, Label
+    // JE Label
 
     iInstrIndex = AddInstrLookup("JE", INSTR_JE, 1);
-	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
-	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
-    // JNE          Op0, Op1, Label
+    // JNE Label
 
     iInstrIndex = AddInstrLookup("JNE", INSTR_JNE, 1);
-	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
-	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
-    // JG           Op0, Op1, Label
+    // JG Label
 
     iInstrIndex = AddInstrLookup("JG", INSTR_JG, 1);
-	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
-	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
-    // JL           Op0, Op1, Label
+    // JL Label
 
     iInstrIndex = AddInstrLookup("JL", INSTR_JL, 1);
-	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
-	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
-    // JGE          Op0, Op1, Label
+    // JGE Label
 
     iInstrIndex = AddInstrLookup("JGE", INSTR_JGE, 1);
-	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
-	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
-    // JLE           Op0, Op1, Label
+    // JLE Label
 
     iInstrIndex = AddInstrLookup("JLE", INSTR_JLE, 1);
-	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
-	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
+	// brtrue label
 	iInstrIndex = AddInstrLookup("brtrue", INSTR_BRTRUE, 1);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
+	// brfalse label
 	iInstrIndex = AddInstrLookup("brfalse", INSTR_BRFALSE, 1);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LINE_LABEL);
 
