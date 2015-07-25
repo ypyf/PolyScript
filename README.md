@@ -16,6 +16,6 @@ A game script virtual machine.
         while (i > 0)
         {
             print "Hello World";
-            i -= 1;
+            --i;
         }
     }
