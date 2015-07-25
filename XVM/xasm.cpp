@@ -1001,11 +1001,11 @@ void InitInstrTable()
     // ----Miscellaneous
 
 	// Trap #0
-	AddInstrLookup("Trap", INSTR_TRAP, 1);
+	iInstrIndex = AddInstrLookup("Trap", INSTR_TRAP, 1);
 	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
 
 	// Breakpoint
-	AddInstrLookup("Print", INSTR_BREAK, 0);
+	AddInstrLookup("break", INSTR_BREAK, 0);
 
     // Pause        Duration
 
