@@ -15,32 +15,30 @@ LexerState g_PrevLexerState;                    // The previous lexer state (use
 // ---- First operator characters
 
 OpState g_OpChars0[MAX_OP_STATE_COUNT] = { { '+', 0, 2, 0 }, { '-', 2, 2, 1 }, { '*', 4, 1, 2 }, { '/', 5, 1, 3 },
-{ '%', 6, 1, 4 }, { '^', 7, 1, 5 }, { '&', 8, 2, 6 }, { '|', 10, 2, 7 },
-{ '#', 12, 1, 8 }, { '~', 0, 0, 9 }, { '!', 13, 1, 10 }, { '=', 14, 1, 11 },
-{ '<', 15, 2, 12 }, { '>', 17, 2, 13 }, { '$', 19, 1, 35 } };
+{ '%', 6, 1, 4 }, { '&', 8, 2, 5 }, { '|', 10, 2, 6 },
+{ '~', 0, 0, 7 }, { '^', 11, 1, 8 }, { '!', 12, 1, 9 }, { '=', 13, 1, 10 },
+{ '<', 14, 2, 11 }, { '>', 16, 2, 12 },};
 
 // ---- Second operator characters
 
 OpState g_OpChars1[MAX_OP_STATE_COUNT] = { 
-	{ '=', 0, 0, 14 }, { '+', 0, 0, 15 },     // +=, ++
-	{ '=', 0, 0, 16 }, { '-', 0, 0, 17 },     // -=, --
-	{ '=', 0, 0, 18 },                        // *=
-	{ '=', 0, 0, 19 },                        // /=
-	{ '=', 0, 0, 20 },                        // %=
-	{ '=', 0, 0, 21 },                        // ^=
-	{ '=', 0, 0, 22 }, { '&', 0, 0, 23 },     // &=, &&
-	{ '=', 0, 0, 24 }, { '|', 0, 0, 25 },     // |=, ||
-	{ '=', 0, 0, 26 },                        // #=
-	{ '=', 0, 0, 27 },                        // !=
-	{ '=', 0, 0, 28 },                        // ==
-	{ '=', 0, 0, 29 }, { '<', 0, 1, 30 },     // <=, <<
-	{ '=', 0, 0, 31 }, { '>', 1, 1, 32 },     // >=, >>
-	{ '=', 0, 0, 36 },		                  // $=
+	{ '=', 0, 0, 13 }, { '+', 0, 0, 14 },     // +=, ++
+	{ '=', 0, 0, 15 }, { '-', 0, 0, 16 },     // -=, --
+	{ '=', 0, 0, 17 },                        // *=
+	{ '=', 0, 0, 18 },                        // /=
+	{ '=', 0, 0, 19 },                        // %=
+	{ '=', 0, 0, 20 }, { '&', 0, 0, 21 },     // &=, &&
+	{ '=', 0, 0, 22 }, { '|', 0, 0, 23 },     // |=, ||
+	{ '=', 0, 0, 24 },                        // ^=
+	{ '=', 0, 0, 25 },                        // !=
+	{ '=', 0, 0, 26 },                        // ==
+	{ '=', 0, 0, 27 }, { '<', 0, 1, 28 },     // <=, <<
+	{ '=', 0, 0, 29 }, { '>', 1, 1, 30 },     // >=, >>
 };
 
 // ---- Third operator characters
 
-OpState g_OpChars2[MAX_OP_STATE_COUNT] = { { '=', 0, 0, 33 }, { '=', 0, 0, 34 } }; // <<=, >>=
+OpState g_OpChars2[MAX_OP_STATE_COUNT] = { { '=', 0, 0, 31 }, { '=', 0, 0, 32 } }; // <<=, >>=
 
 // ---- Delimiters ------------------------------------------------------------------------
 
@@ -199,7 +197,7 @@ int IsCharOpChar(char cChar, int iCharIndex)
 
 /******************************************************************************************
 *
-*   GetOpState ()
+*   GetOpState()
 *
 *   Returns the operator state associated with the specified index and state.
 */
@@ -231,7 +229,7 @@ OpState GetOpState(int iCharIndex, int iStateIndex)
 
 /******************************************************************************************
 *
-*   IsCharDelim ()
+*   IsCharDelim()
 *
 *   Determines whether a character is a delimiter.
 */
@@ -255,7 +253,7 @@ int IsCharDelim(char cChar)
 
 /******************************************************************************************
 *
-*	IsCharWhitespace ()
+*	IsCharWhitespace()
 *
 *	Returns a nonzero if the given character is whitespace, or zero otherwise.
 */
@@ -272,7 +270,7 @@ int IsCharWhitespace(char cChar)
 
 /******************************************************************************************
 *
-*	IsCharNumeric ()
+*	IsCharNumeric()
 *
 *	Returns a nonzero if the given character is numeric, or zero otherwise.
 */
@@ -289,7 +287,7 @@ int IsCharNumeric(char cChar)
 
 /******************************************************************************************
 *
-*	IsCharIdent ()
+*	IsCharIdent()
 *
 *	Returns a nonzero if the given character is part of a valid identifier, meaning it's an
 *	alphanumeric or underscore. Zero is returned otherwise.
@@ -311,7 +309,7 @@ int IsCharIdent(char cChar)
 
 /******************************************************************************************
 *
-*   GetNextChar ()
+*   GetNextChar()
 *
 *   Returns the next character in the source buffer.
 */

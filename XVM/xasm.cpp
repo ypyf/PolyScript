@@ -944,42 +944,6 @@ void InitInstrTable()
 	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
 	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
-    // ----String Manipulation
-
-    // Concat       String0, String1
-
-    iInstrIndex = AddInstrLookup("Concat", INSTR_CONCAT, 0);
-    //SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-    //    OP_FLAG_TYPE_REG);
-    //SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_MEM_REF |
-    //    OP_FLAG_TYPE_REG |
-    //    OP_FLAG_TYPE_STRING);
-
-    // GetChar      Destination, Source, Index
-
-    iInstrIndex = AddInstrLookup("GetChar", INSTR_GETCHAR, 3);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG |
-        OP_FLAG_TYPE_STRING);
-    SetOpType(iInstrIndex, 2, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG |
-        OP_FLAG_TYPE_INT);
-
-    // SetChar      Destination, Index, Source
-
-    iInstrIndex = AddInstrLookup("SetChar", INSTR_SETCHAR, 3);
-    SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG |
-        OP_FLAG_TYPE_STRING);
-    SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG |
-        OP_FLAG_TYPE_INT);
-    SetOpType(iInstrIndex, 2, OP_FLAG_TYPE_MEM_REF |
-        OP_FLAG_TYPE_REG |
-        OP_FLAG_TYPE_STRING);
-
     // ----Conditional Branching
 
     // Jmp          Label

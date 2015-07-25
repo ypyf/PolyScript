@@ -16,7 +16,6 @@ char ppstrMnemonics[][12] =
 	"mov",
 	"add", "sub", "mul", "div", "mod", "exp", "neg", "inc", "dec",
 	"and", "or", "xor", "not", "shl", "shr",
-	"concat", "getChar", "setChar",
 	"jmp", "je", "jne", "jg", "jl", "jge", "jle",
 	"brtrue", "brfalse",
 	"push", "pop",

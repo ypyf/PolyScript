@@ -82,60 +82,46 @@
 
 // ---- Operators -------------------------------------------------------------------------
 
-// ---- Arithmetic
+// 运算符的编码等于OpState中的最后一个字段
 
+// 单字符运算符
 #define OP_TYPE_ADD                     0       // +
 #define OP_TYPE_SUB                     1       // -
 #define OP_TYPE_MUL                     2       // *
 #define OP_TYPE_DIV                     3       // /
 #define OP_TYPE_MOD                     4       // %
-#define OP_TYPE_EXP                     5       // ^
-#define OP_TYPE_CONCAT                  35       // $
+#define OP_TYPE_BITWISE_AND             5       // &
+#define OP_TYPE_BITWISE_OR              6       // |
+#define OP_TYPE_BITWISE_NOT             7       // ~
+#define OP_TYPE_BITWISE_XOR             8       // ^
+#define OP_TYPE_LOGICAL_NOT             9       // !
+#define OP_TYPE_ASSIGN                  10      // =
+#define OP_TYPE_LESS                    11      // <
+#define OP_TYPE_GREATER                 12      // >
 
-#define OP_TYPE_INC                     15      // ++
-#define OP_TYPE_DEC                     17      // --
+// 双字符运算符
+#define OP_TYPE_ASSIGN_ADD              13      // +=
+#define OP_TYPE_INC                     14      // ++
+#define OP_TYPE_ASSIGN_SUB              15      // -=
+#define OP_TYPE_DEC                     16      // --
+#define OP_TYPE_ASSIGN_MUL              17      // *=
+#define OP_TYPE_ASSIGN_DIV              18      // /=
+#define OP_TYPE_ASSIGN_MOD              19      // %=
+#define OP_TYPE_ASSIGN_AND              20      // &=
+#define OP_TYPE_LOGICAL_AND             21      // &&
+#define OP_TYPE_ASSIGN_OR               22      // |=
+#define OP_TYPE_LOGICAL_OR              23      // ||
+#define OP_TYPE_ASSIGN_XOR              24      // ^=
+#define OP_TYPE_NOT_EQUAL               25      // !=
+#define OP_TYPE_EQUAL                   26      // ==
+#define OP_TYPE_LESS_EQUAL              27      // <=
+#define OP_TYPE_BITWISE_SHIFT_LEFT      28      // <<
+#define OP_TYPE_GREATER_EQUAL           29      // >=
+#define OP_TYPE_BITWISE_SHIFT_RIGHT     30      // >>
 
-#define OP_TYPE_ASSIGN_ADD              14      // +=
-#define OP_TYPE_ASSIGN_SUB              16      // -=
-#define OP_TYPE_ASSIGN_MUL              18      // *=
-#define OP_TYPE_ASSIGN_DIV              19      // /=
-#define OP_TYPE_ASSIGN_MOD              20      // %=
-#define OP_TYPE_ASSIGN_EXP              21      // ^=
-#define OP_TYPE_ASSIGN_CONCAT           36      // $=
-
-// ---- Bitwise
-
-#define OP_TYPE_BITWISE_AND             6       // &
-#define OP_TYPE_BITWISE_OR              7       // |
-#define OP_TYPE_BITWISE_XOR             8       // #
-#define OP_TYPE_BITWISE_NOT             9       // ~
-#define OP_TYPE_BITWISE_SHIFT_LEFT      30      // <<
-#define OP_TYPE_BITWISE_SHIFT_RIGHT     32      // >>
-
-#define OP_TYPE_ASSIGN_AND              22      // &=
-#define OP_TYPE_ASSIGN_OR               24      // |=
-#define OP_TYPE_ASSIGN_XOR              26      // #=
-#define OP_TYPE_ASSIGN_SHIFT_LEFT       33      // <<=
-#define OP_TYPE_ASSIGN_SHIFT_RIGHT      34      // >>=
-
-// ---- Logical
-
-#define OP_TYPE_LOGICAL_AND             23      // &&
-#define OP_TYPE_LOGICAL_OR              25      // ||
-#define OP_TYPE_LOGICAL_NOT             10      // !
-
-// ---- Relational
-
-#define OP_TYPE_EQUAL                   28      // ==
-#define OP_TYPE_NOT_EQUAL               27      // !=
-#define OP_TYPE_LESS                    12      // <
-#define OP_TYPE_GREATER                 13      // >
-#define OP_TYPE_LESS_EQUAL              29      // <=
-#define OP_TYPE_GREATER_EQUAL           31      // >=
-
-// ---- Assignment
-
-#define OP_TYPE_ASSIGN                  11      // =
+// 三字符运算符
+#define OP_TYPE_ASSIGN_SHIFT_LEFT       31      // <<=
+#define OP_TYPE_ASSIGN_SHIFT_RIGHT      32      // >>=
 
 // ---- Data Structures -----------------------------------------------------------------------
 

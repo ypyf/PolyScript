@@ -223,8 +223,6 @@ int IsOpAssign(int iOpType)
 	case OP_TYPE_ASSIGN_MUL:
 	case OP_TYPE_ASSIGN_DIV:
 	case OP_TYPE_ASSIGN_MOD:
-	case OP_TYPE_ASSIGN_EXP:
-	case OP_TYPE_ASSIGN_CONCAT:
 	case OP_TYPE_ASSIGN_AND:
 	case OP_TYPE_ASSIGN_OR:
 	case OP_TYPE_ASSIGN_XOR:
@@ -942,8 +940,7 @@ void ParseSubExpr()
 
 		if (GetNextToken() != TOKEN_TYPE_OP ||
 			(GetCurrOp() != OP_TYPE_ADD &&
-			GetCurrOp() != OP_TYPE_SUB &&
-			GetCurrOp() != OP_TYPE_CONCAT))
+			GetCurrOp() != OP_TYPE_SUB))
 		{
 			RewindTokenStream();
 			break;
@@ -983,12 +980,6 @@ void ParseSubExpr()
 		case OP_TYPE_SUB:
 			iOpInstr = INSTR_SUB;
 			break;
-
-			// Binary string concatenation
-
-		case OP_TYPE_CONCAT:
-			iOpInstr = INSTR_CONCAT;
-			break;
 		}
 
 		AddICodeInstr(g_iCurrScope, iOpInstr);
@@ -1024,7 +1015,6 @@ void ParseTerm()
 			(GetCurrOp() != OP_TYPE_MUL &&
 			GetCurrOp() != OP_TYPE_DIV &&
 			GetCurrOp() != OP_TYPE_MOD &&
-			GetCurrOp() != OP_TYPE_EXP &&
 			GetCurrOp() != OP_TYPE_BITWISE_AND &&
 			GetCurrOp() != OP_TYPE_BITWISE_OR &&
 			GetCurrOp() != OP_TYPE_BITWISE_XOR &&
@@ -1074,12 +1064,6 @@ void ParseTerm()
 
 		case OP_TYPE_MOD:
 			iOpInstr = INSTR_MOD;
-			break;
-
-			// Binary exponentiation
-
-		case OP_TYPE_EXP:
-			iOpInstr = INSTR_EXP;
 			break;
 
 			// Binary bitwise AND
@@ -1883,18 +1867,6 @@ void ParseAssign()
 		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_MOD);
 		break;
 
-		// ^=
-
-	case OP_TYPE_ASSIGN_EXP:
-		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_EXP);
-		break;
-
-		// $=
-
-	case OP_TYPE_ASSIGN_CONCAT:
-		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_CONCAT);
-		break;
-
 		// &=
 
 	case OP_TYPE_ASSIGN_AND:
@@ -1907,7 +1879,7 @@ void ParseAssign()
 		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_OR);
 		break;
 
-		// #=
+		// ^=
 
 	case OP_TYPE_ASSIGN_XOR:
 		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_XOR);

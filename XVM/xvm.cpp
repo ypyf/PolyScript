@@ -748,8 +748,8 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 		case INSTR_SHL:
 		case INSTR_SHR:
 			{
-				Value op0 = Pop(vm);
-				Value op1 = Pop(vm);
+				Value op0 = exec_pop(vm);
+				Value op1 = exec_pop(vm);
 				Value op2;
 
 				switch (iOpcode)
@@ -800,7 +800,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				}
 
 				// 保存计算结果
-				Push(vm, &op2);
+				exec_push(vm, &op2);
 				break;
 			}
 
@@ -881,119 +881,6 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 break;
             }
 
-            // ----String Processing
-
-        case INSTR_CONCAT:
-            {
-                // Get a local copy of the destination operand (operand index 0)
-
-                Value* Dest = ResolveOpValue(vm, 0);
-
-                // Get a local copy of the source string (operand index 1)
-
-                char *pstrSourceString = ResolveOpAsString(vm, 1);
-
-                // If the destination isn't a string, do nothing
-
-                if (Dest->Type != OP_TYPE_STRING)
-                    break;
-
-                // Determine the length of the new string and allocate space for it (with a
-                // null terminator)
-
-                int iNewStringLength = strlen(Dest->String) + strlen(pstrSourceString);
-                char *pstrNewString = (char *)malloc(iNewStringLength + 1);
-
-                // Copy the old string to the new one
-
-                strcpy(pstrNewString, Dest->String);
-
-                // Concatenate the destination with the source
-
-                strcat(pstrNewString, pstrSourceString);
-
-                // Free the existing string in the destination structure and replace it
-                // with the new string
-
-                free(Dest->String);
-                Dest->String = pstrNewString;
-
-                // Copy the concatenated string pointer to its destination
-
-                *ResolveOpValue(vm, 0) = *Dest;
-
-                break;
-            }
-
-        case INSTR_GETCHAR:
-            {
-                // Get a local copy of the destination operand (operand index 0)
-
-                Value* Dest = ResolveOpValue(vm, 0);
-
-                // Get a local copy of the source string (operand index 1)
-
-                char *pstrSourceString = ResolveOpAsString(vm, 1);
-
-                // Find out whether or not the destination is already a string
-
-                char *pstrNewString;
-                if (Dest->Type == OP_TYPE_STRING)
-                {
-                    // If it is, we can use it's existing string buffer as long as it's at
-                    // least 1 character
-
-                    if (strlen(Dest->String) >= 1)
-                    {
-                        pstrNewString = Dest->String;
-                    }
-                    else
-                    {
-                        free(Dest->String);
-                        pstrNewString = (char *)malloc(2);
-                    }
-                }
-                else
-                {
-                    // Otherwise allocate a new string and set the type
-                    pstrNewString = (char *)malloc(2);
-                    Dest->Type = OP_TYPE_STRING;
-                }
-
-                // Get the index of the character (operand index 2)
-                int iSourceIndex = ResolveOpAsInt(vm, 2);
-
-                // Copy the character and append a null-terminator
-                pstrNewString[0] = pstrSourceString[iSourceIndex];
-                pstrNewString[1] = '\0';
-
-                // Set the string pointer in the destination Value structure
-                Dest->String = pstrNewString;
-
-                // Copy the concatenated string pointer to its destination
-                *ResolveOpValue(vm, 0) = *Dest;
-
-                break;
-            }
-
-        case INSTR_SETCHAR:
-            {
-                // Get the destination index (operand index 1)
-                int iDestIndex = ResolveOpAsInt(vm, 1);
-
-                // If the destination isn't a string, do nothing
-                if (ResolveOpType(vm, 0) != OP_TYPE_STRING)
-                    break;
-
-                // Get the source character (operand index 2)
-                char *pstrSourceString = ResolveOpAsString(vm, 2);
-
-                // Set the specified character in the destination (operand index 0)
-                ResolveOpValue(vm, 0)->String[iDestIndex] = pstrSourceString[0];
-
-                break;
-            }
-
             // ----Conditional Branching
 
         case INSTR_JMP:
@@ -1014,8 +901,8 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_JGE:
         case INSTR_JLE:
             {
-                Value* Op1 = &Pop(vm);  // 条件2
-                Value* Op0 = &Pop(vm);  // 条件1
+                Value* Op1 = &exec_pop(vm);  // 条件2
+                Value* Op0 = &exec_pop(vm);  // 条件1
 
                 // Get the index of the target instruction (opcode index 2)
 
@@ -1147,7 +1034,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
 		case INSTR_BRT:
 			{
-				Value* Op0 = &Pop(vm);  // 条件
+				Value* Op0 = &exec_pop(vm);  // 条件
 
                 // Get the index of the target instruction (opcode index 2)
 
@@ -1183,7 +1070,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 			}
 		case INSTR_BRF:
 			{
-				Value* Op0 = &Pop(vm);  // 条件
+				Value* Op0 = &exec_pop(vm);  // 条件
 
                 // Get the index of the target instruction (opcode index 2)
 
@@ -1226,7 +1113,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 Value* Source = ResolveOpValue(vm, 0);
 
                 // Push the value onto the stack
-                Push(vm, Source);
+                exec_push(vm, Source);
 
                 break;
             }
@@ -1234,7 +1121,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_POP:
             {
                 // Pop the top of the stack into the destination
-                *ResolveOpValue(vm, 0) = Pop(vm);
+                *ResolveOpValue(vm, 0) = exec_pop(vm);
                 break;
             }
 
@@ -1244,7 +1131,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				Value Source;
 				Source.Type = OP_TYPE_INT;
 				Source.Fixnum = 0;
-				Push(vm, &Source);
+				exec_push(vm, &Source);
 				break;
 			}
 
@@ -1254,7 +1141,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				Value Source;
 				Source.Type = OP_TYPE_INT;
 				Source.Fixnum = 1;
-				Push(vm, &Source);
+				exec_push(vm, &Source);
 				break;
 			}
 
@@ -1264,7 +1151,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				Value Source;
 				Source.Type = OP_TYPE_FLOAT;
 				Source.Realnum = 0.f;
-				Push(vm, &Source);
+				exec_push(vm, &Source);
 				break;
 			}
 
@@ -1274,7 +1161,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				Value Source;
 				Source.Type = OP_TYPE_FLOAT;
 				Source.Realnum = 1.f;
-				Push(vm, &Source);
+				exec_push(vm, &Source);
 				break;
 			}
 
@@ -1356,7 +1243,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             {
                 // Get the current function index off the top of the stack and use it to get
                 // the corresponding function structure
-                Value FuncIndex = Pop(vm);
+                Value FuncIndex = exec_pop(vm);
 
                 assert(FuncIndex.Type == OP_TYPE_FUNC_INDEX ||
                        FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER);
@@ -1409,7 +1296,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                     RunGC(vm);
                 Value val = GC_AllocObject(iSize, &vm->pLastObject);
                 vm->iNumberOfObjects++;
-                Push(vm, &val);
+                exec_push(vm, &val);
                 break;
             }
 
@@ -2088,7 +1975,7 @@ void CallFunc(VMState *vm, int iIndex, int type)
     Value ReturnAddr;
     ReturnAddr.Type = OP_TYPE_INSTR_INDEX;
     ReturnAddr.InstrIndex = vm->CurrInstr;
-    Push(vm, &ReturnAddr);
+    exec_push(vm, &ReturnAddr);
 
     // 函数信息块,保存调用者的栈帧索引
     Value FuncIndex;
@@ -2123,7 +2010,7 @@ void XVM_PassIntParam(VMState* vm, int iInt)
     Param.Fixnum = iInt;
 
     // Push the parameter onto the stack
-    Push(vm, &Param);
+    exec_push(vm, &Param);
 }
 
 /******************************************************************************************
@@ -2141,7 +2028,7 @@ void XVM_PassFloatParam(VMState* vm, float fFloat)
     Param.Realnum = fFloat;
 
     // Push the parameter onto the stack
-    Push(vm, &Param);
+    exec_push(vm, &Param);
 }
 
 /******************************************************************************************
@@ -2160,7 +2047,7 @@ void XVM_PassStringParam(VMState* vm, char *pstrString)
     strcpy(Param.String, pstrString);
 
     // Push the parameter onto the stack
-    Push(vm, &Param);
+    exec_push(vm, &Param);
 }
 
 /******************************************************************************************

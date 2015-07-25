@@ -4,8 +4,8 @@
 #include "xvm-internal.h"
 
 void CopyValue(Value *pDest, Value* Source);
-void Push(VMState* vm, Value* Val);
-Value Pop(VMState* vm);
+void exec_push(VMState* vm, Value* Val);
+Value exec_pop(VMState* vm);
 
 void exec_add(const Value& op0, const Value& op1, Value& op2);
 void exec_sub(const Value& op0, const Value& op1, Value& op2);
@@ -25,6 +25,7 @@ void exec_not(Value& op0);
 void exec_inc(Value& op0);
 void exec_dec(Value& op0);
 void exec_sqrt(Value& op0);
+
 
 // 面向对象
 //void exec_new(const );

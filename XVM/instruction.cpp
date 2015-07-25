@@ -21,13 +21,13 @@ void CopyValue(Value *pDest, Value* Source)
     }
 }
 
-void Push(VMState* vm, Value* Val)
+void exec_push(VMState* vm, Value* Val)
 {
     // Put the value into the current top index
     CopyValue(&vm->Stack[vm->iTopIndex++], Val);
 }
 
-Value Pop(VMState *vm)
+Value exec_pop(VMState *vm)
 {
     Value Val;
     CopyValue(&Val, &vm->Stack[--vm->iTopIndex]);
