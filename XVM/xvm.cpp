@@ -10,8 +10,6 @@
 
 
 
-
-
 // ----The Global Host API ----------------------------------------------------------------------
 HOST_API_FUNC* g_HostAPIs;    // The host API
 
@@ -744,9 +742,14 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 		case INSTR_DIV:
 		case INSTR_MOD:
 		case INSTR_EXP:
+		case INSTR_AND:
+		case INSTR_OR:
+		case INSTR_XOR:
+		case INSTR_SHL:
+		case INSTR_SHR:
 			{
-				Value& op0 = Pop(vm);
-				Value& op1 = Pop(vm);
+				Value op0 = Pop(vm);
+				Value op1 = Pop(vm);
 				Value op2;
 
 				switch (iOpcode)
@@ -774,8 +777,29 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				case INSTR_EXP:
 					exec_exp(op0, op1, op2);
 					break;
+
+				case INSTR_AND:
+					exec_and(op0, op1, op2);
+					break;
+
+				case INSTR_OR:
+					exec_or(op0, op1, op2);
+					break;
+
+				case INSTR_XOR:
+					exec_xor(op0, op1, op2);
+					break;
+
+				case INSTR_SHL:
+					exec_shl(op0, op1, op2);
+					break;
+
+				case INSTR_SHR:
+					exec_shr(op0, op1, op2);
+					break;
 				}
 
+				// 保存计算结果
 				Push(vm, &op2);
 				break;
 			}
@@ -783,14 +807,6 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             // Move
 
         case INSTR_MOV:
-
-            // Bitwise Operations
-
-        case INSTR_AND:
-        case INSTR_OR:
-        case INSTR_XOR:
-        case INSTR_SHL:
-        case INSTR_SHR:
             {
                 // Get a local copy of the destination operand (operand index 0)
 
@@ -812,44 +828,6 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                     // Copy the source operand into the destination
                     CopyValue(Dest, Source);
-
-                    break;
-
-                    // The bitwise instructions only work with integers. They do nothing
-                    // when the destination data type is anything else.
-
-                case INSTR_AND:
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        Dest->Fixnum &= ResolveOpAsInt(vm, 1);
-
-                    break;
-
-                case INSTR_OR:
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        Dest->Fixnum |= ResolveOpAsInt(vm, 1);
-
-                    break;
-
-                case INSTR_XOR:
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        Dest->Fixnum ^= ResolveOpAsInt(vm, 1);
-
-                    break;
-
-                case INSTR_SHL:
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        Dest->Fixnum <<= ResolveOpAsInt(vm, 1);
-
-                    break;
-
-                case INSTR_SHR:
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        Dest->Fixnum >>= ResolveOpAsInt(vm, 1);
 
                     break;
                 }
