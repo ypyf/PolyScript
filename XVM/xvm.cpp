@@ -853,51 +853,29 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_SQRT:
             {
 				// 获取栈顶元素
-                Value* Dest = &vm->Stack[vm->iTopIndex - 1];
+                Value& op0 = vm->Stack[vm->iTopIndex - 1];
 
                 switch (iOpcode)
                 {
-                case INSTR_SQRT:
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        Dest->Realnum = sqrtf((float)Dest->Fixnum);
-                    else
-                        Dest->Realnum = sqrtf(Dest->Realnum);
-                    break;
-
                 case INSTR_NEG:
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        Dest->Fixnum = -Dest->Fixnum;
-                    else
-                        Dest->Realnum = -Dest->Realnum;
-
+					exec_neg(op0);
                     break;
 
                 case INSTR_NOT:
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        Dest->Fixnum = ~Dest->Fixnum;
-
-                    break;
+					exec_not(op0);
+					break;
 
                 case INSTR_INC:
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        ++Dest->Fixnum;
-                    else
-                        ++Dest->Realnum;
-
-                    break;
+					exec_inc(op0);
+					break;
 
                 case INSTR_DEC:
+					exec_dec(op0);
+					break;
 
-                    if (Dest->Type == OP_TYPE_INT)
-                        --Dest->Fixnum;
-                    else
-                        --Dest->Realnum;
-
-                    break;
+				case INSTR_SQRT:
+					exec_sqrt(op0);
+					break;
                 }
 
                 break;
@@ -1413,41 +1391,16 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 break;
             }
 
-        case INSTR_PRINT:
-            {
-                Value* val = ResolveOpValue(vm, 0);
-                switch (val->Type)
-                {
-                case OP_TYPE_NULL:
-                    printf("<null>\n");
-                    break;
-                case OP_TYPE_INT:
-                    printf("%d\n", val->Fixnum);
-                    break;
-                case OP_TYPE_FLOAT:
-                    printf("%.16g\n", val->Realnum);
-                    break;
-                case OP_TYPE_STRING:
-                    printf("%s\n", val->String);
-                    break;
-                case OP_TYPE_REG:
-                    printf("%i\n", val->Register);
-                    break;
-                case OP_TYPE_OBJECT:
-                    printf("<object at %p>\n", val->ObjectPtr);
-                    break;
-                default:
-                    // TODO 索引和其他调试信息
-                    fprintf(stderr, "VM Error: INSTR_PRINT: %d unexcepted data type.\n", val->Type);
-                }
-                break;
-            }
-
 		case INSTR_BREAK:
 			// 暂停虚拟机
 			vm->IsPaused = TRUE;
 			// TODO 调用调试例程
 			break;
+
+		case INSTR_PRINT:
+			exec_print(*ResolveOpValue(vm, 0));
+			break;
+
         case INSTR_NEW:
             {
                 int iSize = ResolveOpAsInt(vm, 0);
@@ -1480,17 +1433,6 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                 break;
             }
-
-        //case INSTR_EXIT:
-        //    {
-        //        // Resolve operand zero to find the exit code
-        //        // Get it from the integer field
-        //        g_Scripts[vm].ExitCode = ResolveOpAsInt(vm, 0);
-
-        //        // Tell the XVM to stop executing the script
-        //        g_Scripts[vm].IsRunning = FALSE;
-        //        break;
-        //    }
         }
 
         // If the instruction pointer hasn't been changed by an instruction, increment it

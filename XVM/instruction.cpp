@@ -161,7 +161,68 @@ void exec_shr(const Value& op0, const Value& op1, Value& op2)
 	}
 }
 
-void exec_sqrt(const Value& op0, Value& op1)
+void exec_neg(Value& op0)
 {
+	if (op0.Type == OP_TYPE_INT)
+		op0.Fixnum = -op0.Fixnum;
+	else
+		op0.Realnum = -op0.Realnum;
+}
 
+void exec_not(Value& op0)
+{
+	if (op0.Type == OP_TYPE_INT)
+		op0.Fixnum = ~op0.Fixnum;
+}
+
+void exec_inc(Value& op0)
+{
+	if (op0.Type == OP_TYPE_INT)
+		++op0.Fixnum;
+	else
+		++op0.Realnum;
+}
+
+void exec_dec(Value& op0)
+{
+	if (op0.Type == OP_TYPE_INT)
+		--op0.Fixnum;
+	else
+		--op0.Realnum;
+}
+
+void exec_sqrt(Value& op0)
+{
+	if (op0.Type == OP_TYPE_INT)
+		op0.Realnum = sqrtf((float)op0.Fixnum);
+	else
+		op0.Realnum = sqrtf(op0.Realnum);
+}
+
+void exec_print(const Value& op0)
+{
+	switch (op0.Type)
+	{
+	case OP_TYPE_NULL:
+		printf("<null>\n");
+		break;
+	case OP_TYPE_INT:
+		printf("%d\n", op0.Fixnum);
+		break;
+	case OP_TYPE_FLOAT:
+		printf("%.16g\n", op0.Realnum);
+		break;
+	case OP_TYPE_STRING:
+		printf("%s\n", op0.String);
+		break;
+	case OP_TYPE_REG:
+		printf("%i\n", op0.Register);
+		break;
+	case OP_TYPE_OBJECT:
+		printf("<object at %p>\n", op0.ObjectPtr);
+		break;
+	default:
+		// TODO 索引和其他调试信息
+		fprintf(stderr, "VM Error: INSTR_PRINT: %d unexcepted data type.\n", op0.Type);
+	}
 }

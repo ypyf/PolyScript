@@ -5,6 +5,7 @@
 
 enum InstrSet {
 	INSTR_NOP = 0,
+	INSTR_BREAK,
 	INSTR_MOV,
 	INSTR_ADD,
 	INSTR_SUB,
@@ -43,7 +44,6 @@ enum InstrSet {
 	INSTR_FCONST_0,			// push 0.f
 	INSTR_FCONST_1,			// push 1.f
 	INSTR_PRINT,
-	INSTR_BREAK,
 	INSTR_SQRT,
 	INSTR_NEW,
 	INSTR_THISCALL,

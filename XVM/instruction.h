@@ -20,6 +20,16 @@ void exec_xor(const Value& op0, const Value& op1, Value& op2);
 void exec_shl(const Value& op0, const Value& op1, Value& op2);
 void exec_shr(const Value& op0, const Value& op1, Value& op2);
 
-void exec_sqrt(const Value& op0, Value& op1);
+void exec_neg(Value& op0);
+void exec_not(Value& op0);
+void exec_inc(Value& op0);
+void exec_dec(Value& op0);
+void exec_sqrt(Value& op0);
+
+// 面向对象
+//void exec_new(const );
+
+// 调试指令
+void exec_print(const Value& op0);
 
 #endif	/* __INSTRUCTION_H__ */

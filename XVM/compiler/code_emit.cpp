@@ -12,7 +12,7 @@ FILE * g_pOutputFile = NULL;                        // Pointer to the output fil
 // 每个助记符的位置与指令常量必须相等
 char ppstrMnemonics[][12] =
 {
-	"nop",
+	"nop", "break",
 	"mov",
 	"add", "sub", "mul", "div", "mod", "exp", "neg", "inc", "dec",
 	"and", "or", "xor", "not", "shl", "shr",
@@ -23,7 +23,7 @@ char ppstrMnemonics[][12] =
 	"call", "ret",
 	"pause",
 	"iconst0", "iconst1", "fconst0", "fconst1",
-	"print", "break",
+	"print",
 };
 
 // ---- Functions -----------------------------------------------------------------------------
