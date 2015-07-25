@@ -41,6 +41,7 @@ void ParseBlock();
 
 void ParseVar();
 void ParsePrint();
+void ParseBeep();
 void ParseFunc();
 
 void ParseExpr();

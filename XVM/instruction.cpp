@@ -1,6 +1,10 @@
 #include "instruction.h"
 #include "mathlib.h"
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 void CopyValue(Value *pDest, Value* Source)
 {
     // If the destination already contains a string, make sure to free it first
@@ -224,4 +228,9 @@ void exec_print(const Value& op0)
 		// TODO 索引和其他调试信息
 		fprintf(stderr, "VM Error: INSTR_PRINT: %d unexcepted data type.\n", op0.Type);
 	}
+}
+
+void exec_beep(const Value& op0, const Value& op1)
+{
+	Beep(op0.Fixnum, op1.Fixnum);
 }

@@ -9,7 +9,6 @@
 #include <time.h>
 
 
-
 // ----The Global Host API ----------------------------------------------------------------------
 HOST_API_FUNC* g_HostAPIs;    // The host API
 
@@ -1278,6 +1277,14 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				Value op0 = vm->Stack[vm->iTopIndex - 1];
 				exec_print(op0);
 				exec_pop(vm);
+				break;
+			}
+
+		case INSTR_BEEP:
+			{
+				Value op1 = exec_pop(vm);
+				Value op0 = exec_pop(vm);
+				exec_beep(op0, op1);
 				break;
 			}
 

@@ -47,6 +47,7 @@
 #define LEX_STATE_NO_STRING         0           // Lexemes are scanned as normal
 #define LEX_STATE_IN_STRING         1           // Lexemes are scanned as strings
 #define LEX_STATE_END_STRING        2           // Lexemes are scanned as normal, and the next state is LEXEME_STATE_NO_STRING
+
 enum {
 
 TOKEN_TYPE_QUOTE = 100,           // A double-quote
@@ -859,37 +860,25 @@ void InitInstrTable()
     // Add Destination, Source
 
     iInstrIndex = AddInstrLookup("Add", INSTR_ADD, 0);
-	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
-	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
 
     // Sub Destination, Source
 
-    iInstrIndex = AddInstrLookup("Sub", INSTR_SUB, 0);
-	//SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
-	//SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    AddInstrLookup("Sub", INSTR_SUB, 0);
 
     // Mul Destination, Source
 
-    iInstrIndex = AddInstrLookup("Mul", INSTR_MUL, 2);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    AddInstrLookup("Mul", INSTR_MUL, 0);
 
     // Div Destination, Source
 
-    iInstrIndex = AddInstrLookup("Div", INSTR_DIV, 2);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    iInstrIndex = AddInstrLookup("Div", INSTR_DIV, 0);
 
     // Mod Destination, Source
 
-    iInstrIndex = AddInstrLookup("Mod", INSTR_MOD, 2);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    iInstrIndex = AddInstrLookup("Mod", INSTR_MOD, 0);
 
     // Exp Destination, Source
-    iInstrIndex = AddInstrLookup("Exp", INSTR_EXP, 2);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    iInstrIndex = AddInstrLookup("Exp", INSTR_EXP, 0);
 
 	// ----- 一元运算符
 
@@ -916,33 +905,23 @@ void InitInstrTable()
 
     // And Destination, Source
 
-    iInstrIndex = AddInstrLookup("And", INSTR_AND, 2);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    iInstrIndex = AddInstrLookup("And", INSTR_AND, 0);
 
     // Or  Destination, Source
 
-    iInstrIndex = AddInstrLookup("Or", INSTR_OR, 2);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    iInstrIndex = AddInstrLookup("Or", INSTR_OR, 0);
 
     // XOr Destination, Source
 
-    iInstrIndex = AddInstrLookup("XOr", INSTR_XOR, 2);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    iInstrIndex = AddInstrLookup("XOr", INSTR_XOR, 0);
 
     // ShL Destination, Source
 
-    iInstrIndex = AddInstrLookup("ShL", INSTR_SHL, 2);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    iInstrIndex = AddInstrLookup("ShL", INSTR_SHL, 0);
 
     // ShR Destination, Source
 
-    iInstrIndex = AddInstrLookup("ShR", INSTR_SHR, 2);
-	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
-	SetOpType(iInstrIndex, 1, OP_FLAG_TYPE_RVALUE);
+    iInstrIndex = AddInstrLookup("ShR", INSTR_SHR, 0);
 
     // ----Conditional Branching
 
@@ -1022,7 +1001,10 @@ void InitInstrTable()
     // ----Miscellaneous
 
 	// Print Object
-	iInstrIndex = AddInstrLookup("Print", INSTR_PRINT, 0);
+	AddInstrLookup("Print", INSTR_PRINT, 0);
+
+	// Beep
+	AddInstrLookup("Beep", INSTR_BEEP, 0);
 
 	// Breakpoint
 	AddInstrLookup("Print", INSTR_BREAK, 0);
@@ -1192,6 +1174,29 @@ void ASM_ResetLexer()
     g_Lexer.CurrLexState = LEX_STATE_NO_STRING;
 }
 
+int escapeChar(char cChar)
+{
+	switch (cChar)
+	{
+	case 'a':
+		return '\a';
+	case 'b':
+		return '\b';
+	case 'n':
+		return '\n';
+	case 'r':
+		return '\r';
+	case 't':
+		return '\t';
+	case 'f':
+		return '\f';
+	case 'v':
+		return '\v';
+	default:
+		return cChar;
+	}
+}
+
 /******************************************************************************************
 *
 *   GetNextToken()
@@ -1292,9 +1297,15 @@ Token ASM_GetNextToken()
     for (size_t i = g_Lexer.Index0; i < g_Lexer.Index1; ++i)
     {
         // 处理字符串中的转义字符
-        if (g_Lexer.CurrLexState == LEX_STATE_IN_STRING)
-            if (g_ppstrSourceCode[g_Lexer.CurrSourceLine][i] == '\\')
+        if (g_Lexer.CurrLexState == LEX_STATE_IN_STRING &&
+			g_ppstrSourceCode[g_Lexer.CurrSourceLine][i] == '\\')
+		{
                 ++i;
+				char cChar = escapeChar(g_ppstrSourceCode[g_Lexer.CurrSourceLine][i]);
+				g_Lexer.CurrLexeme[iCurrDestIndex] = cChar;
+				++iCurrDestIndex;
+				continue;
+		}
 
         // Copy the character from the source line to the lexeme
 

@@ -30,7 +30,8 @@ void exec_sqrt(Value& op0);
 // 面向对象
 //void exec_new(const );
 
-// 调试指令
+// 调试指令 (可以做成软中断服务，减少Opcode数量)
 void exec_print(const Value& op0);
+void exec_beep(const Value& op0, const Value& op1);
 
 #endif	/* __INSTRUCTION_H__ */

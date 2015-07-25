@@ -41,6 +41,7 @@ enum Opcodes {
 	INSTR_FCONST_0,			// push 0.f
 	INSTR_FCONST_1,			// push 1.f
 	INSTR_PRINT,
+	INSTR_BEEP,
 	INSTR_SQRT,
 	INSTR_NEW,
 	INSTR_THISCALL,

@@ -62,9 +62,10 @@
 #define TOKEN_TYPE_RSRVD_FUNC           14      // func
 #define TOKEN_TYPE_RSRVD_RETURN         15      // return
 #define TOKEN_TYPE_RSRVD_PRINT			16		// print
-#define TOKEN_TYPE_RSRVD_PARAM			17		// param
-#define TOKEN_TYPE_RSRVD_SETSTACKSIZE	18		// setstacksize
-#define TOKEN_TYPE_RSRVD_SETPRIORITY	19		// setpriority
+#define TOKEN_TYPE_RSRVD_BEEP			17	
+#define TOKEN_TYPE_RSRVD_PARAM			18		// param
+#define TOKEN_TYPE_RSRVD_SETSTACKSIZE	19		// setstacksize
+#define TOKEN_TYPE_RSRVD_SETPRIORITY	20		// setpriority
 
 #define TOKEN_TYPE_OP                   33      // Operator
 

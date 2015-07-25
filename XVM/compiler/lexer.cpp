@@ -683,7 +683,7 @@ Token GetNextToken()
 
 			else if (cCurrChar == '\\')
 			{
-				iAddCurrChar = FALSE;
+				iAddCurrChar = TRUE;
 				iCurrLexState = LEX_STATE_STRING_ESCAPE;
 			}
 
@@ -718,8 +718,7 @@ Token GetNextToken()
 
 		if (iAddCurrChar)
 		{
-			g_CurrLexerState.pstrCurrLexeme[iNextLexemeCharIndex] = cCurrChar;
-			++iNextLexemeCharIndex;
+			g_CurrLexerState.pstrCurrLexeme[iNextLexemeCharIndex++] = cCurrChar;
 		}
 
 		// If the lexeme is complete, exit the loop
@@ -816,6 +815,10 @@ Token GetNextToken()
 
 		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "print") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_PRINT;
+
+		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "beep") == 0)
+			TokenType = TOKEN_TYPE_RSRVD_BEEP;
+
 		// func
 
 		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "func") == 0)

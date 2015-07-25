@@ -368,6 +368,10 @@ void ParseStatement()
 		ParsePrint();
 		break;
 
+	case TOKEN_TYPE_RSRVD_BEEP:
+		ParseBeep();
+		break;
+
 		// Function definition
 
 	case TOKEN_TYPE_RSRVD_FUNC:
@@ -536,8 +540,20 @@ void ParseVar()
 // print <expr>
 void ParsePrint()
 {
+	AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine());
 	ParseExpr();
 	AddICodeInstr(g_iCurrScope, INSTR_PRINT);
+	ReadToken(TOKEN_TYPE_SEMICOLON);
+}
+
+// beep <expr>, <expr>
+void ParseBeep()
+{
+	AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine());
+	ParseExpr();
+	ReadToken(TOKEN_TYPE_COMMA);
+	ParseExpr();
+	AddICodeInstr(g_iCurrScope, INSTR_BEEP);
 	ReadToken(TOKEN_TYPE_SEMICOLON);
 }
 
@@ -982,8 +998,6 @@ void ParseSubExpr()
 
 void ParseTerm()
 {
-	int iInstrIndex;
-
 	// The current operator type
 
 	int iOpType;
@@ -1022,13 +1036,13 @@ void ParseTerm()
 
 		// Pop the first operand into _T1
 
-		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1);
+		//iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1);
 
 		// Pop the second operand into _T0
 
-		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
+		//iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
 
 		// Perform the binary operation associated with the specified operator
 
@@ -1083,14 +1097,15 @@ void ParseTerm()
 			iOpInstr = INSTR_SHR;
 			break;
 		}
-		iInstrIndex = AddICodeInstr(g_iCurrScope, iOpInstr);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1);
+
+		AddICodeInstr(g_iCurrScope, iOpInstr);
+		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
+		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1);
 
 		// Push the result (stored in _T0)
 
-		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-		AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
+		//iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
+		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
 	}
 }
 
