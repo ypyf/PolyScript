@@ -842,10 +842,6 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
             // ----Unary Operations
 
-            // These instructions work much like the binary operations in the sense that
-            // they only work with integers and floats (except Not, which works with
-            // integers only). Any other destination data type will be ignored.
-
         case INSTR_NEG:
         case INSTR_NOT:
         case INSTR_INC:
@@ -884,15 +880,8 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             // ----Conditional Branching
 
         case INSTR_JMP:
-            {
-                // Get the index of the target instruction (opcode index 0)
-                int iTargetIndex = ResolveOpAsInstrIndex(vm, 0);
-
-                // Move the instruction pointer to the target
-                vm->CurrInstr = iTargetIndex;
-
-                break;
-            }
+			vm->CurrInstr = ResolveOpAsInstrIndex(vm, 0);
+			break;
 
         case INSTR_JE:
         case INSTR_JNE:
@@ -1228,7 +1217,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                         }
                         else
                         {
-                            fprintf(stderr, "Runtime Error: 调用未定义的函数 '%s'\n", pstrFuncName);
+                            fprintf(stderr, "VM: 调用未定义的函数 '%s'\n", pstrFuncName);
                             exit(1);
                         }
                     }
@@ -1291,7 +1280,6 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_NEW:
             {
                 int iSize = ResolveOpAsInt(vm, 0);
-                //printf("已分配 %d 个对象\n", g_Scripts[vm].iNumberOfObjects);
                 if (vm->iMaxObjects)
                     RunGC(vm);
                 Value val = GC_AllocObject(iSize, &vm->pLastObject);
@@ -1320,6 +1308,10 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                 break;
             }
+
+		default:
+			fprintf(stderr, "VM: 无法识别的指令 '%d'\n", iOpcode);
+			exit(0);
         }
 
         // If the instruction pointer hasn't been changed by an instruction, increment it

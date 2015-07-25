@@ -94,7 +94,6 @@ void exec_div(const Value& op0, const Value& op1, Value& op2)
 
 void exec_mod(const Value& op0, const Value& op1, Value& op2)
 {
-	// Remember, Mod works with integers only
 	if (op0.Type == OP_TYPE_INT)
 	{
 		op2.Type = OP_TYPE_INT;
