@@ -959,16 +959,6 @@ void ParseSubExpr()
 
 		ParseTerm();
 
-		// Pop the first operand into _T1
-
-		//iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1SymbolIndex);
-
-		// Pop the second operand into _T0
-
-		//iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0SymbolIndex);
-
 		// Perform the binary operation associated with the specified operator
 
 		int iOpInstr;
@@ -1121,6 +1111,8 @@ void ParseUnary()
 		// 单独处理自赋值
 		if (iOpType == OP_TYPE_INC || iOpType == OP_TYPE_DEC)
 		{
+			AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine());
+
 			if (GetNextToken() != TOKEN_TYPE_IDENT)
 				ExitOnCodeError("Invalid expression");
 
