@@ -842,7 +842,7 @@ void ParseExpr()
 					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRF);
 					AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex);
 
-					//// JE _T1, 0, True
+					// JE _T1, 0, True
 					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRF);
 					AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iFalseJumpTargetIndex);
 

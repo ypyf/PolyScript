@@ -5,7 +5,6 @@
 #include "gc.h"
 #include "xvm.h"
 #include "compiler/xsc.h"
-#include "mathlib.h"
 #include <ctype.h>
 #include <time.h>
 
@@ -741,6 +740,10 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
 		case INSTR_ADD:
 		case INSTR_SUB:
+		case INSTR_MUL:
+		case INSTR_DIV:
+		case INSTR_MOD:
+		case INSTR_EXP:
 			{
 				Value& op0 = Pop(vm);
 				Value& op1 = Pop(vm);
@@ -755,7 +758,24 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				case INSTR_SUB:
 					exec_sub(op0, op1, op2);
 					break;
+
+				case INSTR_MUL:
+					exec_mul(op0, op1, op2);
+					break;
+
+				case INSTR_DIV:
+					exec_div(op0, op1, op2);
+					break;
+
+				case INSTR_MOD:
+					exec_mod(op0, op1, op2);
+					break;
+
+				case INSTR_EXP:
+					exec_exp(op0, op1, op2);
+					break;
 				}
+
 				Push(vm, &op2);
 				break;
 			}
@@ -763,12 +783,6 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             // Move
 
         case INSTR_MOV:
-
-            // Arithmetic Operations
-        case INSTR_MUL:
-        case INSTR_DIV:
-        case INSTR_MOD:
-        case INSTR_EXP:
 
             // Bitwise Operations
 
@@ -799,45 +813,6 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                     // Copy the source operand into the destination
                     CopyValue(Dest, Source);
 
-                    break;
-
-                    // The arithmetic instructions only work with destination types that
-                    // are either integers or floats. They first check for integers and
-                    // assume that anything else is a float. Mod only works with integers.
-
-                case INSTR_MUL:
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        Dest->Fixnum *= ResolveOpAsInt(vm, 1);
-                    else
-                        Dest->Realnum *= ResolveOpAsFloat(vm, 1);
-
-                    break;
-
-                case INSTR_DIV:
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        Dest->Fixnum /= ResolveOpAsInt(vm, 1);
-                    else
-                        Dest->Realnum /= ResolveOpAsFloat(vm, 1);
-
-                    break;
-
-                case INSTR_MOD:
-
-                    // Remember, Mod works with integers only
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        Dest->Fixnum %= ResolveOpAsInt(vm, 1);
-
-                    break;
-
-                case INSTR_EXP:
-
-                    if (Dest->Type == OP_TYPE_INT)
-                        Dest->Fixnum = math::IntPow(Dest->Fixnum, ResolveOpAsInt(vm, 1));
-                    else
-                        Dest->Realnum = (float)pow(Dest->Realnum, ResolveOpAsFloat(vm, 1));
                     break;
 
                     // The bitwise instructions only work with integers. They do nothing
