@@ -26,12 +26,8 @@ void exec_inc(Value& op0);
 void exec_dec(Value& op0);
 void exec_sqrt(Value& op0);
 
-
-// 面向对象
 //void exec_new(const );
+void exec_trap(VMState* vm, int interrupt);
 
-// 调试指令 (可以做成软中断服务，减少Opcode数量)
-void exec_print(const Value& op0);
-void exec_beep(const Value& op0, const Value& op1);
 
 #endif	/* __INSTRUCTION_H__ */

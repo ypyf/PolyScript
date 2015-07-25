@@ -542,7 +542,8 @@ void ParsePrint()
 {
 	AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine());
 	ParseExpr();
-	AddICodeInstr(g_iCurrScope, INSTR_PRINT);
+	int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_TRAP);
+	AddIntICodeOp(g_iCurrScope, iInstrIndex, 0);
 	ReadToken(TOKEN_TYPE_SEMICOLON);
 }
 
@@ -553,7 +554,8 @@ void ParseBeep()
 	ParseExpr();
 	ReadToken(TOKEN_TYPE_COMMA);
 	ParseExpr();
-	AddICodeInstr(g_iCurrScope, INSTR_BEEP);
+	int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_TRAP);
+	AddIntICodeOp(g_iCurrScope, iInstrIndex, 1);
 	ReadToken(TOKEN_TYPE_SEMICOLON);
 }
 
@@ -815,7 +817,7 @@ void ParseExpr()
 
 			// Generate the outcome for falsehood
 
-			AddICodeInstr(g_iCurrScope, INSTR_ICONST_0);
+			AddICodeInstr(g_iCurrScope, INSTR_ICONST0);
 
 			// Generate a jump past the true outcome
 
@@ -828,7 +830,7 @@ void ParseExpr()
 
 			// Generate the outcome for truth
 
-			AddICodeInstr(g_iCurrScope, INSTR_ICONST_1);
+			AddICodeInstr(g_iCurrScope, INSTR_ICONST1);
 
 			// Set the jump target for exiting the operand evaluation
 
@@ -853,7 +855,7 @@ void ParseExpr()
 
 					// Push 1	返回的是布尔值1
 
-					AddICodeInstr(g_iCurrScope, INSTR_ICONST_1);
+					AddICodeInstr(g_iCurrScope, INSTR_ICONST1);
 
 					// Jmp Exit
 
@@ -865,7 +867,7 @@ void ParseExpr()
 
 					// Push 0	 返回的是布尔值0
 
-					AddICodeInstr(g_iCurrScope, INSTR_ICONST_0);
+					AddICodeInstr(g_iCurrScope, INSTR_ICONST0);
 
 					// L1: (Exit)
 
@@ -1215,7 +1217,7 @@ void ParseUnary()
 
 				// Push 0
 
-				AddICodeInstr(g_iCurrScope, INSTR_ICONST_0);
+				AddICodeInstr(g_iCurrScope, INSTR_ICONST0);
 
 				// Jmp L1
 
@@ -1227,7 +1229,7 @@ void ParseUnary()
 
 				// Push 1
 
-				AddICodeInstr(g_iCurrScope, INSTR_ICONST_1);
+				AddICodeInstr(g_iCurrScope, INSTR_ICONST1);
 
 				// L1: (Exit)
 
@@ -1283,11 +1285,11 @@ void ParseFactor()
 		// It's a true or false constant, so push either 0 and 1 onto the stack
 
 	case TOKEN_TYPE_RSRVD_FALSE:
-		AddICodeInstr(g_iCurrScope, INSTR_ICONST_0);
+		AddICodeInstr(g_iCurrScope, INSTR_ICONST0);
 		break;
 
 	case TOKEN_TYPE_RSRVD_TRUE:
-		AddICodeInstr(g_iCurrScope, INSTR_ICONST_1);
+		AddICodeInstr(g_iCurrScope, INSTR_ICONST1);
 		break;
 
 		// It's an integer literal, so push it onto the stack

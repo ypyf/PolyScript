@@ -1113,7 +1113,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 break;
             }
 
-		case INSTR_ICONST_0:
+		case INSTR_ICONST0:
 			{
 				// PUSH 0
 				Value Source;
@@ -1123,7 +1123,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				break;
 			}
 
-		case INSTR_ICONST_1:
+		case INSTR_ICONST1:
 			{
 				// PUSH 1
 				Value Source;
@@ -1266,27 +1266,18 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 break;
             }
 
+		case INSTR_TRAP:
+			{
+				int interrupt = ResolveOpAsInt(vm, 0);
+				exec_trap(vm, interrupt);
+				break;
+			}
+
 		case INSTR_BREAK:
 			// 暂停虚拟机
 			vm->IsPaused = TRUE;
 			// TODO 调用调试例程
 			break;
-
-		case INSTR_PRINT:
-			{
-				Value op0 = vm->Stack[vm->iTopIndex - 1];
-				exec_print(op0);
-				exec_pop(vm);
-				break;
-			}
-
-		case INSTR_BEEP:
-			{
-				Value op1 = exec_pop(vm);
-				Value op0 = exec_pop(vm);
-				exec_beep(op0, op1);
-				break;
-			}
 
         case INSTR_NEW:
             {

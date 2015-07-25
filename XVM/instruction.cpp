@@ -202,35 +202,42 @@ void exec_sqrt(Value& op0)
 		op0.Realnum = sqrtf(op0.Realnum);
 }
 
-void exec_print(const Value& op0)
+void exec_trap(VMState* vm, int interrupt)
 {
-	switch (op0.Type)
+	switch (interrupt)
 	{
-	case OP_TYPE_NULL:
-		printf("<null>\n");
+	case 0:	/* #1 print */
+		{
+			Value op0 = exec_pop(vm);
+			switch (op0.Type)
+			{
+			case OP_TYPE_NULL:
+				printf("<null>\n");
+				break;
+			case OP_TYPE_INT:
+				printf("%d\n", op0.Fixnum);
+				break;
+			case OP_TYPE_FLOAT:
+				printf("%.16g\n", op0.Realnum);
+				break;
+			case OP_TYPE_STRING:
+				printf("%s\n", op0.String);
+				break;
+			case OP_TYPE_REG:
+				printf("%i\n", op0.Register);
+				break;
+			case OP_TYPE_OBJECT:
+				printf("<object at %p>\n", op0.ObjectPtr);
+				break;
+			}
 		break;
-	case OP_TYPE_INT:
-		printf("%d\n", op0.Fixnum);
-		break;
-	case OP_TYPE_FLOAT:
-		printf("%.16g\n", op0.Realnum);
-		break;
-	case OP_TYPE_STRING:
-		printf("%s\n", op0.String);
-		break;
-	case OP_TYPE_REG:
-		printf("%i\n", op0.Register);
-		break;
-	case OP_TYPE_OBJECT:
-		printf("<object at %p>\n", op0.ObjectPtr);
-		break;
-	default:
-		// TODO 索引和其他调试信息
-		fprintf(stderr, "VM Error: INSTR_PRINT: %d unexcepted data type.\n", op0.Type);
+		}
+	case 1:	/* #1 Beep */
+		{
+			Value op1 = exec_pop(vm);
+			Value op0 = exec_pop(vm);
+			Beep(op0.Fixnum, op1.Fixnum);
+			break;
+		}
 	}
-}
-
-void exec_beep(const Value& op0, const Value& op1)
-{
-	Beep(op0.Fixnum, op1.Fixnum);
 }

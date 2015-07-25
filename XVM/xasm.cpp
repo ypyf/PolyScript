@@ -993,18 +993,16 @@ void InitInstrTable()
     iInstrIndex = AddInstrLookup("Ret", INSTR_RET, 0);
 
 	// push const
-	AddInstrLookup("IConst0", INSTR_ICONST_0, 0);
-	AddInstrLookup("IConst1", INSTR_ICONST_1, 0);
+	AddInstrLookup("IConst0", INSTR_ICONST0, 0);
+	AddInstrLookup("IConst1", INSTR_ICONST1, 0);
 	AddInstrLookup("FConst0", INSTR_FCONST_0, 0);
 	AddInstrLookup("FConst1", INSTR_FCONST_1, 0);
 
     // ----Miscellaneous
 
-	// Print Object
-	AddInstrLookup("Print", INSTR_PRINT, 0);
-
-	// Beep
-	AddInstrLookup("Beep", INSTR_BEEP, 0);
+	// Trap #0
+	AddInstrLookup("Trap", INSTR_TRAP, 1);
+	SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_RVALUE);
 
 	// Breakpoint
 	AddInstrLookup("Print", INSTR_BREAK, 0);
