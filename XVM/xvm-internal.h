@@ -138,7 +138,7 @@ struct HOST_API_FUNC                     // Host API function
 
 // ----Script Virtual Machine State ---------------------------------------------------------------------------
 
-struct VMState
+struct ScriptContext
 {
     // Header fields
     int GlobalDataSize;                        // The size of the script's global data
@@ -161,7 +161,7 @@ struct VMState
 	int CurrInstr;			// 当前指令
 
 	// 堆栈
-	Value *Stack;           // The stack elements
+	Value *stack;           // The stack elements
 	int iStackSize;          // The number of elements in the stack
 	int iTopIndex;          // 栈顶指针
 	int iFrameIndex;         // 总是指向当前栈帧

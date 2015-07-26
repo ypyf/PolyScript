@@ -25,16 +25,16 @@ void CopyValue(Value *pDest, Value* Source)
     }
 }
 
-void exec_push(VMState* vm, Value* Val)
+void exec_push(ScriptContext *sc, Value *Val)
 {
     // Put the value into the current top index
-    CopyValue(&vm->Stack[vm->iTopIndex++], Val);
+    CopyValue(&sc->stack[sc->iTopIndex++], Val);
 }
 
-Value exec_pop(VMState *vm)
+Value exec_pop(ScriptContext *sc)
 {
     Value Val;
-    CopyValue(&Val, &vm->Stack[--vm->iTopIndex]);
+    CopyValue(&Val, &sc->stack[--sc->iTopIndex]);
 
     return Val;
 }
@@ -213,13 +213,13 @@ void exec_sqrt(Value& op0)
 		op0.Realnum = sqrtf(op0.Realnum);
 }
 
-void exec_trap(VMState* vm, int interrupt)
+void exec_trap(ScriptContext *sc, int interrupt)
 {
 	switch (interrupt)
 	{
 	case 0:	/* #1 print */
 		{
-			Value op0 = exec_pop(vm);
+			Value op0 = exec_pop(sc);
 			switch (op0.Type)
 			{
 			case OP_TYPE_NULL:
@@ -245,8 +245,8 @@ void exec_trap(VMState* vm, int interrupt)
 		}
 	case 1:	/* #1 Beep */
 		{
-			Value op1 = exec_pop(vm);
-			Value op0 = exec_pop(vm);
+			Value op1 = exec_pop(sc);
+			Value op0 = exec_pop(sc);
 			Beep(op0.Fixnum, op1.Fixnum);
 			break;
 		}

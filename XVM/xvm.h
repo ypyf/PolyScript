@@ -68,10 +68,9 @@ extern "C" {
 
 
 // ----Data Structures -----------------------------------------------------------------------
-struct VMState;
-typedef VMState XVM_State;
 
-typedef void (*XVM_HOST_FUNCTION)(XVM_State*);  // Host API function pointer alias
+struct ScriptContext;
+typedef void (*XVM_HOST_FUNCTION)(ScriptContext*);  // Host API function pointer alias
 
 
 // ----Runtime Value ---------------------------------------------------------------------
@@ -104,45 +103,45 @@ struct Value
 
 // ----Main ------------------------------------------------------------------------------
 
-XVM_API XVM_State* XVM_Create();
-XVM_API void XVM_ShutDown(XVM_State* vm);
+XVM_API ScriptContext* XVM_Create();
+XVM_API void XVM_ShutDown(ScriptContext *sc);
 
 // ----Script Interface ------------------------------------------------------------------
 
 XVM_API void XVM_CompileScript(char *pstrFilename, char *pstrExecFilename);
-XVM_API int XVM_LoadXSE(XVM_State* vm, const char *pstrFilename);
-XVM_API void XVM_UnloadScript(XVM_State* vm);
-XVM_API void XVM_ResetVM(XVM_State* vm);
-XVM_API void XVM_RunScript(XVM_State* vm, int iTimesliceDur);
-XVM_API void XVM_StartScript(XVM_State* vm);
-XVM_API void XVM_StopScript(XVM_State* vm);
-XVM_API void XVM_PauseScript(XVM_State* vm, int iDur);
-XVM_API void XVM_ResumeScript(XVM_State* vm);
-XVM_API void XVM_PassIntParam(XVM_State* vm, int iInt);
-XVM_API void XVM_PassFloatParam(XVM_State* vm, float fFloat);
-XVM_API void XVM_PassStringParam(XVM_State* vm, char *pstrString);
-XVM_API int XVM_CallScriptFunc(XVM_State* vm, char *pstrName);
-XVM_API void XVM_CallScriptFuncSync(XVM_State* vm, char *pstrName);
-XVM_API int XVM_GetReturnValueAsInt(XVM_State* vm);
-XVM_API float XVM_GetReturnValueAsFloat(XVM_State* vm);
-XVM_API char *XVM_GetReturnValueAsString(XVM_State* vm);
+XVM_API int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename);
+XVM_API void XVM_UnloadScript(ScriptContext *sc);
+XVM_API void XVM_ResetVM(ScriptContext *sc);
+XVM_API void XVM_RunScript(ScriptContext *sc, int iTimesliceDur);
+XVM_API void XVM_StartScript(ScriptContext *sc);
+XVM_API void XVM_StopScript(ScriptContext *sc);
+XVM_API void XVM_PauseScript(ScriptContext *sc, int iDur);
+XVM_API void XVM_ResumeScript(ScriptContext *sc);
+XVM_API void XVM_PassIntParam(ScriptContext *sc, int iInt);
+XVM_API void XVM_PassFloatParam(ScriptContext *sc, float fFloat);
+XVM_API void XVM_PassStringParam(ScriptContext *sc, char *pstrString);
+XVM_API int XVM_CallScriptFunc(ScriptContext *sc, char *pstrName);
+XVM_API void XVM_CallScriptFuncSync(ScriptContext *sc, char *pstrName);
+XVM_API int XVM_GetReturnValueAsInt(ScriptContext *sc);
+XVM_API float XVM_GetReturnValueAsFloat(ScriptContext *sc);
+XVM_API char *XVM_GetReturnValueAsString(ScriptContext *sc);
 
 // ----Host API Interface ----------------------------------------------------------------
 
-XVM_API int XVM_RegisterHostFunc(XVM_State* vm, char *pstrName, XVM_HOST_FUNCTION fnFunc);
-XVM_API int XVM_GetParamAsInt(XVM_State* vm, int iParamIndex);
-XVM_API float XVM_GetParamAsFloat(XVM_State* vm, int iParamIndex);
-XVM_API char *XVM_GetParamAsString(XVM_State* vm, int iParamIndex);
-XVM_API Value XVM_GetParam(XVM_State* vm, int iParamIndex);
+XVM_API int XVM_RegisterHostFunc(ScriptContext *sc, char *pstrName, XVM_HOST_FUNCTION fnFunc);
+XVM_API int XVM_GetParamAsInt(ScriptContext *sc, int iParamIndex);
+XVM_API float XVM_GetParamAsFloat(ScriptContext *sc, int iParamIndex);
+XVM_API char *XVM_GetParamAsString(ScriptContext *sc, int iParamIndex);
+XVM_API Value XVM_GetParam(ScriptContext *sc, int iParamIndex);
 
-XVM_API void XVM_ReturnFromHost(XVM_State* vm);
-XVM_API void XVM_ReturnIntFromHost(XVM_State* vm, int iInt);
-XVM_API void XVM_ReturnFloatFromHost(XVM_State* vm, float iFloat);
-XVM_API void XVM_ReturnStringFromHost(XVM_State* vm, char *pstrString);
+XVM_API void XVM_ReturnFromHost(ScriptContext *sc);
+XVM_API void XVM_ReturnIntFromHost(ScriptContext *sc, int iInt);
+XVM_API void XVM_ReturnFloatFromHost(ScriptContext *sc, float iFloat);
+XVM_API void XVM_ReturnStringFromHost(ScriptContext *sc, char *pstrString);
 
-XVM_API int XVM_GetParamCount(XVM_State* vm);       // 获取传递给函数的参数个数
-XVM_API int XVM_IsScriptStop(XVM_State* vm);        // 脚本是否已经停止
-XVM_API int XVM_GetExitCode(XVM_State* vm);         // 脚本退出代码
+XVM_API int XVM_GetParamCount(ScriptContext *sc);       // 获取传递给函数的参数个数
+XVM_API int XVM_IsScriptStop(ScriptContext *sc);        // 脚本是否已经停止
+XVM_API int XVM_GetExitCode(ScriptContext *sc);         // 脚本退出代码
 XVM_API time_t XVM_GetSourceTimestamp(const char* filename);
 
 #ifdef __cplusplus

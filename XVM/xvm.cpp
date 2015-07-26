@@ -52,32 +52,32 @@ inline int ResolveStackIndex(int iFrameIndex, int iIndex)
 // ----Function Prototypes -------------------------------------------------------------------
 
 // GC
-static void RunGC(VMState *vm);
+static void RunGC(ScriptContext *sc);
 
 // ----Operand Interface -----------------------------------------------------------------
 
-int CoerceValueToInt(Value* Val);
-float CoerceValueToFloat(Value* Val);
-char *CoerceValueToString(Value* Val);
+int CoerceValueToInt(Value *Val);
+float CoerceValueToFloat(Value *Val);
+char *CoerceValueToString(Value *Val);
 
-int GetOpType(VMState* vm, int OpIndex);
-int ResolveOpRelStackIndex(VMState *vm, Value* OpValue);
-Value* ResolveOpValue(VMState* vm, int iOpIndex);
-int ResolveOpType(VMState* vm, int iOpIndex);
-int ResolveOpAsInt(VMState* vm, int iOpIndex);
-float ResolveOpAsFloat(VMState* vm, int iOpIndex);
-char* ResolveOpAsString(VMState* vm, int iOpIndex);
-int ResolveOpAsInstrIndex(VMState* vm, int iOpIndex);
-int ResolveOpAsFuncIndex(VMState* vm, int iOpIndex);
+int GetOpType(ScriptContext *sc, int OpIndex);
+int ResolveOpRelStackIndex(ScriptContext *sc, Value* OpValue);
+Value* ResolveOpValue(ScriptContext *sc, int iOpIndex);
+int ResolveOpType(ScriptContext *sc, int iOpIndex);
+int ResolveOpAsInt(ScriptContext *sc, int iOpIndex);
+float ResolveOpAsFloat(ScriptContext *sc, int iOpIndex);
+char* ResolveOpAsString(ScriptContext *sc, int iOpIndex);
+int ResolveOpAsInstrIndex(ScriptContext *sc, int iOpIndex);
+int ResolveOpAsFuncIndex(ScriptContext *sc, int iOpIndex);
 char* ResolveOpAsHostAPICall(int iOpIndex);
-//Value* ResolveOpValue(VMState* vm, int iOpIndex);
+//Value* ResolveOpValue(VMState* sc, int iOpIndex);
 
 // ----Runtime Stack Interface -----------------------------------------------------------
 
-Value* GetStackValue(VMState* vm, int iIndex);
-void SetStackValue(VMState* vm, int iIndex, Value Val);
-void PushFrame(VMState* vm, int iSize);
-void PopFrame(VMState* vm, int iSize);
+Value* GetStackValue(ScriptContext *sc, int iIndex);
+void SetStackValue(ScriptContext *sc, int iIndex, Value Val);
+void PushFrame(ScriptContext *sc, int iSize);
+void PopFrame(ScriptContext *sc, int iSize);
 
 // VM Instruction Implementation --------------------------------------
 #include "instruction.h"
@@ -87,11 +87,11 @@ void PopFrame(VMState* vm, int iSize);
 
 // ----Function Table Interface ----------------------------------------------------------
 
-FUNC *GetFunc(VMState* vm, int iIndex);
+FUNC *GetFunc(ScriptContext *sc, int iIndex);
 
 // ----Host API Call Table Interface -----------------------------------------------------
 
-char* GetHostFunc(VMState* vm, int iIndex);
+char* GetHostFunc(ScriptContext *sc, int iIndex);
 
 // ----Time Abstraction ------------------------------------------------------------------
 
@@ -99,7 +99,7 @@ int GetCurrTime();
 
 // ----Functions -------------------------------------------------------------------------
 
-void CallFunc(VMState* vm, int iIndex, int type);
+void CallFunc(ScriptContext *sc, int iIndex, int type);
 
 // ----Functions -----------------------------------------------------------------------------
 
@@ -110,9 +110,9 @@ void CallFunc(VMState* vm, int iIndex, int type);
 *    Initializes the runtime environment.
 */
 
-VMState* XVM_Create()
+ScriptContext* XVM_Create()
 {
-	VMState* thead = new VMState;
+	ScriptContext* thead = new ScriptContext;
 
 	thead->ThreadActiveTime = 0;
 
@@ -121,7 +121,7 @@ VMState* XVM_Create()
 	thead->IsPaused = FALSE;
 
 	thead->InstrStream.Instrs = NULL;
-	thead->Stack = NULL;
+	thead->stack = NULL;
 	thead->FuncTable.Funcs = NULL;
 	thead->HostCallTable.Calls = NULL;
 	thead->HostAPIs = NULL;
@@ -170,7 +170,7 @@ time_t XVM_GetSourceTimestamp(const char* filename)
 *    Loads an .XSE file into memory.
 */
 
-int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
+int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 {
     // ----Open the input file
 
@@ -209,30 +209,30 @@ int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
 
     // Read the stack size (4 bytes)
 
-    fread(&vm->iStackSize, 4, 1, pScriptFile);
+    fread(&sc->iStackSize, 4, 1, pScriptFile);
 
     // Check for a default stack size request
 
-    if (vm->iStackSize == 0)
-        vm->iStackSize = DEF_STACK_SIZE;
+    if (sc->iStackSize == 0)
+        sc->iStackSize = DEF_STACK_SIZE;
 
     // Allocate the runtime stack
 
-    int iStackSize = vm->iStackSize;
-    if (!(vm->Stack = (Value *)malloc(iStackSize*sizeof(Value))))
+    int iStackSize = sc->iStackSize;
+    if (!(sc->stack = (Value *)malloc(iStackSize*sizeof(Value))))
         return XVM_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read the global data size (4 bytes)
 
-    fread(&vm->GlobalDataSize, 4, 1, pScriptFile);
+    fread(&sc->GlobalDataSize, 4, 1, pScriptFile);
 
     // Check for presence of Main() (1 byte)
 
-    fread(&vm->IsMainFuncPresent, 1, 1, pScriptFile);
+    fread(&sc->IsMainFuncPresent, 1, 1, pScriptFile);
 
     // Read Main()'s function index (4 bytes)
 
-    fread(&vm->MainFuncIndex, 4, 1, pScriptFile);
+    fread(&sc->MainFuncIndex, 4, 1, pScriptFile);
 
     // Read the priority type (1 byte)
 
@@ -241,34 +241,34 @@ int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
 
     // Read the user-defined priority (4 bytes)
 	// Unused field
-    fread(&vm->TimesliceDur, 4, 1, pScriptFile);
+    fread(&sc->TimesliceDur, 4, 1, pScriptFile);
 
     // ----Read the instruction stream
 
     // Read the instruction count (4 bytes)
 
-    fread(&vm->InstrStream.Size, 4, 1, pScriptFile);
+    fread(&sc->InstrStream.Size, 4, 1, pScriptFile);
 
     // Allocate the stream
 
-	if (!(vm->InstrStream.Instrs = (INSTR *)malloc(vm->InstrStream.Size*sizeof(INSTR))))
+	if (!(sc->InstrStream.Instrs = (INSTR *)malloc(sc->InstrStream.Size*sizeof(INSTR))))
 		return XVM_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read the instruction data
 
-    for (int CurrInstrIndex = 0; CurrInstrIndex < vm->InstrStream.Size; ++CurrInstrIndex)
+    for (int CurrInstrIndex = 0; CurrInstrIndex < sc->InstrStream.Size; ++CurrInstrIndex)
     {
         // Read the opcode (2 bytes)
 
-        vm->InstrStream.Instrs[CurrInstrIndex].Opcode = 0;
-        fread(&vm->InstrStream.Instrs[CurrInstrIndex].Opcode, 2, 1, pScriptFile);
+        sc->InstrStream.Instrs[CurrInstrIndex].Opcode = 0;
+        fread(&sc->InstrStream.Instrs[CurrInstrIndex].Opcode, 2, 1, pScriptFile);
 
         // Read the operand count (1 byte)
 
-        vm->InstrStream.Instrs[CurrInstrIndex].OpCount = 0;
-        fread(&vm->InstrStream.Instrs[CurrInstrIndex].OpCount, 1, 1, pScriptFile);
+        sc->InstrStream.Instrs[CurrInstrIndex].OpCount = 0;
+        fread(&sc->InstrStream.Instrs[CurrInstrIndex].OpCount, 1, 1, pScriptFile);
 
-        int iOpCount = vm->InstrStream.Instrs[CurrInstrIndex].OpCount;
+        int iOpCount = sc->InstrStream.Instrs[CurrInstrIndex].OpCount;
 
         // Allocate space for the operand list in a temporary pointer
 
@@ -353,7 +353,7 @@ int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
         }
 
         // Assign the operand list pointer to the instruction stream
-		vm->InstrStream.Instrs[CurrInstrIndex].pOpList = pOpList;
+		sc->InstrStream.Instrs[CurrInstrIndex].pOpList = pOpList;
     }
 
     // ----Read the string table
@@ -401,12 +401,12 @@ int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
         // Run through each operand in the instruction stream and assign copies of string
         // operand's corresponding string literals
 
-        for (int CurrInstrIndex = 0; CurrInstrIndex < vm->InstrStream.Size; ++CurrInstrIndex)
+        for (int CurrInstrIndex = 0; CurrInstrIndex < sc->InstrStream.Size; ++CurrInstrIndex)
         {
             // Get the instruction's operand count and a copy of it's operand list
 
-            int iOpCount = vm->InstrStream.Instrs[CurrInstrIndex].OpCount;
-            Value *pOpList = vm->InstrStream.Instrs[CurrInstrIndex].pOpList;
+            int iOpCount = sc->InstrStream.Instrs[CurrInstrIndex].OpCount;
+            Value *pOpList = sc->InstrStream.Instrs[CurrInstrIndex].pOpList;
 
             for (int j = 0; j < iOpCount; ++j)
             {
@@ -450,11 +450,11 @@ int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
     int iFuncTableSize;
     fread(&iFuncTableSize, 4, 1, pScriptFile);
 
-    vm->FuncTable.Size = iFuncTableSize;
+    sc->FuncTable.Size = iFuncTableSize;
 
     // Allocate the table
 
-    if (!(vm->FuncTable.Funcs = (FUNC *)malloc(iFuncTableSize*sizeof(FUNC))))
+    if (!(sc->FuncTable.Funcs = (FUNC *)malloc(iFuncTableSize*sizeof(FUNC))))
         return XVM_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read each function
@@ -486,31 +486,31 @@ int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
 
         // Read the function name (N bytes) and append a null-terminator
 
-        fread(&vm->FuncTable.Funcs[i].Name, iFuncNameLength, 1, pScriptFile);
-        vm->FuncTable.Funcs[i].Name[iFuncNameLength] = '\0';
+        fread(&sc->FuncTable.Funcs[i].Name, iFuncNameLength, 1, pScriptFile);
+        sc->FuncTable.Funcs[i].Name[iFuncNameLength] = '\0';
 
         // Write everything to the function table
 
-        vm->FuncTable.Funcs[i].EntryPoint = iEntryPoint;
-        vm->FuncTable.Funcs[i].ParamCount = iParamCount;
-        vm->FuncTable.Funcs[i].LocalDataSize = iLocalDataSize;
-        vm->FuncTable.Funcs[i].StackFrameSize = iStackFrameSize;
+        sc->FuncTable.Funcs[i].EntryPoint = iEntryPoint;
+        sc->FuncTable.Funcs[i].ParamCount = iParamCount;
+        sc->FuncTable.Funcs[i].LocalDataSize = iLocalDataSize;
+        sc->FuncTable.Funcs[i].StackFrameSize = iStackFrameSize;
     }
 
     // ----Read the host API call table
 
     // Read the host API call count
 
-    fread(&vm->HostCallTable.Size, 4, 1, pScriptFile);
+    fread(&sc->HostCallTable.Size, 4, 1, pScriptFile);
 
     // Allocate the table
 
-	if (!(vm->HostCallTable.Calls = (char **)malloc(vm->HostCallTable.Size*sizeof(char *))))
+	if (!(sc->HostCallTable.Calls = (char **)malloc(sc->HostCallTable.Size*sizeof(char *))))
         return XVM_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read each host API call
 
-    for (int i = 0; i < vm->HostCallTable.Size; ++i)
+    for (int i = 0; i < sc->HostCallTable.Size; ++i)
     {
         // Read the host API call string size (1 byte)
 
@@ -530,7 +530,7 @@ int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
 
         // Assign the temporary pointer to the table
 
-        vm->HostCallTable.Calls[i] = pstrCurrCall;
+        sc->HostCallTable.Calls[i] = pstrCurrCall;
     }
 
     // ----Close the input file
@@ -539,7 +539,7 @@ int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
 
     // Reset the script
 
-    XVM_ResetVM(vm);
+    XVM_ResetVM(sc);
 
     // Return a success code
 
@@ -553,10 +553,10 @@ int XVM_LoadXSE(VMState* vm, const char *pstrFilename)
 *    Shuts down the runtime environment.
 */
 
-void XVM_ShutDown(VMState *vm)
+void XVM_ShutDown(ScriptContext *sc)
 {
-	XVM_UnloadScript(vm);
-	delete vm;
+	XVM_UnloadScript(sc);
+	delete sc;
 }
 
 /******************************************************************************************
@@ -566,19 +566,19 @@ void XVM_ShutDown(VMState *vm)
 *    Unloads a script from memory.
 */
 
-void XVM_UnloadScript(VMState* vm)
+void XVM_UnloadScript(ScriptContext *sc)
 {
     // ----Free The instruction stream
 
     // First check to see if any instructions have string operands, and free them if they
     // do
 
-    for (int i = 0; i < vm->InstrStream.Size; ++i)
+    for (int i = 0; i < sc->InstrStream.Size; ++i)
     {
         // Make a local copy of the operand count and operand list
 
-        int iOpCount = vm->InstrStream.Instrs[i].OpCount;
-        Value *pOpList = vm->InstrStream.Instrs[i].pOpList;
+        int iOpCount = sc->InstrStream.Instrs[i].OpCount;
+        Value *pOpList = sc->InstrStream.Instrs[i].pOpList;
 
         // Loop through each operand and free its string pointer
 
@@ -589,32 +589,32 @@ void XVM_UnloadScript(VMState* vm)
 
     // Now free the stream itself
 
-    if (vm->InstrStream.Instrs)
-        free(vm->InstrStream.Instrs);
+    if (sc->InstrStream.Instrs)
+        free(sc->InstrStream.Instrs);
 
     // ----Free the runtime stack
 
     // Free any strings that are still on the stack
 
-	for (int i = 0; i < vm->iStackSize; ++i)
-		if (vm->Stack[i].Type == OP_TYPE_STRING)
-			free(vm->Stack[i].String);
+	for (int i = 0; i < sc->iStackSize; ++i)
+		if (sc->stack[i].Type == OP_TYPE_STRING)
+			free(sc->stack[i].String);
 
     // Now free the stack itself
 
-    if (vm->Stack)
-        free(vm->Stack);
+    if (sc->stack)
+        free(sc->stack);
 
     // ----Free the function table
 
-    if (vm->FuncTable.Funcs)
-        free(vm->FuncTable.Funcs);
+    if (sc->FuncTable.Funcs)
+        free(sc->FuncTable.Funcs);
 
 	// ---- Free registered host API
-	while (vm->HostAPIs != NULL) 
+	while (sc->HostAPIs != NULL) 
 	{
-		HOST_API_FUNC* pFunc = vm->HostAPIs;
-		vm->HostAPIs = vm->HostAPIs->Next;
+		HOST_API_FUNC* pFunc = sc->HostAPIs;
+		sc->HostAPIs = sc->HostAPIs->Next;
 		free(pFunc);
 	}
 
@@ -622,14 +622,14 @@ void XVM_UnloadScript(VMState* vm)
 
     // First free each string in the table individually
 
-	for (int i = 0; i < vm->HostCallTable.Size; ++i)
-		if (vm->HostCallTable.Calls[i])
-			free(vm->HostCallTable.Calls[i]);
+	for (int i = 0; i < sc->HostCallTable.Size; ++i)
+		if (sc->HostCallTable.Calls[i])
+			free(sc->HostCallTable.Calls[i]);
 
     // Now free the table itself
 
-    if (vm->HostCallTable.Calls)
-        free(vm->HostCallTable.Calls);
+    if (sc->HostCallTable.Calls)
+        free(sc->HostCallTable.Calls);
 }
 
 /******************************************************************************************
@@ -640,35 +640,35 @@ void XVM_UnloadScript(VMState* vm)
 *    currently active thread, because scripts can (and will) need to be reset arbitrarily.
 */
 
-void XVM_ResetVM(VMState* vm)
+void XVM_ResetVM(ScriptContext *sc)
 {
 	// 重置指令指针
-	vm->CurrInstr = 0;
+	sc->CurrInstr = 0;
 
     // Clear the stack
-    vm->iTopIndex = 0;
-    vm->iFrameIndex = 0;
+    sc->iTopIndex = 0;
+    sc->iFrameIndex = 0;
 
     // Set the entire stack to null
 
-	for (int i = 0; i < vm->iStackSize; ++i)
-		vm->Stack[i].Type = OP_TYPE_NULL;
+	for (int i = 0; i < sc->iStackSize; ++i)
+		sc->stack[i].Type = OP_TYPE_NULL;
 
     // Free all allocated objects
-    GC_FreeAllObjects(vm->pLastObject);
+    GC_FreeAllObjects(sc->pLastObject);
 
     // Reset GC state
-    vm->pLastObject = NULL;
-    vm->iNumberOfObjects = 0;
-    vm->iMaxObjects = INITIAL_GC_THRESHOLD;
+    sc->pLastObject = NULL;
+    sc->iNumberOfObjects = 0;
+    sc->iMaxObjects = INITIAL_GC_THRESHOLD;
 
     // Unpause the script
 
-    vm->IsPaused = FALSE;
+    sc->IsPaused = FALSE;
 
     // Allocate space for the globals
 
-    PushFrame(vm, vm->GlobalDataSize);
+    PushFrame(sc, sc->GlobalDataSize);
 }
 
 /******************************************************************************************
@@ -678,7 +678,7 @@ void XVM_ResetVM(VMState* vm)
 *    Runs the currenty loaded script for a given timeslice duration.
 */
 
-static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
+static void ExecuteInstruction(ScriptContext *sc, int iTimesliceDur)
 {
     int iExitExecLoop = FALSE;
 
@@ -690,7 +690,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
     int iCurrTime;
 
 	// Execution loop
-    while (vm->IsRunning)
+    while (sc->IsRunning)
     {
         // 检查线程是否已经终结，则退出执行循环
 
@@ -698,14 +698,14 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         iCurrTime = GetCurrTime();
 
         // Is the script currently paused?
-        if (vm->IsPaused)
+        if (sc->IsPaused)
         {
             // Has the pause duration elapsed yet?
 
-            if (iCurrTime >= vm->PauseEndTime)
+            if (iCurrTime >= sc->PauseEndTime)
             {
                 // Yes, so unpause the script
-                vm->IsPaused = FALSE;
+                sc->IsPaused = FALSE;
             }
             else
             {
@@ -715,18 +715,18 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         }
 
         // 如果没有任何指令需要执行，则停止运行
-		if (vm->CurrInstr >= vm->InstrStream.Size)
+		if (sc->CurrInstr >= sc->InstrStream.Size)
 		{
-			vm->IsRunning = FALSE;
-			vm->ExitCode = XVM_EXIT_OK;
+			sc->IsRunning = FALSE;
+			sc->ExitCode = XVM_EXIT_OK;
 			break;
 		}
 
         // 保存指令指针，用于之后的比较
-        int iCurrInstr = vm->CurrInstr;
+        int iCurrInstr = sc->CurrInstr;
 
         // Get the current opcode
-        int iOpcode = vm->InstrStream.Instrs[iCurrInstr].Opcode;
+        int iOpcode = sc->InstrStream.Instrs[iCurrInstr].Opcode;
 
         // Execute the current instruction based on its opcode, as long as we aren't
         // currently paused
@@ -747,8 +747,8 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 		case INSTR_SHL:
 		case INSTR_SHR:
 			{
-				Value op0 = exec_pop(vm);
-				Value op1 = exec_pop(vm);
+				Value op0 = exec_pop(sc);
+				Value op1 = exec_pop(sc);
 				Value op2;
 
 				switch (iOpcode)
@@ -799,7 +799,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				}
 
 				// 保存计算结果
-				exec_push(vm, &op2);
+				exec_push(sc, &op2);
 				break;
 			}
 
@@ -809,11 +809,11 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             {
                 // Get a local copy of the destination operand (operand index 0)
 
-                Value* Dest = ResolveOpValue(vm, 0);
+                Value* Dest = ResolveOpValue(sc, 0);
 
                 // Get a local copy of the source operand (operand index 1)
 
-                Value* Source = ResolveOpValue(vm, 1);
+                Value* Source = ResolveOpValue(sc, 1);
 
                 // Depending on the instruction, perform a binary operation
 
@@ -822,7 +822,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 case INSTR_MOV:
 
                     // Skip cases where the two operands are the same
-                    if (ResolveOpValue(vm, 0) == ResolveOpValue(vm, 1))
+                    if (ResolveOpValue(sc, 0) == ResolveOpValue(sc, 1))
                         break;
 
                     // Copy the source operand into the destination
@@ -834,7 +834,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 // Use ResolveOpPntr() to get a pointer to the destination Value structure and
                 // move the result there
 
-                *ResolveOpValue(vm, 0) = *Dest;
+                *ResolveOpValue(sc, 0) = *Dest;
 
                 break;
             }
@@ -848,7 +848,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_SQRT:
             {
 				// 获取栈顶元素
-                Value& op0 = vm->Stack[vm->iTopIndex - 1];
+                Value& op0 = sc->stack[sc->iTopIndex - 1];
 
                 switch (iOpcode)
                 {
@@ -879,7 +879,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             // ----Conditional Branching
 
         case INSTR_JMP:
-			vm->CurrInstr = ResolveOpAsInstrIndex(vm, 0);
+			sc->CurrInstr = ResolveOpAsInstrIndex(sc, 0);
 			break;
 
         case INSTR_JE:
@@ -889,12 +889,12 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_JGE:
         case INSTR_JLE:
             {
-                Value* Op1 = &exec_pop(vm);  // 条件2
-                Value* Op0 = &exec_pop(vm);  // 条件1
+                Value* Op1 = &exec_pop(sc);  // 条件2
+                Value* Op0 = &exec_pop(sc);  // 条件1
 
                 // Get the index of the target instruction (opcode index 2)
 
-                int iTargetIndex = ResolveOpAsInstrIndex(vm, 0);
+                int iTargetIndex = ResolveOpAsInstrIndex(sc, 0);
 
                 // Perform the specified comparison and jump if it evaluates to true
 
@@ -1015,18 +1015,18 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                 // If the comparison evaluated to TRUE, make the jump
                 if (iJump)
-                    vm->CurrInstr = iTargetIndex;
+                    sc->CurrInstr = iTargetIndex;
 
                 break;
             }
 
 		case INSTR_BRTRUE:
 			{
-				Value* Op0 = &exec_pop(vm);  // 条件
+				Value* Op0 = &exec_pop(sc);  // 条件
 
                 // Get the index of the target instruction (opcode index 2)
 
-                int iTargetIndex = ResolveOpAsInstrIndex(vm, 0);
+                int iTargetIndex = ResolveOpAsInstrIndex(sc, 0);
 
                 // Perform the specified comparison and jump if it evaluates to true
 
@@ -1052,17 +1052,17 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
 				 // If the comparison evaluated to TRUE, make the jump
                 if (iJump)
-                    vm->CurrInstr = iTargetIndex;
+                    sc->CurrInstr = iTargetIndex;
 
                 break;
 			}
 		case INSTR_BRFALSE:
 			{
-				Value* Op0 = &exec_pop(vm);  // 条件
+				Value* Op0 = &exec_pop(sc);  // 条件
 
                 // Get the index of the target instruction (opcode index 2)
 
-                int iTargetIndex = ResolveOpAsInstrIndex(vm, 0);
+                int iTargetIndex = ResolveOpAsInstrIndex(sc, 0);
 
                 // Perform the specified comparison and jump if it evaluates to true
 
@@ -1087,7 +1087,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 }
 				// If the comparison evaluated to TRUE, make the jump
                 if (iJump)
-                    vm->CurrInstr = iTargetIndex;
+                    sc->CurrInstr = iTargetIndex;
 
                 break;
 			}
@@ -1098,10 +1098,10 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_PUSH:
             {
                 // Get a local copy of the source operand (operand index 0)
-                Value* Source = ResolveOpValue(vm, 0);
+                Value* Source = ResolveOpValue(sc, 0);
 
                 // Push the value onto the stack
-                exec_push(vm, Source);
+                exec_push(sc, Source);
 
                 break;
             }
@@ -1109,7 +1109,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
         case INSTR_POP:
             {
                 // Pop the top of the stack into the destination
-                *ResolveOpValue(vm, 0) = exec_pop(vm);
+                *ResolveOpValue(sc, 0) = exec_pop(sc);
                 break;
             }
 
@@ -1119,7 +1119,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				Value Source;
 				Source.Type = OP_TYPE_INT;
 				Source.Fixnum = 0;
-				exec_push(vm, &Source);
+				exec_push(sc, &Source);
 				break;
 			}
 
@@ -1129,7 +1129,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				Value Source;
 				Source.Type = OP_TYPE_INT;
 				Source.Fixnum = 1;
-				exec_push(vm, &Source);
+				exec_push(sc, &Source);
 				break;
 			}
 
@@ -1139,7 +1139,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				Value Source;
 				Source.Type = OP_TYPE_FLOAT;
 				Source.Realnum = 0.f;
-				exec_push(vm, &Source);
+				exec_push(sc, &Source);
 				break;
 			}
 
@@ -1149,14 +1149,14 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 				Value Source;
 				Source.Type = OP_TYPE_FLOAT;
 				Source.Realnum = 1.f;
-				exec_push(vm, &Source);
+				exec_push(sc, &Source);
 				break;
 			}
 
             // ----The Function Call Interface
         case INSTR_CALL:
             {
-                Value* oprand = ResolveOpValue(vm, 0);
+                Value* oprand = ResolveOpValue(sc, 0);
 
                 assert(oprand->Type == OP_TYPE_FUNC_INDEX ||
                         oprand->Type == OP_TYPE_HOST_CALL_INDEX);
@@ -1167,10 +1167,10 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                 case OP_TYPE_FUNC_INDEX:
                     {
                         // Get a local copy of the function index
-                        int iFuncIndex = ResolveOpAsFuncIndex(vm, 0);
+                        int iFuncIndex = ResolveOpAsFuncIndex(sc, 0);
 
                         // Call the function
-						CallFunc(vm, iFuncIndex, OP_TYPE_FUNC_INDEX);
+						CallFunc(sc, iFuncIndex, OP_TYPE_FUNC_INDEX);
                     }
 
                     break;
@@ -1185,7 +1185,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                         // Get the name of the host API function
 
-                        char *pstrFuncName = GetHostFunc(vm, iHostAPICallIndex);
+                        char *pstrFuncName = GetHostFunc(sc, iHostAPICallIndex);
 
                         // Search through the host API until the matching function is found
 
@@ -1212,7 +1212,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
                         if (iMatchFound)
                         {
-                            pCFunction->FuncPtr(vm);
+                            pCFunction->FuncPtr(sc);
                         }
                         else
                         {
@@ -1231,7 +1231,7 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             {
                 // Get the current function index off the top of the stack and use it to get
                 // the corresponding function structure
-                Value FuncIndex = exec_pop(vm);
+                Value FuncIndex = exec_pop(sc);
 
                 assert(FuncIndex.Type == OP_TYPE_FUNC_INDEX ||
                        FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER);
@@ -1241,52 +1241,52 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
                     iExitExecLoop = TRUE;
 
                 // 如果是主函数返回，记录退出代码
-                if (vm->IsMainFuncPresent &&
-                    vm->MainFuncIndex == FuncIndex.FuncIndex)
+                if (sc->IsMainFuncPresent &&
+                    sc->MainFuncIndex == FuncIndex.FuncIndex)
                 {
-                    vm->ExitCode = vm->_RetVal.Fixnum;
+                    sc->ExitCode = sc->_RetVal.Fixnum;
                 }
 
                 // Get the previous function index
-                FUNC *CurrFunc = GetFunc(vm, FuncIndex.FuncIndex);
+                FUNC *CurrFunc = GetFunc(sc, FuncIndex.FuncIndex);
 
                 // Read the return address structure from the stack, which is stored one
                 // index below the local data
-                int iIndexOfRA = vm->iTopIndex - (CurrFunc->LocalDataSize + 1);
-                Value* ReturnAddr = GetStackValue(vm, iIndexOfRA);
+                int iIndexOfRA = sc->iTopIndex - (CurrFunc->LocalDataSize + 1);
+                Value* ReturnAddr = GetStackValue(sc, iIndexOfRA);
                 //printf("OffsetIndex %d\n", FuncIndex.OffsetIndex);
                 assert(ReturnAddr->Type == OP_TYPE_INSTR_INDEX);
 
                 // Pop the stack frame along with the return address
-                PopFrame(vm, CurrFunc->StackFrameSize);
+                PopFrame(sc, CurrFunc->StackFrameSize);
 
                 // Make the jump to the return address
-                vm->CurrInstr = ReturnAddr->InstrIndex;
+                sc->CurrInstr = ReturnAddr->InstrIndex;
 
                 break;
             }
 
 		case INSTR_TRAP:
 			{
-				int interrupt = ResolveOpAsInt(vm, 0);
-				exec_trap(vm, interrupt);
+				int interrupt = ResolveOpAsInt(sc, 0);
+				exec_trap(sc, interrupt);
 				break;
 			}
 
 		case INSTR_BREAK:
 			// 暂停虚拟机
-			vm->IsPaused = TRUE;
+			sc->IsPaused = TRUE;
 			// TODO 调用调试例程
 			break;
 
         case INSTR_NEW:
             {
-                int iSize = ResolveOpAsInt(vm, 0);
-                if (vm->iMaxObjects)
-                    RunGC(vm);
-                Value val = GC_AllocObject(iSize, &vm->pLastObject);
-                vm->iNumberOfObjects++;
-                exec_push(vm, &val);
+                int iSize = ResolveOpAsInt(sc, 0);
+                if (sc->iMaxObjects)
+                    RunGC(sc);
+                Value val = GC_AllocObject(iSize, &sc->pLastObject);
+                sc->iNumberOfObjects++;
+                exec_push(sc, &val);
                 break;
             }
 
@@ -1298,15 +1298,15 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
             {
                 // Get the pause duration
 
-                int iPauseDuration = ResolveOpAsInt(vm, 0);
+                int iPauseDuration = ResolveOpAsInt(sc, 0);
 
                 // Determine the ending pause time
 
-                vm->PauseEndTime = iCurrTime + iPauseDuration;
+                sc->PauseEndTime = iCurrTime + iPauseDuration;
 
                 // Pause the script
 
-                vm->IsPaused = TRUE;
+                sc->IsPaused = TRUE;
 
                 break;
             }
@@ -1318,8 +1318,8 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 
         // If the instruction pointer hasn't been changed by an instruction, increment it
         // 如果指令没有改变，执行下一条指令
-        if (iCurrInstr == vm->CurrInstr)
-            ++vm->CurrInstr;
+        if (iCurrInstr == sc->CurrInstr)
+            ++sc->CurrInstr;
 
         // 线程耗尽时间片
         if (iTimesliceDur != XVM_INFINITE_TIMESLICE)
@@ -1339,10 +1339,10 @@ static void ExecuteInstruction(VMState* vm, int iTimesliceDur)
 *    Runs the specified script from Main() for a given timeslice duration.
 */
 
-void XVM_RunScript(VMState* vm, int iTimesliceDur)
+void XVM_RunScript(ScriptContext *sc, int iTimesliceDur)
 {
-	XVM_StartScript(vm);
-    XVM_CallScriptFunc(vm, "Main");
+	XVM_StartScript(sc);
+    XVM_CallScriptFunc(sc, "Main");
 }
 
 /******************************************************************************************
@@ -1352,19 +1352,19 @@ void XVM_RunScript(VMState* vm, int iTimesliceDur)
 *   Starts the execution of a script.
 */
 
-void XVM_StartScript(VMState* vm)
+void XVM_StartScript(ScriptContext *sc)
 {
 	// Set the thread's execution flag
 
-	vm->IsRunning = TRUE;
+	sc->IsRunning = TRUE;
 
 	// Set the current thread to the script
 
-	vm = vm;
+	sc = sc;
 
 	// Set the activation time for the current thread to get things rolling
 
-	vm->ThreadActiveTime = GetCurrTime();
+	sc->ThreadActiveTime = GetCurrTime();
 }
 
 /******************************************************************************************
@@ -1374,11 +1374,11 @@ void XVM_StartScript(VMState* vm)
 *  Stops the execution of a script.
 */
 
-void XVM_StopScript(VMState* vm)
+void XVM_StopScript(ScriptContext *sc)
 {
     // Clear the thread's execution flag
 
-    vm->IsRunning = FALSE;
+    sc->IsRunning = FALSE;
 }
 
 /******************************************************************************************
@@ -1388,15 +1388,15 @@ void XVM_StopScript(VMState* vm)
 *  Pauses a script for a specified duration.
 */
 
-void XVM_PauseScript(VMState* vm, int iDur)
+void XVM_PauseScript(ScriptContext *sc, int iDur)
 {
     // Set the pause flag
 
-    vm->IsPaused = TRUE;
+    sc->IsPaused = TRUE;
 
     // Set the duration of the pause
 
-    vm->PauseEndTime = GetCurrTime() + iDur;
+    sc->PauseEndTime = GetCurrTime() + iDur;
 }
 
 /******************************************************************************************
@@ -1406,11 +1406,11 @@ void XVM_PauseScript(VMState* vm, int iDur)
 *  Unpauses a script.
 */
 
-void XVM_ResumeScript(VMState* vm)
+void XVM_ResumeScript(ScriptContext *sc)
 {
     // Clear the pause flag
 
-    vm->IsPaused = FALSE;
+    sc->IsPaused = FALSE;
 }
 
 /******************************************************************************************
@@ -1420,11 +1420,11 @@ void XVM_ResumeScript(VMState* vm)
 *    Returns the last returned value as an integer.
 */
 
-int XVM_GetReturnValueAsInt(VMState* vm)
+int XVM_GetReturnValueAsInt(ScriptContext *sc)
 {
     // Return _RetVal's integer field
 
-    return vm->_RetVal.Fixnum;
+    return sc->_RetVal.Fixnum;
 }
 
 /******************************************************************************************
@@ -1434,11 +1434,11 @@ int XVM_GetReturnValueAsInt(VMState* vm)
 *    Returns the last returned value as an float.
 */
 
-float XVM_GetReturnValueAsFloat(VMState* vm)
+float XVM_GetReturnValueAsFloat(ScriptContext *sc)
 {
     // Return _RetVal's floating-point field
 
-    return vm->_RetVal.Realnum;
+    return sc->_RetVal.Realnum;
 }
 
 /******************************************************************************************
@@ -1448,26 +1448,26 @@ float XVM_GetReturnValueAsFloat(VMState* vm)
 *    Returns the last returned value as a string.
 */
 
-char* XVM_GetReturnValueAsString(VMState* vm)
+char* XVM_GetReturnValueAsString(ScriptContext *sc)
 {
     // Return _RetVal's string field
 
-    return vm->_RetVal.String;
+    return sc->_RetVal.String;
 }
 
-static void MarkAll(VMState *pScript)
+static void MarkAll(ScriptContext *pScript)
 {
     // 标记堆栈
     for (int i = 0; i < pScript->iTopIndex; i++) 
     {
-        GC_Mark(pScript->Stack[i]);
+        GC_Mark(pScript->stack[i]);
     }
 
     // 标记寄存器
     GC_Mark(pScript->_RetVal);
 }
 
-static void RunGC(VMState *pScript)
+static void RunGC(ScriptContext *pScript)
 {
     int numObjects = pScript->iNumberOfObjects;
 
@@ -1494,7 +1494,7 @@ static void RunGC(VMState *pScript)
 *  Coerces a Value structure from it's current type to an integer value.
 */
 
-int CoerceValueToInt(Value* Val)
+int CoerceValueToInt(Value *Val)
 {
     // Determine which type the Value currently is
 
@@ -1529,7 +1529,7 @@ int CoerceValueToInt(Value* Val)
 *  Coerces a Value structure from it's current type to an float value.
 */
 
-float CoerceValueToFloat(Value* Val)
+float CoerceValueToFloat(Value *Val)
 {
     // Determine which type the Value currently is
 
@@ -1564,7 +1564,7 @@ float CoerceValueToFloat(Value* Val)
 *  Coerces a Value structure from it's current type to a string value.
 */
 
-char *CoerceValueToString(Value* Val)
+char *CoerceValueToString(Value *Val)
 {
     char *pstrCoercion;
 
@@ -1606,13 +1606,13 @@ char *CoerceValueToString(Value* Val)
 *    Returns the type of the specified operand in the current instruction.
 */
 
-inline int GetOpType(VMState *vm, int iOpIndex)
+inline int GetOpType(ScriptContext *sc, int iOpIndex)
 {
-	int iCurrInstr = vm->CurrInstr;
-	return vm->InstrStream.Instrs[iCurrInstr].pOpList[iOpIndex].Type;
+	int iCurrInstr = sc->CurrInstr;
+	return sc->InstrStream.Instrs[iCurrInstr].pOpList[iOpIndex].Type;
 }
 
-inline int ResolveOpRelStackIndex(VMState *vm, Value* OpValue)
+inline int ResolveOpRelStackIndex(ScriptContext *sc, Value* OpValue)
 {
 	assert(OpValue->Type == OP_TYPE_REL_STACK_INDEX);
 	
@@ -1626,7 +1626,7 @@ inline int ResolveOpRelStackIndex(VMState *vm, Value* OpValue)
 	int iOffsetIndex = OpValue->OffsetIndex;
 
 	// Get the variable's value
-	Value* sv = GetStackValue(vm, iOffsetIndex);
+	Value* sv = GetStackValue(sc, iOffsetIndex);
 
 	assert(sv->Type == OP_TYPE_INT);
 
@@ -1648,21 +1648,21 @@ inline int ResolveOpRelStackIndex(VMState *vm, Value* OpValue)
 *    Resolves an operand and returns it's associated Value structure.
 */
 
-inline Value* ResolveOpValue(VMState *vm, int iOpIndex)
+inline Value* ResolveOpValue(ScriptContext *sc, int iOpIndex)
 {
-	Value* OpValue = &vm->InstrStream.Instrs[vm->CurrInstr].pOpList[iOpIndex];
+	Value* OpValue = &sc->InstrStream.Instrs[sc->CurrInstr].pOpList[iOpIndex];
 
 	switch (OpValue->Type)
 	{
 	case OP_TYPE_ABS_STACK_INDEX:
-		return GetStackValue(vm, OpValue->StackIndex);
+		return GetStackValue(sc, OpValue->StackIndex);
 	case OP_TYPE_REL_STACK_INDEX:
 		{
-			int iAbsStackIndex = ResolveOpRelStackIndex(vm, OpValue);
-			return GetStackValue(vm, iAbsStackIndex);
+			int iAbsStackIndex = ResolveOpRelStackIndex(sc, OpValue);
+			return GetStackValue(sc, iAbsStackIndex);
 		}
 	case OP_TYPE_REG:
-		return &vm->_RetVal;
+		return &sc->_RetVal;
 	}
 
 	return OpValue;
@@ -1677,9 +1677,9 @@ inline Value* ResolveOpValue(VMState *vm, int iOpIndex)
 *    resolved type.
 */
 
-inline int ResolveOpType(VMState* vm, int iOpIndex)
+inline int ResolveOpType(ScriptContext *sc, int iOpIndex)
 {
-    return ResolveOpValue(vm, iOpIndex)->Type;
+    return ResolveOpValue(sc, iOpIndex)->Type;
 }
 
 /******************************************************************************************
@@ -1689,11 +1689,11 @@ inline int ResolveOpType(VMState* vm, int iOpIndex)
 *    Resolves and coerces an operand's value to an integer value.
 */
 
-inline int ResolveOpAsInt(VMState* vm, int iOpIndex)
+inline int ResolveOpAsInt(ScriptContext *sc, int iOpIndex)
 {
     // Resolve the operand's value
 
-    Value* OpValue = ResolveOpValue(vm, iOpIndex);
+    Value* OpValue = ResolveOpValue(sc, iOpIndex);
 
     // Coerce it to an int and return it
 
@@ -1708,11 +1708,11 @@ inline int ResolveOpAsInt(VMState* vm, int iOpIndex)
 *    Resolves and coerces an operand's value to a floating-point value.
 */
 
-inline float ResolveOpAsFloat(VMState* vm, int iOpIndex)
+inline float ResolveOpAsFloat(ScriptContext *sc, int iOpIndex)
 {
     // Resolve the operand's value
 
-    Value* OpValue = ResolveOpValue(vm, iOpIndex);
+    Value* OpValue = ResolveOpValue(sc, iOpIndex);
 
     // Coerce it to a float and return it
 
@@ -1728,11 +1728,11 @@ inline float ResolveOpAsFloat(VMState* vm, int iOpIndex)
 *  new string if necessary.
 */
 
-inline char*ResolveOpAsString(VMState* vm, int iOpIndex)
+inline char*ResolveOpAsString(ScriptContext *sc, int iOpIndex)
 {
     // Resolve the operand's value
 
-    Value* OpValue = ResolveOpValue(vm, iOpIndex);
+    Value* OpValue = ResolveOpValue(sc, iOpIndex);
 
     // Coerce it to a string and return it
 
@@ -1747,11 +1747,11 @@ inline char*ResolveOpAsString(VMState* vm, int iOpIndex)
 *    Resolves an operand as an intruction index.
 */
 
-inline int ResolveOpAsInstrIndex(VMState* vm, int iOpIndex)
+inline int ResolveOpAsInstrIndex(ScriptContext *sc, int iOpIndex)
 {
     // Resolve the operand's value
 
-    Value* OpValue = ResolveOpValue(vm, iOpIndex);
+    Value* OpValue = ResolveOpValue(sc, iOpIndex);
 
     // Return it's instruction index
 
@@ -1765,11 +1765,11 @@ inline int ResolveOpAsInstrIndex(VMState* vm, int iOpIndex)
 *    Resolves an operand as a function index.
 */
 
-inline int ResolveOpAsFuncIndex(VMState* vm, int iOpIndex)
+inline int ResolveOpAsFuncIndex(ScriptContext *sc, int iOpIndex)
 {
     // Resolve the operand's value
 
-    Value* OpValue = ResolveOpValue(vm, iOpIndex);
+    Value* OpValue = ResolveOpValue(sc, iOpIndex);
 
     // Return the function index
 
@@ -1783,11 +1783,11 @@ inline int ResolveOpAsFuncIndex(VMState* vm, int iOpIndex)
 *    Resolves an operand as a host API call
 */
 
-inline char*ResolveOpAsHostAPICall(VMState* vm, int iOpIndex)
+inline char*ResolveOpAsHostAPICall(ScriptContext *sc, int iOpIndex)
 {
     // Resolve the operand's value
 
-    Value* OpValue = ResolveOpValue(vm, iOpIndex);
+    Value* OpValue = ResolveOpValue(sc, iOpIndex);
 
     // Get the value's host API call index
 
@@ -1795,7 +1795,7 @@ inline char*ResolveOpAsHostAPICall(VMState* vm, int iOpIndex)
 
     // Return the host API call
 
-    return GetHostFunc(vm, iHostAPICallIndex);
+    return GetHostFunc(sc, iHostAPICallIndex);
 }
 
 /******************************************************************************************
@@ -1805,27 +1805,27 @@ inline char*ResolveOpAsHostAPICall(VMState* vm, int iOpIndex)
 *  Resolves an operand and returns a pointer to its Value structure.
 */
 
-//inline Value* ResolveOpValue(VMState* vm, int iOpIndex)
+//inline Value* ResolveOpValue(VMState* sc, int iOpIndex)
 //{
-//    Value OpValue = vm->InstrStream.Instrs[vm->CurrInstr].pOpList[iOpIndex];
+//    Value OpValue = sc->InstrStream.Instrs[sc->CurrInstr].pOpList[iOpIndex];
 //
 //    switch (OpValue.Type)
 //    {
 //        // It's on the stack
 //
 //    case OP_TYPE_ABS_STACK_INDEX:
-//		return GetStackValue(vm, OpValue.StackIndex);
-//		//return &vm->Stack[ResolveStackIndex(vm->FrameIndex, OpValue.StackIndex)];
+//		return GetStackValue(sc, OpValue.StackIndex);
+//		//return &sc->Stack[ResolveStackIndex(sc->FrameIndex, OpValue.StackIndex)];
 //    case OP_TYPE_REL_STACK_INDEX:
 //        {
-//            int iAbsStackIndex = ResolveOpRelStackIndex(vm, &OpValue);
-//			return GetStackValue(vm, iAbsStackIndex);
+//            int iAbsStackIndex = ResolveOpRelStackIndex(sc, &OpValue);
+//			return GetStackValue(sc, iAbsStackIndex);
 //        }
 //
 //        // It's _RetVal
 //
 //    case OP_TYPE_REG:
-//        return &vm->_RetVal;
+//        return &sc->_RetVal;
 //
 //    }
 //
@@ -1841,11 +1841,11 @@ inline char*ResolveOpAsHostAPICall(VMState* vm, int iOpIndex)
 *    Returns the specified stack value.
 */
 
-inline Value* GetStackValue(VMState *vm, int iIndex)
+inline Value* GetStackValue(ScriptContext *sc, int iIndex)
 {
-	int iActualIndex = ResolveStackIndex(vm->iFrameIndex, iIndex);
-	assert(iActualIndex < vm->iStackSize && iActualIndex >= 0);
-	return &vm->Stack[iActualIndex];
+	int iActualIndex = ResolveStackIndex(sc->iFrameIndex, iIndex);
+	assert(iActualIndex < sc->iStackSize && iActualIndex >= 0);
+	return &sc->stack[iActualIndex];
 }
 
 /******************************************************************************************
@@ -1855,11 +1855,11 @@ inline Value* GetStackValue(VMState *vm, int iIndex)
 *    Sets the specified stack value.
 */
 
-inline void SetStackValue(VMState *vm, int iIndex, Value Val)
+inline void SetStackValue(ScriptContext *sc, int iIndex, Value Val)
 {
-    int iActualIndex = ResolveStackIndex(vm->iFrameIndex, iIndex);
-    assert(iActualIndex < vm->iStackSize && iActualIndex >= 0);
-    vm->Stack[iActualIndex] = Val;
+    int iActualIndex = ResolveStackIndex(sc->iFrameIndex, iIndex);
+    assert(iActualIndex < sc->iStackSize && iActualIndex >= 0);
+    sc->stack[iActualIndex] = Val;
 }
 
 
@@ -1870,15 +1870,15 @@ inline void SetStackValue(VMState *vm, int iIndex, Value Val)
 *    Pushes a stack frame.
 */
 
-inline void PushFrame(VMState *vm, int iSize)
+inline void PushFrame(ScriptContext *sc, int iSize)
 {
     // Increment the top index by the size of the frame
 
-    vm->iTopIndex += iSize;
+    sc->iTopIndex += iSize;
 
     // Move the frame index to the new top of the stack
 
-    vm->iFrameIndex = vm->iTopIndex;
+    sc->iFrameIndex = sc->iTopIndex;
 }
 
 /******************************************************************************************
@@ -1888,10 +1888,10 @@ inline void PushFrame(VMState *vm, int iSize)
 *    Pops a stack frame.
 */
 
-inline void PopFrame(VMState *vm, int iSize)
+inline void PopFrame(ScriptContext *sc, int iSize)
 {
-    vm->iTopIndex -= iSize;
-	vm->iFrameIndex = vm->iTopIndex;
+    sc->iTopIndex -= iSize;
+	sc->iFrameIndex = sc->iTopIndex;
 }
 
 /******************************************************************************************
@@ -1901,10 +1901,10 @@ inline void PopFrame(VMState *vm, int iSize)
 *    Returns the function corresponding to the specified index.
 */
 
-inline FUNC* GetFunc(VMState *vm, int iIndex)
+inline FUNC* GetFunc(ScriptContext *sc, int iIndex)
 {
-    assert(iIndex < vm->FuncTable.Size);
-    return &vm->FuncTable.Funcs[iIndex];
+    assert(iIndex < sc->FuncTable.Size);
+    return &sc->FuncTable.Funcs[iIndex];
 }
 
 /******************************************************************************************
@@ -1914,9 +1914,9 @@ inline FUNC* GetFunc(VMState *vm, int iIndex)
 *    Returns the host API call corresponding to the specified index.
 */
 
-inline char* GetHostFunc(VMState *vm, int iIndex)
+inline char* GetHostFunc(ScriptContext *sc, int iIndex)
 {
-    return vm->HostCallTable.Calls[iIndex];
+    return sc->HostCallTable.Calls[iIndex];
 }
 
 /******************************************************************************************
@@ -1953,23 +1953,23 @@ inline int GetCurrTime()
 *		 OP_TYPE_FUNC_INDEX 普通函数
 */
 
-void CallFunc(VMState *vm, int iIndex, int type)
+void CallFunc(ScriptContext *sc, int iIndex, int type)
 {
     // Advance the instruction pointer so it points to the instruction
     // immediately following the call
 
-    ++vm->CurrInstr;
+    ++sc->CurrInstr;
 
-    FUNC *DestFunc = GetFunc(vm, iIndex);
+    FUNC *DestFunc = GetFunc(sc, iIndex);
 
     // Save the current stack frame index
-    int iFrameIndex = vm->iFrameIndex;
+    int iFrameIndex = sc->iFrameIndex;
 
     // 保存返回地址（RA）
     Value ReturnAddr;
     ReturnAddr.Type = OP_TYPE_INSTR_INDEX;
-    ReturnAddr.InstrIndex = vm->CurrInstr;
-    exec_push(vm, &ReturnAddr);
+    ReturnAddr.InstrIndex = sc->CurrInstr;
+    exec_push(sc, &ReturnAddr);
 
     // 函数信息块,保存调用者的栈帧索引
     Value FuncIndex;
@@ -1979,14 +1979,14 @@ void CallFunc(VMState *vm, int iIndex, int type)
 
     // Push the stack frame + 1 (the extra space is for the function index
     // we'll put on the stack after it
-    PushFrame(vm, DestFunc->LocalDataSize + 1);
+    PushFrame(sc, DestFunc->LocalDataSize + 1);
 
     // Write the function index and old stack frame to the top of the stack
 
-    SetStackValue(vm, vm->iTopIndex - 1, FuncIndex);
+    SetStackValue(sc, sc->iTopIndex - 1, FuncIndex);
 
     // Let the caller make the jump to the entry point
-    vm->CurrInstr = DestFunc->EntryPoint;
+    sc->CurrInstr = DestFunc->EntryPoint;
 }
 
 /******************************************************************************************
@@ -1996,7 +1996,7 @@ void CallFunc(VMState *vm, int iIndex, int type)
 *  Passes an integer parameter from the host to a script function.
 */
 
-void XVM_PassIntParam(VMState* vm, int iInt)
+void XVM_PassIntParam(ScriptContext *sc, int iInt)
 {
     // Create a Value structure to encapsulate the parameter
     Value Param;
@@ -2004,7 +2004,7 @@ void XVM_PassIntParam(VMState* vm, int iInt)
     Param.Fixnum = iInt;
 
     // Push the parameter onto the stack
-    exec_push(vm, &Param);
+    exec_push(sc, &Param);
 }
 
 /******************************************************************************************
@@ -2014,7 +2014,7 @@ void XVM_PassIntParam(VMState* vm, int iInt)
 *  Passes a floating-point parameter from the host to a script function.
 */
 
-void XVM_PassFloatParam(VMState* vm, float fFloat)
+void XVM_PassFloatParam(ScriptContext *sc, float fFloat)
 {
     // Create a Value structure to encapsulate the parameter
     Value Param;
@@ -2022,7 +2022,7 @@ void XVM_PassFloatParam(VMState* vm, float fFloat)
     Param.Realnum = fFloat;
 
     // Push the parameter onto the stack
-    exec_push(vm, &Param);
+    exec_push(sc, &Param);
 }
 
 /******************************************************************************************
@@ -2032,7 +2032,7 @@ void XVM_PassFloatParam(VMState* vm, float fFloat)
 *  Passes a string parameter from the host to a script function.
 */
 
-void XVM_PassStringParam(VMState* vm, char *pstrString)
+void XVM_PassStringParam(ScriptContext *sc, char *pstrString)
 {
     // Create a Value structure to encapsulate the parameter
     Value Param;
@@ -2041,7 +2041,7 @@ void XVM_PassStringParam(VMState* vm, char *pstrString)
     strcpy(Param.String, pstrString);
 
     // Push the parameter onto the stack
-    exec_push(vm, &Param);
+    exec_push(sc, &Param);
 }
 
 /******************************************************************************************
@@ -2051,13 +2051,13 @@ void XVM_PassStringParam(VMState* vm, char *pstrString)
 *  Returns the index into the function table corresponding to the specified name.
 */
 
-int GetFuncIndexByName(VMState* vm, char *pstrName)
+int GetFuncIndexByName(ScriptContext *sc, char *pstrName)
 {
     // Loop through each function and look for a matching name
-    for (int i = 0; i < vm->FuncTable.Size; ++i)
+    for (int i = 0; i < sc->FuncTable.Size; ++i)
     {
         // If the names match, return the index
-        if (stricmp(pstrName, vm->FuncTable.Funcs[i].Name) == 0)
+        if (stricmp(pstrName, sc->FuncTable.Funcs[i].Name) == 0)
             return i;
     }
 
@@ -2072,20 +2072,20 @@ int GetFuncIndexByName(VMState* vm, char *pstrName)
 *  Calls a script function from the host application.
 */
 
-int XVM_CallScriptFunc(VMState* vm, char *pstrName)
+int XVM_CallScriptFunc(ScriptContext *sc, char *pstrName)
 {
     // Get the function's index based on it's name
-    int iFuncIndex = GetFuncIndexByName(vm, pstrName);
+    int iFuncIndex = GetFuncIndexByName(sc, pstrName);
 
     // Make sure the function name was valid
     if (iFuncIndex == -1)
         return FALSE;
 
     // Call the function
-	CallFunc(vm, iFuncIndex, OP_TYPE_STACK_BASE_MARKER);
+	CallFunc(sc, iFuncIndex, OP_TYPE_STACK_BASE_MARKER);
 
     // Allow the script code to execute uninterrupted until the function returns
-    ExecuteInstruction(vm, XVM_INFINITE_TIMESLICE);
+    ExecuteInstruction(sc, XVM_INFINITE_TIMESLICE);
 
     return TRUE;
 }
@@ -2099,17 +2099,17 @@ int XVM_CallScriptFunc(VMState* vm, char *pstrName)
 *  用于在宿主API函数中同步地调用脚本函数。单独使用没有效果。
 */
 
-void XVM_CallScriptFuncSync(VMState* vm, char *pstrName)
+void XVM_CallScriptFuncSync(ScriptContext *sc, char *pstrName)
 {
     // Get the function's index based on its name
-    int iFuncIndex = GetFuncIndexByName(vm, pstrName);
+    int iFuncIndex = GetFuncIndexByName(sc, pstrName);
 
     // Make sure the function name was valid
     if (iFuncIndex == -1)
         return;
 
     // Call the function
-	CallFunc(vm, iFuncIndex, OP_TYPE_FUNC_INDEX);
+	CallFunc(sc, iFuncIndex, OP_TYPE_FUNC_INDEX);
 }
 
 /******************************************************************************************
@@ -2119,7 +2119,7 @@ void XVM_CallScriptFuncSync(VMState* vm, char *pstrName)
 *  Registers a function with the host API.
 */
 
-int XVM_RegisterHostFunc(XVM_State* vm, char *pstrName, XVM_HOST_FUNCTION fnFunc)
+int XVM_RegisterHostFunc(ScriptContext *sc, char *pstrName, XVM_HOST_FUNCTION fnFunc)
 {
     HOST_API_FUNC** pCFuncTable;
 
@@ -2127,10 +2127,10 @@ int XVM_RegisterHostFunc(XVM_State* vm, char *pstrName, XVM_HOST_FUNCTION fnFunc
 		return FALSE;
 
 	// 全局API
-	if (vm == XVM_GLOBAL_FUNC)
+	if (sc == XVM_GLOBAL_FUNC)
 		pCFuncTable = &g_HostAPIs;
 	else
-		pCFuncTable = &vm->HostAPIs;
+		pCFuncTable = &sc->HostAPIs;
 
     while (*pCFuncTable != NULL)
     {
@@ -2154,10 +2154,10 @@ int XVM_RegisterHostFunc(XVM_State* vm, char *pstrName, XVM_HOST_FUNCTION fnFunc
 }
 
 // 返回栈帧上指定的参数
-Value XVM_GetParam(VMState* vm, int iParamIndex)
+Value XVM_GetParam(ScriptContext *sc, int iParamIndex)
 {
-    int iTopIndex = vm->iTopIndex;
-    Value arg = vm->Stack[iTopIndex - (iParamIndex + 1)];
+    int iTopIndex = sc->iTopIndex;
+    Value arg = sc->stack[iTopIndex - (iParamIndex + 1)];
     return arg;
 }
 
@@ -2168,10 +2168,10 @@ Value XVM_GetParam(VMState* vm, int iParamIndex)
 *  Returns the specified integer parameter to a host API function.
 */
 
-int XVM_GetParamAsInt(VMState* vm, int iParamIndex)
+int XVM_GetParamAsInt(ScriptContext *sc, int iParamIndex)
 {
     // Get the current top element
-    Value Param = XVM_GetParam(vm, iParamIndex);
+    Value Param = XVM_GetParam(sc, iParamIndex);
 
     // Coerce the top element of the stack to an integer
     int iInt = CoerceValueToInt(&Param);
@@ -2187,10 +2187,10 @@ int XVM_GetParamAsInt(VMState* vm, int iParamIndex)
 *  Returns the specified floating-point parameter to a host API function.
 */
 
-float XVM_GetParamAsFloat(VMState* vm, int iParamIndex)
+float XVM_GetParamAsFloat(ScriptContext *sc, int iParamIndex)
 {
     // Get the current top element
-    Value Param = XVM_GetParam(vm, iParamIndex);
+    Value Param = XVM_GetParam(sc, iParamIndex);
 
     // Coerce the top element of the stack to a float
     float fFloat = CoerceValueToFloat(&Param);
@@ -2205,10 +2205,10 @@ float XVM_GetParamAsFloat(VMState* vm, int iParamIndex)
 *  Returns the specified string parameter to a host API function.
 */
 
-char* XVM_GetParamAsString(VMState* vm, int iParamIndex)
+char* XVM_GetParamAsString(ScriptContext *sc, int iParamIndex)
 {
     // Get the current top element
-    Value Param = XVM_GetParam(vm, iParamIndex);
+    Value Param = XVM_GetParam(sc, iParamIndex);
 
     // Coerce the top element of the stack to a string
     char *pstrString = CoerceValueToString(&Param);
@@ -2223,10 +2223,10 @@ char* XVM_GetParamAsString(VMState* vm, int iParamIndex)
 *  Returns from a host API function.
 */
 
-void XVM_ReturnFromHost(VMState* vm)
+void XVM_ReturnFromHost(ScriptContext *sc)
 {
     // Clear the parameters off the stack
-    vm->iTopIndex = vm->iFrameIndex;
+    sc->iTopIndex = sc->iFrameIndex;
 }
 
 /******************************************************************************************
@@ -2236,13 +2236,13 @@ void XVM_ReturnFromHost(VMState* vm)
 *  Returns an integer from a host API function.
 */
 
-void XVM_ReturnIntFromHost(VMState* vm, int iInt)
+void XVM_ReturnIntFromHost(ScriptContext *sc, int iInt)
 {
     // Put the return value and type in _RetVal
-    vm->_RetVal.Type = OP_TYPE_INT;
-    vm->_RetVal.Fixnum = iInt;
+    sc->_RetVal.Type = OP_TYPE_INT;
+    sc->_RetVal.Fixnum = iInt;
 
-    XVM_ReturnFromHost(vm);
+    XVM_ReturnFromHost(sc);
 }
 
 /******************************************************************************************
@@ -2252,14 +2252,14 @@ void XVM_ReturnIntFromHost(VMState* vm, int iInt)
 *  Returns a float from a host API function.
 */
 
-void XVM_ReturnFloatFromHost(VMState* vm, float fFloat)
+void XVM_ReturnFloatFromHost(ScriptContext *sc, float fFloat)
 {
     // Put the return value and type in _RetVal
-    vm->_RetVal.Type = OP_TYPE_FLOAT;
-    vm->_RetVal.Realnum = fFloat;
+    sc->_RetVal.Type = OP_TYPE_FLOAT;
+    sc->_RetVal.Realnum = fFloat;
 
     // Clear the parameters off the stack
-    XVM_ReturnFromHost(vm);
+    XVM_ReturnFromHost(sc);
 }
 
 /******************************************************************************************
@@ -2269,34 +2269,34 @@ void XVM_ReturnFloatFromHost(VMState* vm, float fFloat)
 *  Returns a string from a host API function.
 */
 
-void XVM_ReturnStringFromHost(VMState* vm, char *pstrString)
+void XVM_ReturnStringFromHost(ScriptContext *sc, char *pstrString)
 {
     // Put the return value and type in _RetVal
     Value ReturnValue;
     ReturnValue.Type = OP_TYPE_STRING;
     ReturnValue.String = pstrString;
-    CopyValue(&vm->_RetVal, &ReturnValue);
+    CopyValue(&sc->_RetVal, &ReturnValue);
 
     // Clear the parameters off the stack
-    XVM_ReturnFromHost(vm);
+    XVM_ReturnFromHost(sc);
 }
 
 
-int XVM_GetParamCount(VMState* vm)
+int XVM_GetParamCount(ScriptContext *sc)
 {
-    return (vm->iTopIndex - vm->iFrameIndex);
+    return (sc->iTopIndex - sc->iFrameIndex);
 }
 
 
-int XVM_IsScriptStop(VMState* vm)
+int XVM_IsScriptStop(ScriptContext *sc)
 {
-    return !vm->IsRunning;
+    return !sc->IsRunning;
 }
 
 
-int XVM_GetExitCode(VMState* vm)
+int XVM_GetExitCode(ScriptContext *sc)
 {
-    return vm->ExitCode;
+    return sc->ExitCode;
 }
 
 // .xss => .xse

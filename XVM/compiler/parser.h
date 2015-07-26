@@ -27,7 +27,7 @@ struct Loop                                 // Loop instance
 
 // ---- Function Prototypes -------------------------------------------------------------------
 
-void ReadToken(Token ReqToken);
+void MatchToken(Token ReqToken);
 
 int IsOpUnary(int iOpType);
 int IsOpAssign(int iOpType);

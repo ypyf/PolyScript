@@ -54,37 +54,37 @@ void print_error_message(int iErrorCode)
 // ----Host API ------------------------------------------------------------------------------
 
 /* 打印平均值 */
-static void average(XVM_State* vm)
+static void average(ScriptContext *sc)
 {
-    int n = XVM_GetParamCount(vm);
+    int n = XVM_GetParamCount(sc);
     int sum = 0;
     for (int i = 0; i < n; i++)
     {
-        sum += XVM_GetParamAsInt(vm, i);
+        sum += XVM_GetParamAsInt(sc, i);
     }
-    XVM_ReturnIntFromHost(vm, sum / n);
+    XVM_ReturnIntFromHost(sc, sum / n);
 }
 
-static void h_PrintString(XVM_State* vm)
+static void h_PrintString(ScriptContext *sc)
 {
-	char* str = XVM_GetParamAsString(vm, 0);
+	char* str = XVM_GetParamAsString(sc, 0);
 	puts(str);
-	XVM_ReturnFromHost(vm);
+	XVM_ReturnFromHost(sc);
 }
 
-static void h_PrintInt(XVM_State* vm)
+static void h_PrintInt(ScriptContext *sc)
 {
-	int i = XVM_GetParamAsInt(vm, 0);
+	int i = XVM_GetParamAsInt(sc, 0);
 	printf("Explode %d!\n", i);
-	XVM_ReturnFromHost(vm);
+	XVM_ReturnFromHost(sc);
 }
 
-static void h_Division(XVM_State* vm)
+static void h_Division(ScriptContext *sc)
 {
-	float i = XVM_GetParamAsFloat(vm, 0);
-	float j = XVM_GetParamAsFloat(vm, 1);
+	float i = XVM_GetParamAsFloat(sc, 0);
+	float j = XVM_GetParamAsFloat(sc, 1);
 	printf("%f\n", i / j);
-	XVM_ReturnFromHost(vm);
+	XVM_ReturnFromHost(sc);
 }
 
 // ----XVM Entry Main ----------------------------------------------------------------------------------
@@ -119,7 +119,7 @@ int RunScript(char* pstrFilename)
     }
 
     // Initialize the runtime environment
-    XVM_State* vm = XVM_Create();
+    ScriptContext *sc = XVM_Create();
 
     // 注册宿主api
 	XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "Explode", h_PrintInt);
@@ -134,7 +134,7 @@ int RunScript(char* pstrFilename)
     int iErrorCode;
 
     // Load the demo script
-    iErrorCode = XVM_LoadXSE(vm, ExecFileName);
+    iErrorCode = XVM_LoadXSE(sc, ExecFileName);
 
     // Check for an error
     if (iErrorCode != XVM_LOAD_OK)
@@ -144,12 +144,12 @@ int RunScript(char* pstrFilename)
     }
 
     // Run we're loaded script from Main()
-    XVM_RunScript(vm, XVM_INFINITE_TIMESLICE);
+    XVM_RunScript(sc, XVM_INFINITE_TIMESLICE);
 
-    int iExitCode = XVM_GetExitCode(vm);
+    int iExitCode = XVM_GetExitCode(sc);
 
     // Free resources and perform general cleanup
-    XVM_ShutDown(vm);
+    XVM_ShutDown(sc);
 
     return iExitCode;
 }
