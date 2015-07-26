@@ -84,15 +84,26 @@ void exec_mul(const Value& op0, const Value& op1, Value& op2)
 
 void exec_div(const Value& op0, const Value& op1, Value& op2)
 {
-	if (op0.Type == OP_TYPE_INT)
+	if (op0.Type == OP_TYPE_FLOAT)
 	{
-		op2.Type = OP_TYPE_INT;
-		op2.Fixnum = op0.Fixnum / op1.Fixnum;
+		op2.Type = OP_TYPE_FLOAT;
+		if (op1.Type == OP_TYPE_FLOAT)
+			op2.Realnum = op0.Realnum / op1.Realnum;
+		else
+			op2.Realnum = op0.Realnum / op1.Fixnum;
+	}
+	else if (op1.Type == OP_TYPE_FLOAT)
+	{
+		op2.Type = OP_TYPE_FLOAT;
+		if (op0.Type == OP_TYPE_FLOAT)
+			op2.Realnum = op0.Realnum / op1.Realnum;
+		else
+			op2.Realnum = op0.Fixnum / op1.Realnum;
 	}
 	else
 	{
-		op2.Type = OP_TYPE_FLOAT;
-		op2.Realnum = op0.Realnum / op1.Realnum;
+		op2.Type = OP_TYPE_INT;
+		op2.Fixnum = op0.Fixnum / op1.Fixnum;
 	}
 }
 

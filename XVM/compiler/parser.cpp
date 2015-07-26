@@ -1261,15 +1261,6 @@ void ParseFactor()
 
 	int iCurrToken = GetNextToken();
 
-	// First check for a unary operator
-	//if (iCurrToken == TOKEN_TYPE_OP && IsOpUnary(GetCurrOp()))
-	//{
-	//	// If it was found, save it and set the unary operator flag
-	//	iUnaryOpPending = TRUE;
-	//	iOpType = GetCurrOp();
-	//	iCurrToken = GetNextToken();
-	//}
-
 	// Determine which type of factor we're dealing with based on the next token
 
 	switch (iCurrToken)
