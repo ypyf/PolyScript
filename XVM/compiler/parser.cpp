@@ -719,15 +719,8 @@ void ParseLogical()
 
 		iOpType = GetCurrOp();
 
-		// TODO
 		// 对逻辑与（&&）和逻辑或（||）运算符应用短路求值规则
 		// 即在对操作符右边的表达式求值之前让假值跳转
-
-		// Parse the second term
-
-		ParseEquality();
-
-		// ---- Perform the binary operation associated with the specified operator
 		switch (iOpType)
 		{
 		case OP_TYPE_LOGICAL_AND:
@@ -739,6 +732,10 @@ void ParseLogical()
 
 				// JE _T0, 0, True
 				AddICodeInstr(g_iCurrScope, INSTR_BRFALSE, iFalseJumpTargetIndex);
+
+				// Parse the second term
+
+				ParseEquality();
 
 				// JE _T1, 0, True
 				AddICodeInstr(g_iCurrScope, INSTR_BRFALSE, iFalseJumpTargetIndex);
@@ -777,6 +774,10 @@ void ParseLogical()
 
 				// JNE _T0, 0, True
 				AddICodeInstr(g_iCurrScope, INSTR_BRTRUE, iTrueJumpTargetIndex);
+
+				// Parse the second term
+
+				ParseEquality();
 
 				// JNE _T1, 0, True
 				AddICodeInstr(g_iCurrScope, INSTR_BRTRUE, iTrueJumpTargetIndex);
