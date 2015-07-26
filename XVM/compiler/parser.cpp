@@ -244,8 +244,6 @@ int IsOpRelational(int iOpType)
 {
 	switch (iOpType)
 	{
-	case OP_TYPE_EQUAL:
-	case OP_TYPE_NOT_EQUAL:
 	case OP_TYPE_LESS:
 	case OP_TYPE_GREATER:
 	case OP_TYPE_LESS_EQUAL:
@@ -691,16 +689,223 @@ void ParseFunc()
 	g_iCurrScope = SCOPE_GLOBAL;
 }
 
+
+void ParseExpr()
+{
+	ParseLogical();
+}
+
+void ParseLogical()
+{
+	ParseEquality();
+
+	int iInstrIndex;
+
+	// The current operator type
+
+	int iOpType;
+
+	while (TRUE)
+	{
+		// Get the next token
+
+		if (GetNextToken() != TOKEN_TYPE_OP || !IsOpLogical(GetCurrOp()))
+		{
+			RewindTokenStream();
+			break;
+		}
+
+		// Save the operator
+
+		iOpType = GetCurrOp();
+
+		// TODO
+		// 对逻辑与（&&）和逻辑或（||）运算符应用短路求值规则
+		// 即在对操作符右边的表达式求值之前让假值跳转
+
+		// Parse the second term
+
+		ParseEquality();
+
+		// ---- Perform the binary operation associated with the specified operator
+		switch (iOpType)
+		{
+		case OP_TYPE_LOGICAL_AND:
+			{
+				// Get a pair of free jump target indices
+
+				Label iFalseJumpTargetIndex = DefineLabel(),
+					iExitJumpTargetIndex = DefineLabel();
+
+				// JE _T0, 0, True
+				AddICodeInstr(g_iCurrScope, INSTR_BRFALSE, iFalseJumpTargetIndex);
+
+				// JE _T1, 0, True
+				AddICodeInstr(g_iCurrScope, INSTR_BRFALSE, iFalseJumpTargetIndex);
+
+				// Push 1	返回的是布尔值1
+
+				AddICodeInstr(g_iCurrScope, INSTR_ICONST1);
+
+				// Jmp Exit
+
+				AddICodeInstr(g_iCurrScope, INSTR_JMP, iExitJumpTargetIndex);
+
+				// L0: (False)
+
+				MarkLabel(g_iCurrScope, iFalseJumpTargetIndex);
+
+				// Push 0	 返回的是布尔值0
+
+				AddICodeInstr(g_iCurrScope, INSTR_ICONST0);
+
+				// L1: (Exit)
+
+				MarkLabel(g_iCurrScope, iExitJumpTargetIndex);
+
+				break;
+			}
+
+			// Or
+
+		case OP_TYPE_LOGICAL_OR:
+			{
+				// Get a pair of free jump target indices
+
+				Label iTrueJumpTargetIndex = DefineLabel(),
+					iExitJumpTargetIndex = DefineLabel();
+
+				// JNE _T0, 0, True
+				AddICodeInstr(g_iCurrScope, INSTR_BRTRUE, iTrueJumpTargetIndex);
+
+				// JNE _T1, 0, True
+				AddICodeInstr(g_iCurrScope, INSTR_BRTRUE, iTrueJumpTargetIndex);
+
+				// Push 0
+
+				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
+				AddIntICodeOp(g_iCurrScope, iInstrIndex, 0);
+
+				// Jmp Exit
+
+				AddICodeInstr(g_iCurrScope, INSTR_JMP, iExitJumpTargetIndex);
+
+				// L0: (True)
+
+				MarkLabel(g_iCurrScope, iTrueJumpTargetIndex);
+
+				// Push 1
+
+				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
+				AddIntICodeOp(g_iCurrScope, iInstrIndex, 1);
+
+				// L1: (Exit)
+
+				MarkLabel(g_iCurrScope, iExitJumpTargetIndex);
+
+				break;
+			}
+		}
+	}
+}
+
 /******************************************************************************************
 *
-*   ParseExpr()
+*   ParseEquality()
 *
 *   Parses an expression.
 */
 
-// FIXME
-// 逻辑运算符、相等运算符和关系运算符应该有不同的优先级
-void ParseExpr()
+
+void ParseEquality()
+{
+	int iInstrIndex;
+
+	// The current operator type
+
+	int iOpType;
+
+	// Parse the subexpression
+
+	ParseRelationality();
+
+	// Parse any subsequent relational or logical operators
+
+	while (TRUE)
+	{
+		// Get the next token
+
+		if (GetNextToken() != TOKEN_TYPE_OP ||
+			(GetCurrOp() != OP_TYPE_EQUAL && GetCurrOp() != OP_TYPE_NOT_EQUAL))
+		{
+			RewindTokenStream();
+			break;
+		}
+
+		// Save the operator
+
+		iOpType = GetCurrOp();
+
+		// Parse the second term
+
+		ParseRelationality();
+
+		// Get a pair of free jump target indices
+
+		Label iTrueJumpTargetIndex = DefineLabel(),
+			iExitJumpTargetIndex = DefineLabel();
+
+		// It's a relational operator
+
+		switch (iOpType)
+		{
+			// Equal
+
+		case OP_TYPE_EQUAL:
+			{
+				// Generate a JE instruction
+
+				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JE);
+				break;
+			}
+
+			// Not Equal
+
+		case OP_TYPE_NOT_EQUAL:
+			{
+				// Generate a JNE instruction
+
+				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JNE);
+				break;
+			}
+		}
+
+		AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex);
+
+		// Generate the outcome for falsehood
+
+		AddICodeInstr(g_iCurrScope, INSTR_ICONST0);
+
+		// Generate a jump past the true outcome
+
+		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JMP);
+		AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iExitJumpTargetIndex);
+
+		// Set the jump target for the true outcome
+
+		MarkLabel(g_iCurrScope, iTrueJumpTargetIndex);
+
+		// Generate the outcome for truth
+
+		AddICodeInstr(g_iCurrScope, INSTR_ICONST1);
+
+		// Set the jump target for exiting the operand evaluation
+
+		MarkLabel(g_iCurrScope, iExitJumpTargetIndex);
+	}
+}
+
+void ParseRelationality()
 {
 	int iInstrIndex;
 
@@ -718,8 +923,7 @@ void ParseExpr()
 	{
 		// Get the next token
 
-		if (GetNextToken() != TOKEN_TYPE_OP ||
-			(!IsOpRelational(GetCurrOp()) && !IsOpLogical(GetCurrOp())))
+		if (GetNextToken() != TOKEN_TYPE_OP || !IsOpRelational(GetCurrOp()))
 		{
 			RewindTokenStream();
 			break;
@@ -729,194 +933,82 @@ void ParseExpr()
 
 		iOpType = GetCurrOp();
 
-		// TODO
-		// 对逻辑与（&&）和逻辑或（||）运算符应用短路求值规则
-		// 即在对操作符右边的表达式求值之前让假值跳转
-
 		// Parse the second term
 
 		ParseSubExpr();
 
-		// ---- Perform the binary operation associated with the specified operator
+		// Get a pair of free jump target indices
 
-		// Determine the operator type
+		Label iTrueJumpTargetIndex = DefineLabel(),
+			iExitJumpTargetIndex = DefineLabel();
 
-		if (IsOpRelational (iOpType))
+		// It's a relational operator
+
+		switch (iOpType)
 		{
-			// Get a pair of free jump target indices
+			// Greater
 
-			Label iTrueJumpTargetIndex = DefineLabel(),
-				iExitJumpTargetIndex = DefineLabel();
-
-			// It's a relational operator
-
-			switch (iOpType)
+		case OP_TYPE_GREATER:
 			{
-				// Equal
+				// Generate a JG instruction
 
-			case OP_TYPE_EQUAL:
-				{
-					// Generate a JE instruction
-
-					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JE);
-					break;
-				}
-
-				// Not Equal
-
-			case OP_TYPE_NOT_EQUAL:
-				{
-					// Generate a JNE instruction
-
-					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JNE);
-					break;
-				}
-
-				// Greater
-
-			case OP_TYPE_GREATER:
-				{
-					// Generate a JG instruction
-
-					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JG);
-					break;
-				}
-
-				// Less
-
-			case OP_TYPE_LESS:
-				{
-					// Generate a JL instruction
-
-					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JL);
-					break;
-				}
-
-				// Greater or Equal
-
-			case OP_TYPE_GREATER_EQUAL:
-				{
-					// Generate a JGE instruction
-
-					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JGE);
-					break;
-				}
-
-				// Less Than or Equal
-
-			case OP_TYPE_LESS_EQUAL:
-				{
-					// Generate a JLE instruction
-
-					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JLE);
-					break;
-				}
+				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JG);
+				break;
 			}
 
-			AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex);
+			// Less
 
-			// Generate the outcome for falsehood
-
-			AddICodeInstr(g_iCurrScope, INSTR_ICONST0);
-
-			// Generate a jump past the true outcome
-
-			iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JMP);
-			AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iExitJumpTargetIndex);
-
-			// Set the jump target for the true outcome
-
-			MarkLabel(g_iCurrScope, iTrueJumpTargetIndex);
-
-			// Generate the outcome for truth
-
-			AddICodeInstr(g_iCurrScope, INSTR_ICONST1);
-
-			// Set the jump target for exiting the operand evaluation
-
-			MarkLabel(g_iCurrScope, iExitJumpTargetIndex);
-		}
-		else
-		{
-			switch (iOpType)
+		case OP_TYPE_LESS:
 			{
-			case OP_TYPE_LOGICAL_AND:
-				{
-					// Get a pair of free jump target indices
+				// Generate a JL instruction
 
-					Label iFalseJumpTargetIndex = DefineLabel(),
-						iExitJumpTargetIndex = DefineLabel();
+				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JL);
+				break;
+			}
 
-					// JE _T0, 0, True
-					AddICodeInstr(g_iCurrScope, INSTR_BRFALSE, iFalseJumpTargetIndex);
+			// Greater or Equal
 
-					// JE _T1, 0, True
-					AddICodeInstr(g_iCurrScope, INSTR_BRFALSE, iFalseJumpTargetIndex);
+		case OP_TYPE_GREATER_EQUAL:
+			{
+				// Generate a JGE instruction
 
-					// Push 1	返回的是布尔值1
+				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JGE);
+				break;
+			}
 
-					AddICodeInstr(g_iCurrScope, INSTR_ICONST1);
+			// Less Than or Equal
 
-					// Jmp Exit
+		case OP_TYPE_LESS_EQUAL:
+			{
+				// Generate a JLE instruction
 
-					AddICodeInstr(g_iCurrScope, INSTR_JMP, iExitJumpTargetIndex);
-
-					// L0: (False)
-
-					MarkLabel(g_iCurrScope, iFalseJumpTargetIndex);
-
-					// Push 0	 返回的是布尔值0
-
-					AddICodeInstr(g_iCurrScope, INSTR_ICONST0);
-
-					// L1: (Exit)
-
-					MarkLabel(g_iCurrScope, iExitJumpTargetIndex);
-
-					break;
-				}
-
-				// Or
-
-			case OP_TYPE_LOGICAL_OR:
-				{
-					// Get a pair of free jump target indices
-
-					Label iTrueJumpTargetIndex = DefineLabel(),
-						iExitJumpTargetIndex = DefineLabel();
-
-					// JNE _T0, 0, True
-					AddICodeInstr(g_iCurrScope, INSTR_BRTRUE, iTrueJumpTargetIndex);
-
-					// JNE _T1, 0, True
-					AddICodeInstr(g_iCurrScope, INSTR_BRTRUE, iTrueJumpTargetIndex);
-
-					// Push 0
-
-					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-					AddIntICodeOp(g_iCurrScope, iInstrIndex, 0);
-
-					// Jmp Exit
-
-					AddICodeInstr(g_iCurrScope, INSTR_JMP, iExitJumpTargetIndex);
-
-					// L0: (True)
-
-					MarkLabel(g_iCurrScope, iTrueJumpTargetIndex);
-
-					// Push 1
-
-					iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-					AddIntICodeOp(g_iCurrScope, iInstrIndex, 1);
-
-					// L1: (Exit)
-
-					MarkLabel(g_iCurrScope, iExitJumpTargetIndex);
-
-					break;
-				}
+				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JLE);
+				break;
 			}
 		}
+
+		AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iTrueJumpTargetIndex);
+
+		// Generate the outcome for falsehood
+
+		AddICodeInstr(g_iCurrScope, INSTR_ICONST0);
+
+		// Generate a jump past the true outcome
+
+		iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JMP);
+		AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iExitJumpTargetIndex);
+
+		// Set the jump target for the true outcome
+
+		MarkLabel(g_iCurrScope, iTrueJumpTargetIndex);
+
+		// Generate the outcome for truth
+
+		AddICodeInstr(g_iCurrScope, INSTR_ICONST1);
+
+		// Set the jump target for exiting the operand evaluation
+
+		MarkLabel(g_iCurrScope, iExitJumpTargetIndex);
 	}
 }
 
@@ -998,7 +1090,7 @@ void ParseTerm()
 
 	ParseUnary();
 
-	// Parse any subsequent *, /, %, ^, &, |, #, << and >> operators
+	// Parse any subsequent *, /, %, ^, &, |, << and >> operators
 
 	while (TRUE)
 	{
@@ -1025,16 +1117,6 @@ void ParseTerm()
 		// Parse the second factor
 
 		ParseUnary();
-
-		// Pop the first operand into _T1
-
-		//iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1);
-
-		// Pop the second operand into _T0
-
-		//iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
 
 		// Perform the binary operation associated with the specified operator
 
@@ -1091,13 +1173,6 @@ void ParseTerm()
 		}
 
 		AddICodeInstr(g_iCurrScope, iOpInstr);
-		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
-		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1);
-
-		// Push the result (stored in _T0)
-
-		//iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
-		//AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
 	}
 }
 
@@ -1602,7 +1677,7 @@ void ParseBreak()
 
 	// Get the jump target index for the end of the loop
 
-	Label iTargetIndex = ((Loop *) Peek(&g_LoopStack))->end;
+	Label iTargetIndex = ((Loop *)Peek(&g_LoopStack))->end;
 
 	// Unconditionally jump to the end of the loop
 
@@ -1633,12 +1708,11 @@ void ParseContinue()
 
 	// Get the jump target index for the start of the loop
 
-	Label iTargetIndex = ((Loop *) Peek(&g_LoopStack))->start;
+	Label iTargetIndex = ((Loop *)Peek(&g_LoopStack))->start;
 
 	// Unconditionally jump to the end of the loop
 
-	int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_JMP);
-	AddJumpTargetICodeOp(g_iCurrScope, iInstrIndex, iTargetIndex);
+	AddICodeInstr(g_iCurrScope, INSTR_JMP, iTargetIndex);
 }
 
 

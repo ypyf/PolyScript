@@ -45,6 +45,9 @@ void ParseBeep();
 void ParseFunc();
 
 void ParseExpr();
+void ParseLogical();
+void ParseEquality();
+void ParseRelationality();
 void ParseSubExpr();
 void ParseTerm();
 void ParseUnary();
