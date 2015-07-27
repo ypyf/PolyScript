@@ -451,6 +451,7 @@ void ParseStatement()
 		if (GetCurrOp() == OP_TYPE_INC || GetCurrOp() == OP_TYPE_DEC)
 		{
 			RewindTokenStream();
+			AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine());
 			ParseUnary();
 			MatchToken(TOKEN_TYPE_SEMICOLON);
 			// 移出表达式求值的结果，这个结果是没有用的(块中最后一个表达式的值将其返回?)
@@ -1231,8 +1232,6 @@ void ParseUnary()
 		// 单独处理自赋值
 		if (iOpType == OP_TYPE_INC || iOpType == OP_TYPE_DEC)
 		{
-			AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine());
-
 			if (GetNextToken() != TOKEN_TYPE_IDENT)
 				ExitOnCodeError("Invalid expression");
 
