@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{285D6B02-23DC-400C-8D4B-96FA28B3DB0D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>XVM</RootNamespace>
+    <RootNamespace>Poly</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -39,12 +39,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>E:\projects\XVM\include;$(IncludePath)</IncludePath>
+    <IncludePath>E:\projects\Poly\include;$(IncludePath)</IncludePath>
     <TargetName>poly_d32</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>E:\projects\XVM\include;$(IncludePath)</IncludePath>
+    <IncludePath>E:\projects\Poly\include;$(IncludePath)</IncludePath>
     <TargetName>poly_r32</TargetName>
     <EmbedManifest>false</EmbedManifest>
   </PropertyGroup>

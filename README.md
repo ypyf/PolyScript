@@ -1,4 +1,4 @@
-XVM
+PolyScript
 ====
 
 A game script virtual machine.
@@ -7,7 +7,7 @@ A game script virtual machine.
 
 ###Example 1
     
-    /* hello.xss */
+    /* hello.poly */
     
     func main()
     {

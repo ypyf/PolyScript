@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XVM", "XVM\XVM.vcxproj", "{285D6B02-23DC-400C-8D4B-96FA28B3DB0D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Poly", "Poly\Poly.vcxproj", "{285D6B02-23DC-400C-8D4B-96FA28B3DB0D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
