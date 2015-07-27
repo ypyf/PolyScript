@@ -51,7 +51,7 @@ FuncNode * GetFuncByIndex(int iIndex)
 *   Returns a FuncNode structure pointer corresponding to the specified name.
 */
 
-FuncNode * GetFuncByName(char * pstrName)
+FuncNode * GetFuncByName(char* pstrName)
 {
 	// Local function node pointer
 

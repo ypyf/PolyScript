@@ -73,7 +73,7 @@
 #define TOKEN_TYPE_OPEN_PAREN			35		// (
 #define TOKEN_TYPE_CLOSE_PAREN			36		//)
 #define TOKEN_TYPE_OPEN_BRACE			37		// [
-#define TOKEN_TYPE_CLOSE_BRACE			38		// ]
+#define TOKEN_TYPE_CLOSE_BRACE			38		//]
 #define TOKEN_TYPE_OPEN_CURLY_BRACE		39		// {
 #define TOKEN_TYPE_CLOSE_CURLY_BRACE	40		// }
 #define TOKEN_TYPE_SEMICOLON			41		// ;
@@ -164,12 +164,12 @@ char GetNextChar();
 Token GetNextToken();
 void RewindTokenStream();
 Token GetCurrToken();
-char * GetCurrLexeme();
-void CopyCurrLexeme(char * pstrBuffer);
+char* GetCurrLexeme();
+void CopyCurrLexeme(char* pstrBuffer);
 int GetCurrOp();
 char GetLookAheadChar();
 
-char * GetCurrSourceLine();
+char* GetCurrSourceLine();
 int GetCurrSourceLineIndex();
 int GetLexemeStartIndex();
 

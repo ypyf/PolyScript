@@ -71,8 +71,8 @@ struct ScriptHeader                    // Script header data
 {
 	int iStackSize;                             // Requested stack size
 
-	int iIsMainFuncPresent;                     // Is _Main () present?
-	int iMainFuncIndex;							// _Main ()'s function index
+	int iIsMainFuncPresent;                     // Is Main() present?
+	int iMainFuncIndex;							// Main()'s function index
 
 	int iPriorityType;                          // The thread priority type
 	int iUserPriority;                          // The user-defined priority (if any)

@@ -53,7 +53,7 @@ SymbolNode * GetSymbolByIndex(int iIndex)
 *   Returns a pointer to the symbol structure corresponding to the identifier and scope.
 */
 
-SymbolNode * GetSymbolByIdent(char * pstrIdent, int iScope)
+SymbolNode * GetSymbolByIdent(char* pstrIdent, int iScope)
 {
 	// Local symbol node pointer
 
@@ -86,7 +86,7 @@ SymbolNode * GetSymbolByIdent(char * pstrIdent, int iScope)
 *	Returns a variable's size based on its identifier.
 */
 
-int GetSizeByIdent(char * pstrIdent, int iScope)
+int GetSizeByIdent(char* pstrIdent, int iScope)
 {
 	// Get the symbol's information
 
@@ -104,7 +104,7 @@ int GetSizeByIdent(char * pstrIdent, int iScope)
 *   Adds a symbol to the symbol table.
 */
 
-int AddSymbol(char * pstrIdent, int iSize, int iScope, int iType)
+int AddSymbol(char* pstrIdent, int iSize, int iScope, int iType)
 {
 	// If a label already exists
 

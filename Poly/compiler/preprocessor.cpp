@@ -29,7 +29,7 @@ void PreprocessSourceFile ()
 	{
 		// Create local copy of the current line
 
-		char * pstrCurrLine = (char *) pNode->pData;
+		char* pstrCurrLine = (char *) pNode->pData;
 
 		// ---- Scan for comments
 
@@ -37,7 +37,7 @@ void PreprocessSourceFile ()
 		{
 			// If the current character is a quote, toggle the in string flag
 
-			if (pstrCurrLine [ iCurrCharIndex ] == '"')
+			if (pstrCurrLine[iCurrCharIndex] == '"')
 			{
 				if (iInString)
 					iInString = FALSE;
@@ -48,19 +48,19 @@ void PreprocessSourceFile ()
 			// Check for a single-line comment, and terminate the rest of the line if one is
 			// found
 
-			if (pstrCurrLine [ iCurrCharIndex ] == '/' &&
-				pstrCurrLine [ iCurrCharIndex + 1 ] == '/' &&
+			if (pstrCurrLine[iCurrCharIndex] == '/' &&
+				pstrCurrLine[iCurrCharIndex + 1] == '/' &&
 				! iInString && ! iInBlockComment)
 			{
-				pstrCurrLine [ iCurrCharIndex ] = '\n';
-				pstrCurrLine [ iCurrCharIndex + 1 ] = '\0';
+				pstrCurrLine[iCurrCharIndex] = '\n';
+				pstrCurrLine[iCurrCharIndex + 1] = '\0';
 				break;
 			}
 
 			// Check for a block comment
 
-			if (pstrCurrLine [ iCurrCharIndex ] == '/' &&
-				pstrCurrLine [ iCurrCharIndex + 1 ] == '*' &&
+			if (pstrCurrLine[iCurrCharIndex] == '/' &&
+				pstrCurrLine[iCurrCharIndex + 1] == '*' &&
 				! iInString && ! iInBlockComment)
 			{
 				iInBlockComment = TRUE;
@@ -68,12 +68,12 @@ void PreprocessSourceFile ()
 
 			// Check for the end of a block comment
 
-			if (pstrCurrLine [ iCurrCharIndex ] == '*' &&
-				pstrCurrLine [ iCurrCharIndex + 1 ] == '/' &&
+			if (pstrCurrLine[iCurrCharIndex] == '*' &&
+				pstrCurrLine[iCurrCharIndex + 1] == '/' &&
 				iInBlockComment)
 			{
-				pstrCurrLine [ iCurrCharIndex ] = ' ';
-				pstrCurrLine [ iCurrCharIndex + 1 ] = ' ';
+				pstrCurrLine[iCurrCharIndex] = ' ';
+				pstrCurrLine[iCurrCharIndex + 1] = ' ';
 				iInBlockComment = FALSE;
 			}
 
@@ -82,8 +82,8 @@ void PreprocessSourceFile ()
 
 			if (iInBlockComment)
 			{
-				if (pstrCurrLine [ iCurrCharIndex ] != '\n')
-					pstrCurrLine [ iCurrCharIndex ] = ' ';
+				if (pstrCurrLine[iCurrCharIndex] != '\n')
+					pstrCurrLine[iCurrCharIndex] = ' ';
 			}
 		}
 

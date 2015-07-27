@@ -167,7 +167,7 @@ void EmitScopeSymbols(int iScope, int iType)
 				// If the variable is an array, add the size declaration
 
 				if (pCurrSymbol->iSize > 1)
-					fprintf(g_pOutputFile, " [ %d ]", pCurrSymbol->iSize);
+					fprintf(g_pOutputFile, "[%d]", pCurrSymbol->iSize);
 			}
 
 			fprintf(g_pOutputFile, "\n");
@@ -229,7 +229,7 @@ void EmitFunc(FuncNode * pFunc)
 			{
 				// Make a local copy of the source line
 
-				char * pstrSourceLine = pCurrNode->pstrSourceLine;
+				char* pstrSourceLine = pCurrNode->pstrSourceLine;
 
 				// TODO 去掉源代码行前面的缩进
 
@@ -432,7 +432,7 @@ void EmitCode()
 
 	FuncNode * pCurrFunc;
 
-	// Pointer to hold the _Main () function, if it's found
+	// Pointer to hold the Main() function, if it's found
 
 	FuncNode * pMainFunc = NULL;
 
@@ -448,7 +448,7 @@ void EmitCode()
 
 			if (! pCurrFunc->iIsHostAPI)
 			{
-				// Is the current function _Main ()?
+				// Is the current function Main ()?
 
 				if (stricmp (pCurrFunc->pstrName, MAIN_FUNC_NAME) == 0)
 				{
@@ -473,11 +473,11 @@ void EmitCode()
 		}
 	}
 
-	// ---- Emit _Main ()
+	// ---- Emit Main ()
 
 	fprintf(g_pOutputFile, "; ---- Main -----------------------------------------------------------------------------------");
 
-	// If the last pass over the functions found a _Main () function. emit it
+	// If the last pass over the functions found a Main() function. emit it
 
 	if (pMainFunc)
 	{

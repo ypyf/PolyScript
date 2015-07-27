@@ -11,7 +11,7 @@
 *   Prints a general error message and exits.
 */
 
-void ExitOnError(char * pstrErrorMssg)
+void ExitOnError(char* pstrErrorMssg)
 {
 	// Print the message
 
@@ -29,7 +29,7 @@ void ExitOnError(char * pstrErrorMssg)
 *   Prints an code-related error message and exits.
 */
 
-void ExitOnCodeError(char * pstrErrorMssg)
+void ExitOnCodeError(char* pstrErrorMssg)
 {
 	// Print the message
 
@@ -43,7 +43,7 @@ void ExitOnCodeError(char * pstrErrorMssg)
 
 	// If the current line is a valid string, copy it into the local source line buffer
 
-	char * pstrCurrSourceLine = GetCurrSourceLine();
+	char* pstrCurrSourceLine = GetCurrSourceLine();
 	if (pstrCurrSourceLine)
 		strcpy(pstrSourceLine, pstrCurrSourceLine);
 	else

@@ -33,8 +33,8 @@ SymbolNode;
 // ---- Function Prototypes -------------------------------------------------------------------
 
 SymbolNode * GetSymbolByIndex(int iIndex);
-SymbolNode * GetSymbolByIdent(char * pstrIdent, int iScope);
-int GetSizeByIdent(char * pstrIdent, int iScope);
-int AddSymbol(char * pstrIdent, int iSize, int iScope, int iType);
+SymbolNode * GetSymbolByIdent(char* pstrIdent, int iScope);
+int GetSizeByIdent(char* pstrIdent, int iScope);
+int AddSymbol(char* pstrIdent, int iSize, int iScope, int iType);
 
 #endif

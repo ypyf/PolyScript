@@ -8,7 +8,7 @@
 
 // ---- Function Prototypes -------------------------------------------------------------------
 
-void ExitOnError(char * pstrErrorMssg);
-void ExitOnCodeError(char * pstrErrorMssg);
+void ExitOnError(char* pstrErrorMssg);
+void ExitOnCodeError(char* pstrErrorMssg);
 
 #endif

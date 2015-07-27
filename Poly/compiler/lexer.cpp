@@ -318,7 +318,7 @@ char GetNextChar()
 {
 	// Make a local copy of the string pointer, unless we're at the end of the source code
 
-	char * pstrCurrLine;
+	char* pstrCurrLine;
 	if (g_CurrLexerState.pCurrLine)
 		pstrCurrLine = (char *)g_CurrLexerState.pCurrLine->pData;
 	else
@@ -929,7 +929,7 @@ Token GetCurrToken()
 *   Returns a pointer to the current lexeme.
 */
 
-char * GetCurrLexeme()
+char* GetCurrLexeme()
 {
 	return g_CurrLexerState.pstrCurrLexeme;
 }
@@ -941,7 +941,7 @@ char * GetCurrLexeme()
 *   Makes a physical copy of the current lexeme into the specified string buffer.
 */
 
-void CopyCurrLexeme(char * pstrBuffer)
+void CopyCurrLexeme(char* pstrBuffer)
 {
 	strcpy(pstrBuffer, g_CurrLexerState.pstrCurrLexeme);
 }
@@ -998,7 +998,7 @@ char GetLookAheadChar()
 *   Returns a pointer to the current source line string.
 */
 
-char * GetCurrSourceLine()
+char* GetCurrSourceLine()
 {
 	if (g_CurrLexerState.pCurrLine)
 		return (char *)g_CurrLexerState.pCurrLine->pData;

@@ -211,7 +211,7 @@ void RemoveNode(LinkedList * pList, LinkedListNode * pNode)
 *	Adds a string to a linked list, blocking duplicate entries
 */
 
-int AddString(LinkedList * pList, char * pstrString)
+int AddString(LinkedList * pList, char* pstrString)
 {
 	// ---- First check to see if the string is already in the list
 
@@ -237,7 +237,7 @@ int AddString(LinkedList * pList, char * pstrString)
 
 	// Create space on the heap for the specified string
 
-	char * pstrStringNode = (char *)malloc(strlen(pstrString) + 1);
+	char* pstrStringNode = (char *)malloc(strlen(pstrString) + 1);
 	strcpy(pstrStringNode, pstrString);
 
 	// Add the string to the list and return its index

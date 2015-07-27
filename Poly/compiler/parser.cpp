@@ -1,4 +1,3 @@
-
 #include "parser.h"
 #include "error.h"
 #include "lexer.h"
@@ -38,7 +37,7 @@ void MatchToken(Token ReqToken)
 	{
 		// If not, exit on a specific error
 
-		char pstrErrorMssg [ 256 ];
+		char pstrErrorMssg[256];
 		switch (ReqToken)
 		{
 			// Integer
@@ -486,7 +485,7 @@ void ParseBlock()
 *   Parses the declaration of a variable or array and adds it to the symbol table.
 *
 *       var <Identifier>;
-*       var <Identifier> [ <Integer> ];
+*       var <Identifier>[<Integer>];
 */
 
 void ParseVar()
@@ -623,7 +622,7 @@ void ParseFunc()
 
 	if (GetLookAheadChar() != ')')
 	{
-		// If the function being defined is _Main (), flag an error since _Main ()
+		// If the function being defined is Main (), flag an error since Main ()
 		// cannot accept paraemters
 
 		if (IsMainFunc())
@@ -637,7 +636,7 @@ void ParseFunc()
 
 		// Crete an array to store the parameter list locally
 
-		char ppstrParamList [ MAX_FUNC_DECLARE_PARAM_COUNT ][ MAX_IDENT_SIZE ];
+		char ppstrParamList[MAX_FUNC_DECLARE_PARAM_COUNT][ MAX_IDENT_SIZE];
 
 		// Read the parameters
 
@@ -649,7 +648,7 @@ void ParseFunc()
 
 			// Copy the current lexeme to the parameter list array
 
-			CopyCurrLexeme(ppstrParamList [ iParamCount ]);
+			CopyCurrLexeme(ppstrParamList[iParamCount]);
 
 			// Increment the parameter count
 
@@ -678,7 +677,7 @@ void ParseFunc()
 
 			// Add the parameter to the symbol table
 
-			AddSymbol(ppstrParamList [ iParamCount ], 1, g_iCurrScope, SYMBOL_TYPE_PARAM);
+			AddSymbol(ppstrParamList[iParamCount], 1, g_iCurrScope, SYMBOL_TYPE_PARAM);
 		}
 	}
 

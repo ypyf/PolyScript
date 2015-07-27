@@ -56,7 +56,7 @@ ICodeNode * GetICodeNodeByImpIndex(int iFuncIndex, int iInstrIndex)
 *   Adds a line of source code annotation to the I-code stream of the specified function.
 */
 
-void AddICodeAnnotation(int iFuncIndex, char * pstrSourceLine)
+void AddICodeAnnotation(int iFuncIndex, char* pstrSourceLine)
 {
 	// Get the function to which the source line should be added
 

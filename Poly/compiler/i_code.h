@@ -78,7 +78,7 @@ struct ICodeNode                           // An I-code node
 ICodeNode* GetICodeNodeByImpIndex(int iFuncIndex, int iInstrIndex);
 Op* GetICodeOpByIndex(ICodeNode * pInstr, int iOpIndex);
 
-void AddICodeAnnotation(int iFuncIndex, char * pstrSourceLine);
+void AddICodeAnnotation(int iFuncIndex, char* pstrSourceLine);
 int AddICodeInstr(int iFuncIndex, int iOpcode);
 int AddICodeInstr(int iFuncIndex, int iOpcode, Label label);
 void AddICodeOp(int iFuncIndex, int iInstrIndex, Op Value);
