@@ -2887,7 +2887,7 @@ void AssmblSourceFile()
     }
 }
 
-/* Assembly .XASM to .XSE */
+/* Assembly .PASM to .PE */
 void XASM_Assembly(char* pstrFilename, char* pstrExecFilename)
 {
     InitAssembler();
@@ -2902,7 +2902,7 @@ void XASM_Assembly(char* pstrFilename, char* pstrExecFilename)
 *
 *   BuildXSE()
 *
-*   Dumps the assembled executable to an .XSE file.
+*   Dumps the assembled executable to an .PE file.
 */
 
 void BuildXSE(const char* file)

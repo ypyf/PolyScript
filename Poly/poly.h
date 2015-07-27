@@ -47,7 +47,7 @@ extern "C" {
 
 #define POLY_LOAD_OK                        0        // Load successful
 #define POLY_LOAD_ERROR_FILE_IO             1        // File I/O error (most likely a file not found error
-#define POLY_LOAD_ERROR_INVALID_XSE         2        // Invalid .XSE structure
+#define POLY_LOAD_ERROR_INVALID_XSE         2        // Invalid .PE structure
 #define POLY_LOAD_ERROR_UNSUPPORTED_VERS    3        // The format version is unsupported
 #define POLY_LOAD_ERROR_OUT_OF_MEMORY       4        // Out of memory
 #define POLY_LOAD_ERROR_OUT_OF_THREADS      5        // Out of threads

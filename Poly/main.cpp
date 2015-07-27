@@ -32,11 +32,11 @@ void print_error_message(int iErrorCode)
         break;
 
     case POLY_LOAD_ERROR_INVALID_XSE:
-        printf("Invalid .XSE file");
+        printf("Invalid .PE file");
         break;
 
     case POLY_LOAD_ERROR_UNSUPPORTED_VERS:
-        printf("Unsupported .XSE version");
+        printf("Unsupported .PE version");
         break;
 
     case POLY_LOAD_ERROR_OUT_OF_MEMORY:
@@ -97,7 +97,7 @@ int RunScript(char* pstrFilename)
 	strcpy(inputFilename, pstrFilename);
 	strupr(inputFilename);
 
-    // 构造 .XSE 文件名
+    // 构造 .PE 文件名
     if (strstr(inputFilename, XSS_FILE_EXT))
     {
         int ExtOffset = strrchr(inputFilename, '.') - inputFilename;

@@ -167,7 +167,7 @@ time_t Poly_GetSourceTimestamp(const char* filename)
 *
 *    Poly_LoadXSE()
 *
-*    Loads an .XSE file into memory.
+*    Loads an .PE file into memory.
 */
 
 int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
@@ -2299,7 +2299,7 @@ int Poly_GetExitCode(ScriptContext *sc)
     return sc->ExitCode;
 }
 
-// .xss => .xse
+// .poly => .pe
 void Poly_CompileScript(char *pstrFilename, char *pstrExecFilename)
 {
 	XSC_CompileScript(pstrFilename, pstrExecFilename);

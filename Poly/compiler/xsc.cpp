@@ -50,7 +50,7 @@ LinkedList g_StringTable;						// The string table
 // ---- XASM Invocation -------------------------------------------------------------------
 
 int g_iPreserveOutputFile;                      // Preserve the assembly file?
-int g_iGenerateXSE;                             // Generate an .XSE executable?
+int g_iGenerateXSE;                             // Generate an .PE executable?
 
 // ---- Expression Evaluation -------------------------------------------------------------
 
@@ -79,7 +79,7 @@ void Init()
 
 	g_iPreserveOutputFile = FALSE;
 
-	// Generate an .XSE executable
+	// Generate an .PE executable
 
 	g_iGenerateXSE = TRUE;
 
@@ -199,7 +199,7 @@ void XSC_CompileScript(char* pstrFilename, char* pstrExecFilename)
 
 	if (strstr(g_pstrSourceFilename, SOURCE_FILE_EXT))
 	{
-		// 构造 .xasm文件名
+		// 构造 .PASM 文件名
 		int ExtOffset = strrchr(g_pstrSourceFilename, '.') - g_pstrSourceFilename;
 		strncpy(g_pstrOutputFilename, g_pstrSourceFilename, ExtOffset);
 		g_pstrOutputFilename[ExtOffset] = '\0';
