@@ -1,4 +1,4 @@
-﻿#define _Poly_SOURCE
+﻿#define _POLY_SOURCE
 
 #include "bytecode.h"
 #include "poly.h"
@@ -170,7 +170,7 @@ time_t Poly_GetSourceTimestamp(const char* filename)
 *    Loads an .PE file into memory.
 */
 
-int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
+int Poly_LoadPE(ScriptContext *sc, const char *pstrFilename)
 {
     // ----Open the input file
 
@@ -747,8 +747,8 @@ static void ExecuteInstruction(ScriptContext *sc, int iTimesliceDur)
 		case INSTR_SHL:
 		case INSTR_SHR:
 			{
-				Value op0 = exec_pop(sc);
 				Value op1 = exec_pop(sc);
+				Value op0 = exec_pop(sc);
 				Value op2;
 
 				switch (iOpcode)
@@ -2119,7 +2119,7 @@ void Poly_CallScriptFuncSync(ScriptContext *sc, char *pstrName)
 *  Registers a function with the host API.
 */
 
-int Poly_RegisterHostFunc(ScriptContext *sc, char *pstrName, CRIOLLO_HOST_FUNCTION fnFunc)
+int Poly_RegisterHostFunc(ScriptContext *sc, char *pstrName, POLY_HOST_FUNCTION fnFunc)
 {
     HOST_API_FUNC** pCFuncTable;
 

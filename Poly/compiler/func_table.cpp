@@ -67,7 +67,7 @@ FuncNode * GetFuncByName(char * pstrName)
 
 		// Return the function if the name matches
 
-		if (pCurrFunc && stricmp(pCurrFunc->pstrName, pstrName) == 0)
+		if (pCurrFunc && strcmp(pCurrFunc->pstrName, pstrName) == 0)
 			return pCurrFunc;
 	}
 
@@ -120,9 +120,9 @@ int AddFunc(char* pstrName, int iIsHostAPI)
 
 	pNewFunc->ICodeStream.iNodeCount = 0;
 
-	// If the function was _Main (), set its flag and index in the header
+	// If the function was Main(), set its flag and index in the header
 
-	if (stricmp(pstrName, MAIN_FUNC_NAME) == 0)
+	if (strcmp(pstrName, MAIN_FUNC_NAME) == 0)
 	{
 		g_ScriptHeader.iIsMainFuncPresent = TRUE;
 		g_ScriptHeader.iMainFuncIndex = iIndex;

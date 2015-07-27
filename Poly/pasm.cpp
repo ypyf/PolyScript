@@ -2230,8 +2230,8 @@ void AssmblSourceFile()
                 if (iFuncIndex == -1)
                     ASM_ExitOnCodeError(ERROR_MSSG_FUNC_REDEFINITION);
 
-                // Is this the main() function?
-                if (stricmp(pstrFuncName, MAIN_FUNC_NAME) == 0)
+                // Is this the Main() function?
+                if (strcmp(pstrFuncName, MAIN_FUNC_NAME) == 0)
                 {
                     g_ASMScriptHeader.iIsMainFuncPresent = TRUE;
                     g_ASMScriptHeader.iMainFuncIndex = iFuncIndex;

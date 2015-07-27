@@ -132,7 +132,7 @@ struct HOST_CALL_TABLE                // A host API call table
 struct HOST_API_FUNC                     // Host API function
 {
 	char Name[MAX_FUNC_NAME_SIZE];       // The function name
-	CRIOLLO_HOST_FUNCTION FuncPtr;           // Pointer to the function definition
+	POLY_HOST_FUNCTION FuncPtr;           // Pointer to the function definition
 	HOST_API_FUNC* Next;                 // The next record
 };
 

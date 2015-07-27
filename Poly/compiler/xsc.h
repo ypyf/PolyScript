@@ -52,7 +52,7 @@
 
 // ---- Functions -------------------------------------------------------------------------
 
-#define MAIN_FUNC_NAME				"Main"		// _Main ()'s name
+#define MAIN_FUNC_NAME				"Main"		// Main()'s name
 
 // ---- Register Codes---------------------------------------------------------------------
 

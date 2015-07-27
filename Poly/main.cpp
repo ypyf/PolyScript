@@ -134,7 +134,7 @@ int RunScript(char* pstrFilename)
     int iErrorCode;
 
     // Load the demo script
-    iErrorCode = Poly_LoadXSE(sc, ExecFileName);
+    iErrorCode = Poly_LoadPE(sc, ExecFileName);
 
     // Check for an error
     if (iErrorCode != POLY_LOAD_OK)

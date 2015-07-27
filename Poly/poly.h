@@ -13,7 +13,7 @@
 #if !defined(_MSC_VER) || defined(STANDALONE)
 #   define POLY_API
 #else
-# ifdef _Poly_SOURCE
+# ifdef _POLY_SOURCE
 #   define POLY_API __declspec(dllexport)
 # else
 #   define POLY_API __declspec(dllimport)
@@ -67,7 +67,7 @@ extern "C" {
 // ----Data Structures -----------------------------------------------------------------------
 
 struct ScriptContext;
-typedef void (*CRIOLLO_HOST_FUNCTION)(ScriptContext*);  // Host API function pointer alias
+typedef void (*POLY_HOST_FUNCTION)(ScriptContext*);  // Host API function pointer alias
 
 
 // ----Runtime Value ---------------------------------------------------------------------
@@ -106,7 +106,7 @@ POLY_API void Poly_ShutDown(ScriptContext *sc);
 // ----Script Interface ------------------------------------------------------------------
 
 POLY_API void Poly_CompileScript(char *pstrFilename, char *pstrExecFilename);
-POLY_API int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename);
+POLY_API int Poly_LoadPE(ScriptContext *sc, const char *pstrFilename);
 POLY_API void Poly_UnloadScript(ScriptContext *sc);
 POLY_API void Poly_ResetVM(ScriptContext *sc);
 POLY_API void Poly_RunScript(ScriptContext *sc, int iTimesliceDur);
@@ -125,7 +125,7 @@ POLY_API char *Poly_GetReturnValueAsString(ScriptContext *sc);
 
 // ----Host API Interface ----------------------------------------------------------------
 
-POLY_API int Poly_RegisterHostFunc(ScriptContext *sc, char *pstrName, CRIOLLO_HOST_FUNCTION fnFunc);
+POLY_API int Poly_RegisterHostFunc(ScriptContext *sc, char *pstrName, POLY_HOST_FUNCTION fnFunc);
 POLY_API int Poly_GetParamAsInt(ScriptContext *sc, int iParamIndex);
 POLY_API float Poly_GetParamAsFloat(ScriptContext *sc, int iParamIndex);
 POLY_API char *Poly_GetParamAsString(ScriptContext *sc, int iParamIndex);

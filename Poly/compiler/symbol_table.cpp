@@ -69,7 +69,7 @@ SymbolNode * GetSymbolByIdent(char * pstrIdent, int iScope)
 
 		// Return the symbol if the identifier and scope matches
 
-		if (pCurrSymbol && stricmp(pCurrSymbol->pstrIdent, pstrIdent) == 0 &&
+		if (pCurrSymbol && strcmp(pCurrSymbol->pstrIdent, pstrIdent) == 0 &&
 			(pCurrSymbol->iScope == iScope || pCurrSymbol->iScope == 0))
 			return pCurrSymbol;
 	}
