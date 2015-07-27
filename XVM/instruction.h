@@ -1,7 +1,7 @@
 #ifndef __INSTRUCTION_H__
 #define __INSTRUCTION_H__
 
-#include "xvm-internal.h"
+#include "elfvm-internal.h"
 
 void CopyValue(Value *pDest, Value* Source);
 void exec_push(ScriptContext *sc, Value *Val);

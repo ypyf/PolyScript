@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "xvm.h"
+#include "elfvm.h"
 
 #define MAX_PATH    260
 
@@ -27,23 +27,23 @@ void print_error_message(int iErrorCode)
 
     switch (iErrorCode)
     {
-    case XVM_LOAD_ERROR_FILE_IO:
+    case ELF_LOAD_ERROR_FILE_IO:
         printf("File I/O error");
         break;
 
-    case XVM_LOAD_ERROR_INVALID_XSE:
+    case ELF_LOAD_ERROR_INVALID_XSE:
         printf("Invalid .XSE file");
         break;
 
-    case XVM_LOAD_ERROR_UNSUPPORTED_VERS:
+    case ELF_LOAD_ERROR_UNSUPPORTED_VERS:
         printf("Unsupported .XSE version");
         break;
 
-    case XVM_LOAD_ERROR_OUT_OF_MEMORY:
+    case ELF_LOAD_ERROR_OUT_OF_MEMORY:
         printf("Out of memory");
         break;
 
-    case XVM_LOAD_ERROR_OUT_OF_THREADS:
+    case ELF_LOAD_ERROR_OUT_OF_THREADS:
         printf("Out of threads");
         break;
     }
@@ -56,38 +56,38 @@ void print_error_message(int iErrorCode)
 /* 打印平均值 */
 static void average(ScriptContext *sc)
 {
-    int n = XVM_GetParamCount(sc);
+    int n = ELF_GetParamCount(sc);
     int sum = 0;
     for (int i = 0; i < n; i++)
     {
-        sum += XVM_GetParamAsInt(sc, i);
+        sum += ELF_GetParamAsInt(sc, i);
     }
-    XVM_ReturnIntFromHost(sc, sum / n);
+    ELF_ReturnIntFromHost(sc, sum / n);
 }
 
 static void h_PrintString(ScriptContext *sc)
 {
-	char* str = XVM_GetParamAsString(sc, 0);
+	char* str = ELF_GetParamAsString(sc, 0);
 	puts(str);
-	XVM_ReturnFromHost(sc);
+	ELF_ReturnFromHost(sc);
 }
 
 static void h_PrintInt(ScriptContext *sc)
 {
-	int i = XVM_GetParamAsInt(sc, 0);
+	int i = ELF_GetParamAsInt(sc, 0);
 	printf("Explode %d!\n", i);
-	XVM_ReturnFromHost(sc);
+	ELF_ReturnFromHost(sc);
 }
 
 static void h_Division(ScriptContext *sc)
 {
-	float i = XVM_GetParamAsFloat(sc, 0);
-	float j = XVM_GetParamAsFloat(sc, 1);
+	float i = ELF_GetParamAsFloat(sc, 0);
+	float j = ELF_GetParamAsFloat(sc, 1);
 	printf("%f\n", i / j);
-	XVM_ReturnFromHost(sc);
+	ELF_ReturnFromHost(sc);
 }
 
-// ----XVM Entry Main ----------------------------------------------------------------------------------
+// ----CRL Entry Main ----------------------------------------------------------------------------------
 
 int RunScript(char* pstrFilename)
 {
@@ -106,7 +106,7 @@ int RunScript(char* pstrFilename)
         strcat(ExecFileName, XSE_FILE_EXT);
 
         // 编译
-		XVM_CompileScript(inputFilename, ExecFileName);
+		ELF_CompileScript(inputFilename, ExecFileName);
     }
     else if (strstr(inputFilename, XSE_FILE_EXT))
     {
@@ -119,12 +119,12 @@ int RunScript(char* pstrFilename)
     }
 
     // Initialize the runtime environment
-    ScriptContext *sc = XVM_Create();
+    ScriptContext *sc = ELF_Create();
 
     // 注册宿主api
-	XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "Explode", h_PrintInt);
-	XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "Division", h_Division);
-	if (!XVM_RegisterHostFunc(XVM_GLOBAL_FUNC, "PrintString", h_PrintString))
+	ELF_RegisterHostFunc(ELF_GLOBAL_FUNC, "Explode", h_PrintInt);
+	ELF_RegisterHostFunc(ELF_GLOBAL_FUNC, "Division", h_Division);
+	if (!ELF_RegisterHostFunc(ELF_GLOBAL_FUNC, "PrintString", h_PrintString))
     {
         printf("Register Host API Failed!");
         exit(1);
@@ -134,22 +134,22 @@ int RunScript(char* pstrFilename)
     int iErrorCode;
 
     // Load the demo script
-    iErrorCode = XVM_LoadXSE(sc, ExecFileName);
+    iErrorCode = ELF_LoadXSE(sc, ExecFileName);
 
     // Check for an error
-    if (iErrorCode != XVM_LOAD_OK)
+    if (iErrorCode != ELF_LOAD_OK)
     {
         print_error_message(iErrorCode);
         exit(1);
     }
 
     // Run we're loaded script from Main()
-    XVM_RunScript(sc, XVM_INFINITE_TIMESLICE);
+    ELF_RunScript(sc, ELF_INFINITE_TIMESLICE);
 
-    int iExitCode = XVM_GetExitCode(sc);
+    int iExitCode = ELF_GetExitCode(sc);
 
     // Free resources and perform general cleanup
-    XVM_ShutDown(sc);
+    ELF_ShutDown(sc);
 
     return iExitCode;
 }
@@ -160,7 +160,7 @@ int main(int argc, char* argv[])
 	unsigned long start = GetCurrTime();
 	if (argc < 2) 
 	{
-		printf("XVM: No input files\n");
+		printf("CRL: No input files\n");
 		exit(0);
 	}
 

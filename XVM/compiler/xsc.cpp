@@ -22,8 +22,8 @@ void Exit();
 
 // ---- Source Code -----------------------------------------------------------------------
 
-char g_pstrSourceFilename [ MAX_FILENAME_SIZE ],	// Source code filename
-	g_pstrOutputFilename [ MAX_FILENAME_SIZE ];	// Executable filename
+char g_pstrSourceFilename [MAX_FILENAME_SIZE],	// Source code filename
+	 g_pstrOutputFilename [MAX_FILENAME_SIZE];	// Executable filename
 
 LinkedList g_SourceCode;                        // Source code linked list
 
@@ -162,7 +162,7 @@ void LoadSourceFile()
 *
 *   CompileSourceFile()
 *
-*   Compiles the high-level source file to its XVM assembly equivelent.
+*   Compiles the high-level source file to its CRL assembly equivelent.
 */
 
 void CompileSourceFile()

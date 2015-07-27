@@ -35,7 +35,7 @@
 
 // ----,XSE Header -----------------------------------------------------------------------
 
-#define XSE_ID_STRING               "XSE0"      // Written to the file to state it's validity
+#define ELF_ID_STRING               "ELF0"      // Written to the file to state it's validity
 
 #define VERSION_MAJOR               0           // Major version number
 #define VERSION_MINOR               7           // Minor version number
@@ -2664,7 +2664,7 @@ void AssmblSourceFile()
                     case TOKEN_TYPE_IDENT:
                         {
                             // Find out which type of identifier is expected. Since no
-                            // instruction in XVM assebly accepts more than one type
+                            // instruction in CRL assebly accepts more than one type
                             // of identifier per operand, we can use the operand types
                             // alone to determine which type of identifier we're
                             // parsing.
@@ -2917,7 +2917,7 @@ void BuildXSE(const char* file)
 
     // Write the ID string(4 bytes)
 
-    fwrite(XSE_ID_STRING, 4, 1, pExecFile);
+    fwrite(ELF_ID_STRING, 4, 1, pExecFile);
 
 	// 写入源文件创建时间戳
 	struct stat fs;

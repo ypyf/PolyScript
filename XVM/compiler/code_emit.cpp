@@ -8,7 +8,7 @@ FILE * g_pOutputFile = NULL;                        // Pointer to the output fil
 // ---- Instruction Mnemonics -------------------------------------------------------------
 
 // These mnemonics are mapped to each I-code instruction, allowing the emitter to
-// easily translate I-code to XVM assembly
+// easily translate I-code to CRL assembly
 // 每个助记符的位置与指令常量必须相等
 char ppstrMnemonics[][12] =
 {
@@ -391,7 +391,7 @@ void EmitFunc(FuncNode * pFunc)
 *
 *   EmitCode ()
 *
-*   Translates the I-code representation of the script to an ASCII-foramtted XVM assembly
+*   Translates the I-code representation of the script to an ASCII-foramtted CRL assembly
 *   file.
 */
 

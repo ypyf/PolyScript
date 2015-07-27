@@ -98,8 +98,8 @@
     <ClInclude Include="mathlib.h" />
     <ClInclude Include="xasm.h" />
     <ClInclude Include="xqueue.h" />
-    <ClInclude Include="xvm.h" />
-    <ClInclude Include="xvm-internal.h" />
+    <ClInclude Include="elfvm.h" />
+    <ClInclude Include="elfvm-internal.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Compiler\code_emit.cpp" />

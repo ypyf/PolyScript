@@ -16,7 +16,7 @@
 #define ICODE_NODE_ANNOTATION_LINE  1               // Source-code annotation
 #define ICODE_NODE_JUMP_TARGET		2               // A jump target
 
-// ---- I-Code Opcode 采用了和执行体（XVM）相同的指令集
+// ---- I-Code Opcode 采用了和执行体（CRL）相同的指令集
 
 // ---- I-Code Operand Types ---------------------------------------------------------------------
 

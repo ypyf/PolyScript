@@ -1,9 +1,9 @@
-﻿#define _XVM_SOURCE
+﻿#define _ELF_SOURCE
 
 #include "bytecode.h"
-#include "xvm-internal.h"
+#include "elfvm-internal.h"
 #include "gc.h"
-#include "xvm.h"
+#include "elfvm.h"
 #include "compiler/xsc.h"
 #include <ctype.h>
 #include <time.h>
@@ -105,12 +105,12 @@ void CallFunc(ScriptContext *sc, int iIndex, int type);
 
 /******************************************************************************************
 *
-*    XVM_Create()
+*    ELF_Create()
 *
 *    Initializes the runtime environment.
 */
 
-ScriptContext* XVM_Create()
+ScriptContext* ELF_Create()
 {
 	ScriptContext* thead = new ScriptContext;
 
@@ -135,12 +135,12 @@ ScriptContext* XVM_Create()
 
 /******************************************************************************************
 *
-*    XVM_GetSourceTimestamp()
+*    ELF_GetSourceTimestamp()
 *
 *    获取源文件修改时间戳
 */
 
-time_t XVM_GetSourceTimestamp(const char* filename)
+time_t ELF_GetSourceTimestamp(const char* filename)
 {
 	// 打开文件
 	FILE* pScriptFile = fopen(filename, "rb");
@@ -150,7 +150,7 @@ time_t XVM_GetSourceTimestamp(const char* filename)
 	// 验证文件类型
 	char pstrIDString[4];
 	fread(pstrIDString, 4, 1, pScriptFile);
-	if (memcmp(pstrIDString, XSE_ID_STRING, 4) != 0)
+	if (memcmp(pstrIDString, ELF_ID_STRING, 4) != 0)
 		return 0;
 
 	// 读取源文件修改时间戳字段
@@ -165,18 +165,18 @@ time_t XVM_GetSourceTimestamp(const char* filename)
 
 /******************************************************************************************
 *
-*    XVM_LoadXSE()
+*    ELF_LoadXSE()
 *
 *    Loads an .XSE file into memory.
 */
 
-int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename)
+int ELF_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 {
     // ----Open the input file
 
     FILE *pScriptFile;
     if (!(pScriptFile = fopen(pstrFilename, "rb")))
-        return XVM_LOAD_ERROR_FILE_IO;
+        return ELF_LOAD_ERROR_FILE_IO;
 
 
     // ----Read the header
@@ -188,8 +188,8 @@ int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // Compare the data read from the file to the ID string and exit on an error if they don't
     // match
 
-    if (memcmp(pstrIDString, XSE_ID_STRING, 4) != 0)
-        return XVM_LOAD_ERROR_INVALID_XSE;
+    if (memcmp(pstrIDString, ELF_ID_STRING, 4) != 0)
+        return ELF_LOAD_ERROR_INVALID_XSE;
 
 	// 跳过源文件时间戳字段
 	fseek(pScriptFile, sizeof(time_t), SEEK_CUR);
@@ -205,7 +205,7 @@ int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // Validate the version, since this prototype only supports version 1.0 scripts
 
     if (iMajorVersion != VERSION_MAJOR || iMinorVersion != VERSION_MINOR)
-        return XVM_LOAD_ERROR_UNSUPPORTED_VERS;
+        return ELF_LOAD_ERROR_UNSUPPORTED_VERS;
 
     // Read the stack size (4 bytes)
 
@@ -220,7 +220,7 @@ int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
     int iStackSize = sc->iStackSize;
     if (!(sc->stack = (Value *)malloc(iStackSize*sizeof(Value))))
-        return XVM_LOAD_ERROR_OUT_OF_MEMORY;
+        return ELF_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read the global data size (4 bytes)
 
@@ -252,7 +252,7 @@ int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // Allocate the stream
 
 	if (!(sc->InstrStream.Instrs = (INSTR *)malloc(sc->InstrStream.Size*sizeof(INSTR))))
-		return XVM_LOAD_ERROR_OUT_OF_MEMORY;
+		return ELF_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read the instruction data
 
@@ -274,7 +274,7 @@ int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
         Value *pOpList;
         if (!(pOpList = (Value *)malloc(iOpCount*sizeof(Value))))
-            return XVM_LOAD_ERROR_OUT_OF_MEMORY;
+            return ELF_LOAD_ERROR_OUT_OF_MEMORY;
 
         // Read in the operand list (N bytes)
 
@@ -371,7 +371,7 @@ int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
         char **ppstrStringTable;
         if (!(ppstrStringTable = (char **)malloc(iStringTableSize*sizeof(char *))))
-            return XVM_LOAD_ERROR_OUT_OF_MEMORY;
+            return ELF_LOAD_ERROR_OUT_OF_MEMORY;
 
         // Read in each string
 
@@ -386,7 +386,7 @@ int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
             char *pstrCurrString;
             if (!(pstrCurrString = (char *)malloc(iStringSize + 1)))
-                return XVM_LOAD_ERROR_OUT_OF_MEMORY;
+                return ELF_LOAD_ERROR_OUT_OF_MEMORY;
 
             // Read in the string data (N bytes) and append the null terminator
 
@@ -422,7 +422,7 @@ int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename)
                     // Allocate a new string to hold a copy of the one in the table
                     char *pstrStringCopy;
                     if (!(pstrStringCopy = (char *)malloc(strlen(ppstrStringTable[iStringIndex]) + 1)))
-                        return XVM_LOAD_ERROR_OUT_OF_MEMORY;
+                        return ELF_LOAD_ERROR_OUT_OF_MEMORY;
 
                     // Make a copy of the string
 
@@ -455,7 +455,7 @@ int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // Allocate the table
 
     if (!(sc->FuncTable.Funcs = (FUNC *)malloc(iFuncTableSize*sizeof(FUNC))))
-        return XVM_LOAD_ERROR_OUT_OF_MEMORY;
+        return ELF_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read each function
 
@@ -506,7 +506,7 @@ int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // Allocate the table
 
 	if (!(sc->HostCallTable.Calls = (char **)malloc(sc->HostCallTable.Size*sizeof(char *))))
-        return XVM_LOAD_ERROR_OUT_OF_MEMORY;
+        return ELF_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read each host API call
 
@@ -521,7 +521,7 @@ int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
         char *pstrCurrCall;
         if (!(pstrCurrCall = (char *)malloc(iCallLength + 1)))
-            return XVM_LOAD_ERROR_OUT_OF_MEMORY;
+            return ELF_LOAD_ERROR_OUT_OF_MEMORY;
 
         // Read the host API call string data and append the null terminator
 
@@ -539,34 +539,34 @@ int XVM_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
     // Reset the script
 
-    XVM_ResetVM(sc);
+    ELF_ResetVM(sc);
 
     // Return a success code
 
-    return XVM_LOAD_OK;
+    return ELF_LOAD_OK;
 }
 
 /******************************************************************************************
 *
-*    XVM_ShutDown()
+*    ELF_ShutDown()
 *
 *    Shuts down the runtime environment.
 */
 
-void XVM_ShutDown(ScriptContext *sc)
+void ELF_ShutDown(ScriptContext *sc)
 {
-	XVM_UnloadScript(sc);
+	ELF_UnloadScript(sc);
 	delete sc;
 }
 
 /******************************************************************************************
 *
-*    XVM_UnloadScript()
+*    ELF_UnloadScript()
 *
 *    Unloads a script from memory.
 */
 
-void XVM_UnloadScript(ScriptContext *sc)
+void ELF_UnloadScript(ScriptContext *sc)
 {
     // ----Free The instruction stream
 
@@ -634,13 +634,13 @@ void XVM_UnloadScript(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    XVM_ResetVM()
+*    ELF_ResetVM()
 *
 *    Resets the script. This function accepts a thread index rather than relying on the
 *    currently active thread, because scripts can (and will) need to be reset arbitrarily.
 */
 
-void XVM_ResetVM(ScriptContext *sc)
+void ELF_ResetVM(ScriptContext *sc)
 {
 	// 重置指令指针
 	sc->CurrInstr = 0;
@@ -718,7 +718,7 @@ static void ExecuteInstruction(ScriptContext *sc, int iTimesliceDur)
 		if (sc->CurrInstr >= sc->InstrStream.Size)
 		{
 			sc->IsRunning = FALSE;
-			sc->ExitCode = XVM_EXIT_OK;
+			sc->ExitCode = ELF_EXIT_OK;
 			break;
 		}
 
@@ -1322,7 +1322,7 @@ static void ExecuteInstruction(ScriptContext *sc, int iTimesliceDur)
             ++sc->CurrInstr;
 
         // 线程耗尽时间片
-        if (iTimesliceDur != XVM_INFINITE_TIMESLICE)
+        if (iTimesliceDur != ELF_INFINITE_TIMESLICE)
             if (iCurrTime > iMainTimesliceStartTime + iTimesliceDur)
                 break;
 
@@ -1334,15 +1334,15 @@ static void ExecuteInstruction(ScriptContext *sc, int iTimesliceDur)
 
 /******************************************************************************************
 *
-*    XVM_RunScript()
+*    ELF_RunScript()
 *
 *    Runs the specified script from Main() for a given timeslice duration.
 */
 
-void XVM_RunScript(ScriptContext *sc, int iTimesliceDur)
+void ELF_RunScript(ScriptContext *sc, int iTimesliceDur)
 {
-	XVM_StartScript(sc);
-    XVM_CallScriptFunc(sc, "Main");
+	ELF_StartScript(sc);
+    ELF_CallScriptFunc(sc, "Main");
 }
 
 /******************************************************************************************
@@ -1352,7 +1352,7 @@ void XVM_RunScript(ScriptContext *sc, int iTimesliceDur)
 *   Starts the execution of a script.
 */
 
-void XVM_StartScript(ScriptContext *sc)
+void ELF_StartScript(ScriptContext *sc)
 {
 	// Set the thread's execution flag
 
@@ -1369,12 +1369,12 @@ void XVM_StartScript(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    XVM_StopScript()
+*    ELF_StopScript()
 *
 *  Stops the execution of a script.
 */
 
-void XVM_StopScript(ScriptContext *sc)
+void ELF_StopScript(ScriptContext *sc)
 {
     // Clear the thread's execution flag
 
@@ -1383,12 +1383,12 @@ void XVM_StopScript(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    XVM_PauseScript()
+*    ELF_PauseScript()
 *
 *  Pauses a script for a specified duration.
 */
 
-void XVM_PauseScript(ScriptContext *sc, int iDur)
+void ELF_PauseScript(ScriptContext *sc, int iDur)
 {
     // Set the pause flag
 
@@ -1401,12 +1401,12 @@ void XVM_PauseScript(ScriptContext *sc, int iDur)
 
 /******************************************************************************************
 *
-*    XVM_ResumeScript()
+*    ELF_ResumeScript()
 *
 *  Unpauses a script.
 */
 
-void XVM_ResumeScript(ScriptContext *sc)
+void ELF_ResumeScript(ScriptContext *sc)
 {
     // Clear the pause flag
 
@@ -1415,12 +1415,12 @@ void XVM_ResumeScript(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    XVM_GetReturnValueAsInt()
+*    ELF_GetReturnValueAsInt()
 *
 *    Returns the last returned value as an integer.
 */
 
-int XVM_GetReturnValueAsInt(ScriptContext *sc)
+int ELF_GetReturnValueAsInt(ScriptContext *sc)
 {
     // Return _RetVal's integer field
 
@@ -1429,12 +1429,12 @@ int XVM_GetReturnValueAsInt(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    XVM_GetReturnValueAsFloat()
+*    ELF_GetReturnValueAsFloat()
 *
 *    Returns the last returned value as an float.
 */
 
-float XVM_GetReturnValueAsFloat(ScriptContext *sc)
+float ELF_GetReturnValueAsFloat(ScriptContext *sc)
 {
     // Return _RetVal's floating-point field
 
@@ -1443,12 +1443,12 @@ float XVM_GetReturnValueAsFloat(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    XVM_GetReturnValueAsString()
+*    ELF_GetReturnValueAsString()
 *
 *    Returns the last returned value as a string.
 */
 
-char* XVM_GetReturnValueAsString(ScriptContext *sc)
+char* ELF_GetReturnValueAsString(ScriptContext *sc)
 {
     // Return _RetVal's string field
 
@@ -1991,12 +1991,12 @@ void CallFunc(ScriptContext *sc, int iIndex, int type)
 
 /******************************************************************************************
 *
-*  XVM_PassIntParam()
+*  ELF_PassIntParam()
 *
 *  Passes an integer parameter from the host to a script function.
 */
 
-void XVM_PassIntParam(ScriptContext *sc, int iInt)
+void ELF_PassIntParam(ScriptContext *sc, int iInt)
 {
     // Create a Value structure to encapsulate the parameter
     Value Param;
@@ -2009,12 +2009,12 @@ void XVM_PassIntParam(ScriptContext *sc, int iInt)
 
 /******************************************************************************************
 *
-*  XVM_PassFloatParam()
+*  ELF_PassFloatParam()
 *
 *  Passes a floating-point parameter from the host to a script function.
 */
 
-void XVM_PassFloatParam(ScriptContext *sc, float fFloat)
+void ELF_PassFloatParam(ScriptContext *sc, float fFloat)
 {
     // Create a Value structure to encapsulate the parameter
     Value Param;
@@ -2027,12 +2027,12 @@ void XVM_PassFloatParam(ScriptContext *sc, float fFloat)
 
 /******************************************************************************************
 *
-*  XVM_PassStringParam()
+*  ELF_PassStringParam()
 *
 *  Passes a string parameter from the host to a script function.
 */
 
-void XVM_PassStringParam(ScriptContext *sc, char *pstrString)
+void ELF_PassStringParam(ScriptContext *sc, char *pstrString)
 {
     // Create a Value structure to encapsulate the parameter
     Value Param;
@@ -2067,12 +2067,12 @@ int GetFuncIndexByName(ScriptContext *sc, char *pstrName)
 
 /******************************************************************************************
 *
-*  XVM_CallScriptFunc()
+*  ELF_CallScriptFunc()
 *
 *  Calls a script function from the host application.
 */
 
-int XVM_CallScriptFunc(ScriptContext *sc, char *pstrName)
+int ELF_CallScriptFunc(ScriptContext *sc, char *pstrName)
 {
     // Get the function's index based on it's name
     int iFuncIndex = GetFuncIndexByName(sc, pstrName);
@@ -2085,21 +2085,21 @@ int XVM_CallScriptFunc(ScriptContext *sc, char *pstrName)
 	CallFunc(sc, iFuncIndex, OP_TYPE_STACK_BASE_MARKER);
 
     // Allow the script code to execute uninterrupted until the function returns
-    ExecuteInstruction(sc, XVM_INFINITE_TIMESLICE);
+    ExecuteInstruction(sc, ELF_INFINITE_TIMESLICE);
 
     return TRUE;
 }
 
 /******************************************************************************************
 *
-*  XVM_CallScriptFuncSync()
+*  ELF_CallScriptFuncSync()
 *
 *  Invokes a script function from the host application, meaning the call executes in sync
 *  with the script.
 *  用于在宿主API函数中同步地调用脚本函数。单独使用没有效果。
 */
 
-void XVM_CallScriptFuncSync(ScriptContext *sc, char *pstrName)
+void ELF_CallScriptFuncSync(ScriptContext *sc, char *pstrName)
 {
     // Get the function's index based on its name
     int iFuncIndex = GetFuncIndexByName(sc, pstrName);
@@ -2114,12 +2114,12 @@ void XVM_CallScriptFuncSync(ScriptContext *sc, char *pstrName)
 
 /******************************************************************************************
 *
-*  XVM_RegisterHostFunc()
+*  ELF_RegisterHostFunc()
 *
 *  Registers a function with the host API.
 */
 
-int XVM_RegisterHostFunc(ScriptContext *sc, char *pstrName, XVM_HOST_FUNCTION fnFunc)
+int ELF_RegisterHostFunc(ScriptContext *sc, char *pstrName, CRIOLLO_HOST_FUNCTION fnFunc)
 {
     HOST_API_FUNC** pCFuncTable;
 
@@ -2127,7 +2127,7 @@ int XVM_RegisterHostFunc(ScriptContext *sc, char *pstrName, XVM_HOST_FUNCTION fn
 		return FALSE;
 
 	// 全局API
-	if (sc == XVM_GLOBAL_FUNC)
+	if (sc == ELF_GLOBAL_FUNC)
 		pCFuncTable = &g_HostAPIs;
 	else
 		pCFuncTable = &sc->HostAPIs;
@@ -2154,7 +2154,7 @@ int XVM_RegisterHostFunc(ScriptContext *sc, char *pstrName, XVM_HOST_FUNCTION fn
 }
 
 // 返回栈帧上指定的参数
-Value XVM_GetParam(ScriptContext *sc, int iParamIndex)
+Value ELF_GetParam(ScriptContext *sc, int iParamIndex)
 {
     int iTopIndex = sc->iTopIndex;
     Value arg = sc->stack[iTopIndex - (iParamIndex + 1)];
@@ -2163,15 +2163,15 @@ Value XVM_GetParam(ScriptContext *sc, int iParamIndex)
 
 /******************************************************************************************
 *
-*  XVM_GetParamAsInt()
+*  ELF_GetParamAsInt()
 *
 *  Returns the specified integer parameter to a host API function.
 */
 
-int XVM_GetParamAsInt(ScriptContext *sc, int iParamIndex)
+int ELF_GetParamAsInt(ScriptContext *sc, int iParamIndex)
 {
     // Get the current top element
-    Value Param = XVM_GetParam(sc, iParamIndex);
+    Value Param = ELF_GetParam(sc, iParamIndex);
 
     // Coerce the top element of the stack to an integer
     int iInt = CoerceValueToInt(&Param);
@@ -2182,15 +2182,15 @@ int XVM_GetParamAsInt(ScriptContext *sc, int iParamIndex)
 
 /******************************************************************************************
 *
-*  XVM_GetParamAsFloat()
+*  ELF_GetParamAsFloat()
 *
 *  Returns the specified floating-point parameter to a host API function.
 */
 
-float XVM_GetParamAsFloat(ScriptContext *sc, int iParamIndex)
+float ELF_GetParamAsFloat(ScriptContext *sc, int iParamIndex)
 {
     // Get the current top element
-    Value Param = XVM_GetParam(sc, iParamIndex);
+    Value Param = ELF_GetParam(sc, iParamIndex);
 
     // Coerce the top element of the stack to a float
     float fFloat = CoerceValueToFloat(&Param);
@@ -2200,15 +2200,15 @@ float XVM_GetParamAsFloat(ScriptContext *sc, int iParamIndex)
 
 /******************************************************************************************
 *
-*  XVM_GetParamAsString()
+*  ELF_GetParamAsString()
 *
 *  Returns the specified string parameter to a host API function.
 */
 
-char* XVM_GetParamAsString(ScriptContext *sc, int iParamIndex)
+char* ELF_GetParamAsString(ScriptContext *sc, int iParamIndex)
 {
     // Get the current top element
-    Value Param = XVM_GetParam(sc, iParamIndex);
+    Value Param = ELF_GetParam(sc, iParamIndex);
 
     // Coerce the top element of the stack to a string
     char *pstrString = CoerceValueToString(&Param);
@@ -2218,12 +2218,12 @@ char* XVM_GetParamAsString(ScriptContext *sc, int iParamIndex)
 
 /******************************************************************************************
 *
-*  XVM_ReturnFromHost()
+*  ELF_ReturnFromHost()
 *
 *  Returns from a host API function.
 */
 
-void XVM_ReturnFromHost(ScriptContext *sc)
+void ELF_ReturnFromHost(ScriptContext *sc)
 {
     // Clear the parameters off the stack
     sc->iTopIndex = sc->iFrameIndex;
@@ -2231,45 +2231,45 @@ void XVM_ReturnFromHost(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*  XVM_ReturnIntFromHost()
+*  ELF_ReturnIntFromHost()
 *
 *  Returns an integer from a host API function.
 */
 
-void XVM_ReturnIntFromHost(ScriptContext *sc, int iInt)
+void ELF_ReturnIntFromHost(ScriptContext *sc, int iInt)
 {
     // Put the return value and type in _RetVal
     sc->_RetVal.Type = OP_TYPE_INT;
     sc->_RetVal.Fixnum = iInt;
 
-    XVM_ReturnFromHost(sc);
+    ELF_ReturnFromHost(sc);
 }
 
 /******************************************************************************************
 *
-*  XVM_ReturnFloatFromHost()
+*  ELF_ReturnFloatFromHost()
 *
 *  Returns a float from a host API function.
 */
 
-void XVM_ReturnFloatFromHost(ScriptContext *sc, float fFloat)
+void ELF_ReturnFloatFromHost(ScriptContext *sc, float fFloat)
 {
     // Put the return value and type in _RetVal
     sc->_RetVal.Type = OP_TYPE_FLOAT;
     sc->_RetVal.Realnum = fFloat;
 
     // Clear the parameters off the stack
-    XVM_ReturnFromHost(sc);
+    ELF_ReturnFromHost(sc);
 }
 
 /******************************************************************************************
 *
-*  XVM_ReturnStringFromHost()
+*  ELF_ReturnStringFromHost()
 *
 *  Returns a string from a host API function.
 */
 
-void XVM_ReturnStringFromHost(ScriptContext *sc, char *pstrString)
+void ELF_ReturnStringFromHost(ScriptContext *sc, char *pstrString)
 {
     // Put the return value and type in _RetVal
     Value ReturnValue;
@@ -2278,29 +2278,29 @@ void XVM_ReturnStringFromHost(ScriptContext *sc, char *pstrString)
     CopyValue(&sc->_RetVal, &ReturnValue);
 
     // Clear the parameters off the stack
-    XVM_ReturnFromHost(sc);
+    ELF_ReturnFromHost(sc);
 }
 
 
-int XVM_GetParamCount(ScriptContext *sc)
+int ELF_GetParamCount(ScriptContext *sc)
 {
     return (sc->iTopIndex - sc->iFrameIndex);
 }
 
 
-int XVM_IsScriptStop(ScriptContext *sc)
+int ELF_IsScriptStop(ScriptContext *sc)
 {
     return !sc->IsRunning;
 }
 
 
-int XVM_GetExitCode(ScriptContext *sc)
+int ELF_GetExitCode(ScriptContext *sc)
 {
     return sc->ExitCode;
 }
 
 // .xss => .xse
-void XVM_CompileScript(char *pstrFilename, char *pstrExecFilename)
+void ELF_CompileScript(char *pstrFilename, char *pstrExecFilename)
 {
 	XSC_CompileScript(pstrFilename, pstrExecFilename);
 }

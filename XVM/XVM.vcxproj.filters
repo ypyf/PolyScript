@@ -24,12 +24,6 @@
     <ClInclude Include="mathlib.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="xvm.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="xvm-internal.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="xqueue.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -79,6 +73,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="instruction.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="elfvm.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="elfvm-internal.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
