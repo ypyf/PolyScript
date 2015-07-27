@@ -95,7 +95,7 @@
     <ClInclude Include="Compiler\xsc.h" />
     <ClInclude Include="gc.h" />
     <ClInclude Include="instruction.h" />
-    <ClInclude Include="xasm.h" />
+    <ClInclude Include="pasm.h" />
     <ClInclude Include="xqueue.h" />
     <ClInclude Include="poly.h" />
     <ClInclude Include="vm.h" />
@@ -114,7 +114,7 @@
     <ClCompile Include="Compiler\xsc.cpp" />
     <ClCompile Include="instruction.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="xasm.cpp" />
+    <ClCompile Include="pasm.cpp" />
     <ClCompile Include="gc.cpp" />
     <ClCompile Include="vm.cpp" />
   </ItemGroup>

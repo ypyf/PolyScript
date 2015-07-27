@@ -1,6 +1,6 @@
 ﻿/* 汇编器 */
 
-#include "xasm.h"
+#include "pasm.h"
 #include "bytecode.h"
 
 // ------------Disable deprecation
@@ -2888,7 +2888,7 @@ void AssmblSourceFile()
 }
 
 /* Assembly .PASM to .PE */
-void XASM_Assembly(char* pstrFilename, char* pstrExecFilename)
+void PASM_Assembly(char* pstrFilename, char* pstrExecFilename)
 {
     InitAssembler();
     LoadSourceFile(pstrFilename);

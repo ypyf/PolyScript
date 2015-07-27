@@ -10,7 +10,7 @@
 #include "i_code.h"
 #include "code_emit.h"
 
-#include "../xasm.h"
+#include "../pasm.h"
 
 void Init();
 void ShutDown();
@@ -212,7 +212,7 @@ void XSC_CompileScript(char* pstrFilename, char* pstrExecFilename)
 		EmitCode();
 		ShutDown();
 
-		XASM_Assembly(g_pstrOutputFilename, pstrExecFilename);
+		PASM_Assembly(g_pstrOutputFilename, pstrExecFilename);
 	}
 	else
 	{
