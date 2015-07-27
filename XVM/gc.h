@@ -1,7 +1,7 @@
 #ifndef __GC_H__
 #define	__GC_H__
 
-#include "elfvm-internal.h"
+#include "polyvm.h"
 
 // -------- Garbage Collection Interface ----------------------
 

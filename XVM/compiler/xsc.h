@@ -29,8 +29,8 @@
 
 #define MAX_FILENAME_SIZE           2048        // Maximum filename length
 
-#define SOURCE_FILE_EXT             ".XSS"      // Extension of a source code file
-#define OUTPUT_FILE_EXT             ".XASM"     // Extension of an output assembly file
+#define SOURCE_FILE_EXT             ".POLY"      // Extension of a source code file
+#define OUTPUT_FILE_EXT             ".PASM"     // Extension of an output assembly file
 
 // ---- Source Code -----------------------------------------------------------------------
 

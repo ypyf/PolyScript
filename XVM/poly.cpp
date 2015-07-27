@@ -1,9 +1,9 @@
-﻿#define _ELF_SOURCE
+﻿#define _Poly_SOURCE
 
 #include "bytecode.h"
-#include "elfvm-internal.h"
+#include "poly.h"
 #include "gc.h"
-#include "elfvm.h"
+#include "polyvm.h"
 #include "compiler/xsc.h"
 #include <ctype.h>
 #include <time.h>
@@ -105,12 +105,12 @@ void CallFunc(ScriptContext *sc, int iIndex, int type);
 
 /******************************************************************************************
 *
-*    ELF_Create()
+*    Poly_Create()
 *
 *    Initializes the runtime environment.
 */
 
-ScriptContext* ELF_Create()
+ScriptContext* Poly_Create()
 {
 	ScriptContext* thead = new ScriptContext;
 
@@ -135,12 +135,12 @@ ScriptContext* ELF_Create()
 
 /******************************************************************************************
 *
-*    ELF_GetSourceTimestamp()
+*    Poly_GetSourceTimestamp()
 *
 *    获取源文件修改时间戳
 */
 
-time_t ELF_GetSourceTimestamp(const char* filename)
+time_t Poly_GetSourceTimestamp(const char* filename)
 {
 	// 打开文件
 	FILE* pScriptFile = fopen(filename, "rb");
@@ -150,7 +150,7 @@ time_t ELF_GetSourceTimestamp(const char* filename)
 	// 验证文件类型
 	char pstrIDString[4];
 	fread(pstrIDString, 4, 1, pScriptFile);
-	if (memcmp(pstrIDString, ELF_ID_STRING, 4) != 0)
+	if (memcmp(pstrIDString, POLY_ID_STRING, 4) != 0)
 		return 0;
 
 	// 读取源文件修改时间戳字段
@@ -165,18 +165,18 @@ time_t ELF_GetSourceTimestamp(const char* filename)
 
 /******************************************************************************************
 *
-*    ELF_LoadXSE()
+*    Poly_LoadXSE()
 *
 *    Loads an .XSE file into memory.
 */
 
-int ELF_LoadXSE(ScriptContext *sc, const char *pstrFilename)
+int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 {
     // ----Open the input file
 
     FILE *pScriptFile;
     if (!(pScriptFile = fopen(pstrFilename, "rb")))
-        return ELF_LOAD_ERROR_FILE_IO;
+        return Poly_LOAD_ERROR_FILE_IO;
 
 
     // ----Read the header
@@ -188,8 +188,8 @@ int ELF_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // Compare the data read from the file to the ID string and exit on an error if they don't
     // match
 
-    if (memcmp(pstrIDString, ELF_ID_STRING, 4) != 0)
-        return ELF_LOAD_ERROR_INVALID_XSE;
+    if (memcmp(pstrIDString, POLY_ID_STRING, 4) != 0)
+        return Poly_LOAD_ERROR_INVALID_XSE;
 
 	// 跳过源文件时间戳字段
 	fseek(pScriptFile, sizeof(time_t), SEEK_CUR);
@@ -205,7 +205,7 @@ int ELF_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // Validate the version, since this prototype only supports version 1.0 scripts
 
     if (iMajorVersion != VERSION_MAJOR || iMinorVersion != VERSION_MINOR)
-        return ELF_LOAD_ERROR_UNSUPPORTED_VERS;
+        return Poly_LOAD_ERROR_UNSUPPORTED_VERS;
 
     // Read the stack size (4 bytes)
 
@@ -220,7 +220,7 @@ int ELF_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
     int iStackSize = sc->iStackSize;
     if (!(sc->stack = (Value *)malloc(iStackSize*sizeof(Value))))
-        return ELF_LOAD_ERROR_OUT_OF_MEMORY;
+        return Poly_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read the global data size (4 bytes)
 
@@ -252,7 +252,7 @@ int ELF_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // Allocate the stream
 
 	if (!(sc->InstrStream.Instrs = (INSTR *)malloc(sc->InstrStream.Size*sizeof(INSTR))))
-		return ELF_LOAD_ERROR_OUT_OF_MEMORY;
+		return Poly_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read the instruction data
 
@@ -274,7 +274,7 @@ int ELF_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
         Value *pOpList;
         if (!(pOpList = (Value *)malloc(iOpCount*sizeof(Value))))
-            return ELF_LOAD_ERROR_OUT_OF_MEMORY;
+            return Poly_LOAD_ERROR_OUT_OF_MEMORY;
 
         // Read in the operand list (N bytes)
 
@@ -371,7 +371,7 @@ int ELF_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
         char **ppstrStringTable;
         if (!(ppstrStringTable = (char **)malloc(iStringTableSize*sizeof(char *))))
-            return ELF_LOAD_ERROR_OUT_OF_MEMORY;
+            return Poly_LOAD_ERROR_OUT_OF_MEMORY;
 
         // Read in each string
 
@@ -386,7 +386,7 @@ int ELF_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
             char *pstrCurrString;
             if (!(pstrCurrString = (char *)malloc(iStringSize + 1)))
-                return ELF_LOAD_ERROR_OUT_OF_MEMORY;
+                return Poly_LOAD_ERROR_OUT_OF_MEMORY;
 
             // Read in the string data (N bytes) and append the null terminator
 
@@ -422,7 +422,7 @@ int ELF_LoadXSE(ScriptContext *sc, const char *pstrFilename)
                     // Allocate a new string to hold a copy of the one in the table
                     char *pstrStringCopy;
                     if (!(pstrStringCopy = (char *)malloc(strlen(ppstrStringTable[iStringIndex]) + 1)))
-                        return ELF_LOAD_ERROR_OUT_OF_MEMORY;
+                        return Poly_LOAD_ERROR_OUT_OF_MEMORY;
 
                     // Make a copy of the string
 
@@ -455,7 +455,7 @@ int ELF_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // Allocate the table
 
     if (!(sc->FuncTable.Funcs = (FUNC *)malloc(iFuncTableSize*sizeof(FUNC))))
-        return ELF_LOAD_ERROR_OUT_OF_MEMORY;
+        return Poly_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read each function
 
@@ -506,7 +506,7 @@ int ELF_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // Allocate the table
 
 	if (!(sc->HostCallTable.Calls = (char **)malloc(sc->HostCallTable.Size*sizeof(char *))))
-        return ELF_LOAD_ERROR_OUT_OF_MEMORY;
+        return Poly_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read each host API call
 
@@ -521,7 +521,7 @@ int ELF_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
         char *pstrCurrCall;
         if (!(pstrCurrCall = (char *)malloc(iCallLength + 1)))
-            return ELF_LOAD_ERROR_OUT_OF_MEMORY;
+            return Poly_LOAD_ERROR_OUT_OF_MEMORY;
 
         // Read the host API call string data and append the null terminator
 
@@ -539,34 +539,34 @@ int ELF_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
     // Reset the script
 
-    ELF_ResetVM(sc);
+    Poly_ResetVM(sc);
 
     // Return a success code
 
-    return ELF_LOAD_OK;
+    return Poly_LOAD_OK;
 }
 
 /******************************************************************************************
 *
-*    ELF_ShutDown()
+*    Poly_ShutDown()
 *
 *    Shuts down the runtime environment.
 */
 
-void ELF_ShutDown(ScriptContext *sc)
+void Poly_ShutDown(ScriptContext *sc)
 {
-	ELF_UnloadScript(sc);
+	Poly_UnloadScript(sc);
 	delete sc;
 }
 
 /******************************************************************************************
 *
-*    ELF_UnloadScript()
+*    Poly_UnloadScript()
 *
 *    Unloads a script from memory.
 */
 
-void ELF_UnloadScript(ScriptContext *sc)
+void Poly_UnloadScript(ScriptContext *sc)
 {
     // ----Free The instruction stream
 
@@ -634,13 +634,13 @@ void ELF_UnloadScript(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    ELF_ResetVM()
+*    Poly_ResetVM()
 *
 *    Resets the script. This function accepts a thread index rather than relying on the
 *    currently active thread, because scripts can (and will) need to be reset arbitrarily.
 */
 
-void ELF_ResetVM(ScriptContext *sc)
+void Poly_ResetVM(ScriptContext *sc)
 {
 	// 重置指令指针
 	sc->CurrInstr = 0;
@@ -718,7 +718,7 @@ static void ExecuteInstruction(ScriptContext *sc, int iTimesliceDur)
 		if (sc->CurrInstr >= sc->InstrStream.Size)
 		{
 			sc->IsRunning = FALSE;
-			sc->ExitCode = ELF_EXIT_OK;
+			sc->ExitCode = Poly_EXIT_OK;
 			break;
 		}
 
@@ -1322,7 +1322,7 @@ static void ExecuteInstruction(ScriptContext *sc, int iTimesliceDur)
             ++sc->CurrInstr;
 
         // 线程耗尽时间片
-        if (iTimesliceDur != ELF_INFINITE_TIMESLICE)
+        if (iTimesliceDur != Poly_INFINITE_TIMESLICE)
             if (iCurrTime > iMainTimesliceStartTime + iTimesliceDur)
                 break;
 
@@ -1334,15 +1334,15 @@ static void ExecuteInstruction(ScriptContext *sc, int iTimesliceDur)
 
 /******************************************************************************************
 *
-*    ELF_RunScript()
+*    Poly_RunScript()
 *
 *    Runs the specified script from Main() for a given timeslice duration.
 */
 
-void ELF_RunScript(ScriptContext *sc, int iTimesliceDur)
+void Poly_RunScript(ScriptContext *sc, int iTimesliceDur)
 {
-	ELF_StartScript(sc);
-    ELF_CallScriptFunc(sc, "Main");
+	Poly_StartScript(sc);
+    Poly_CallScriptFunc(sc, "Main");
 }
 
 /******************************************************************************************
@@ -1352,7 +1352,7 @@ void ELF_RunScript(ScriptContext *sc, int iTimesliceDur)
 *   Starts the execution of a script.
 */
 
-void ELF_StartScript(ScriptContext *sc)
+void Poly_StartScript(ScriptContext *sc)
 {
 	// Set the thread's execution flag
 
@@ -1369,12 +1369,12 @@ void ELF_StartScript(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    ELF_StopScript()
+*    Poly_StopScript()
 *
 *  Stops the execution of a script.
 */
 
-void ELF_StopScript(ScriptContext *sc)
+void Poly_StopScript(ScriptContext *sc)
 {
     // Clear the thread's execution flag
 
@@ -1383,12 +1383,12 @@ void ELF_StopScript(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    ELF_PauseScript()
+*    Poly_PauseScript()
 *
 *  Pauses a script for a specified duration.
 */
 
-void ELF_PauseScript(ScriptContext *sc, int iDur)
+void Poly_PauseScript(ScriptContext *sc, int iDur)
 {
     // Set the pause flag
 
@@ -1401,12 +1401,12 @@ void ELF_PauseScript(ScriptContext *sc, int iDur)
 
 /******************************************************************************************
 *
-*    ELF_ResumeScript()
+*    Poly_ResumeScript()
 *
 *  Unpauses a script.
 */
 
-void ELF_ResumeScript(ScriptContext *sc)
+void Poly_ResumeScript(ScriptContext *sc)
 {
     // Clear the pause flag
 
@@ -1415,12 +1415,12 @@ void ELF_ResumeScript(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    ELF_GetReturnValueAsInt()
+*    Poly_GetReturnValueAsInt()
 *
 *    Returns the last returned value as an integer.
 */
 
-int ELF_GetReturnValueAsInt(ScriptContext *sc)
+int Poly_GetReturnValueAsInt(ScriptContext *sc)
 {
     // Return _RetVal's integer field
 
@@ -1429,12 +1429,12 @@ int ELF_GetReturnValueAsInt(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    ELF_GetReturnValueAsFloat()
+*    Poly_GetReturnValueAsFloat()
 *
 *    Returns the last returned value as an float.
 */
 
-float ELF_GetReturnValueAsFloat(ScriptContext *sc)
+float Poly_GetReturnValueAsFloat(ScriptContext *sc)
 {
     // Return _RetVal's floating-point field
 
@@ -1443,12 +1443,12 @@ float ELF_GetReturnValueAsFloat(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    ELF_GetReturnValueAsString()
+*    Poly_GetReturnValueAsString()
 *
 *    Returns the last returned value as a string.
 */
 
-char* ELF_GetReturnValueAsString(ScriptContext *sc)
+char* Poly_GetReturnValueAsString(ScriptContext *sc)
 {
     // Return _RetVal's string field
 
@@ -1991,12 +1991,12 @@ void CallFunc(ScriptContext *sc, int iIndex, int type)
 
 /******************************************************************************************
 *
-*  ELF_PassIntParam()
+*  Poly_PassIntParam()
 *
 *  Passes an integer parameter from the host to a script function.
 */
 
-void ELF_PassIntParam(ScriptContext *sc, int iInt)
+void Poly_PassIntParam(ScriptContext *sc, int iInt)
 {
     // Create a Value structure to encapsulate the parameter
     Value Param;
@@ -2009,12 +2009,12 @@ void ELF_PassIntParam(ScriptContext *sc, int iInt)
 
 /******************************************************************************************
 *
-*  ELF_PassFloatParam()
+*  Poly_PassFloatParam()
 *
 *  Passes a floating-point parameter from the host to a script function.
 */
 
-void ELF_PassFloatParam(ScriptContext *sc, float fFloat)
+void Poly_PassFloatParam(ScriptContext *sc, float fFloat)
 {
     // Create a Value structure to encapsulate the parameter
     Value Param;
@@ -2027,12 +2027,12 @@ void ELF_PassFloatParam(ScriptContext *sc, float fFloat)
 
 /******************************************************************************************
 *
-*  ELF_PassStringParam()
+*  Poly_PassStringParam()
 *
 *  Passes a string parameter from the host to a script function.
 */
 
-void ELF_PassStringParam(ScriptContext *sc, char *pstrString)
+void Poly_PassStringParam(ScriptContext *sc, char *pstrString)
 {
     // Create a Value structure to encapsulate the parameter
     Value Param;
@@ -2067,12 +2067,12 @@ int GetFuncIndexByName(ScriptContext *sc, char *pstrName)
 
 /******************************************************************************************
 *
-*  ELF_CallScriptFunc()
+*  Poly_CallScriptFunc()
 *
 *  Calls a script function from the host application.
 */
 
-int ELF_CallScriptFunc(ScriptContext *sc, char *pstrName)
+int Poly_CallScriptFunc(ScriptContext *sc, char *pstrName)
 {
     // Get the function's index based on it's name
     int iFuncIndex = GetFuncIndexByName(sc, pstrName);
@@ -2085,21 +2085,21 @@ int ELF_CallScriptFunc(ScriptContext *sc, char *pstrName)
 	CallFunc(sc, iFuncIndex, OP_TYPE_STACK_BASE_MARKER);
 
     // Allow the script code to execute uninterrupted until the function returns
-    ExecuteInstruction(sc, ELF_INFINITE_TIMESLICE);
+    ExecuteInstruction(sc, Poly_INFINITE_TIMESLICE);
 
     return TRUE;
 }
 
 /******************************************************************************************
 *
-*  ELF_CallScriptFuncSync()
+*  Poly_CallScriptFuncSync()
 *
 *  Invokes a script function from the host application, meaning the call executes in sync
 *  with the script.
 *  用于在宿主API函数中同步地调用脚本函数。单独使用没有效果。
 */
 
-void ELF_CallScriptFuncSync(ScriptContext *sc, char *pstrName)
+void Poly_CallScriptFuncSync(ScriptContext *sc, char *pstrName)
 {
     // Get the function's index based on its name
     int iFuncIndex = GetFuncIndexByName(sc, pstrName);
@@ -2114,12 +2114,12 @@ void ELF_CallScriptFuncSync(ScriptContext *sc, char *pstrName)
 
 /******************************************************************************************
 *
-*  ELF_RegisterHostFunc()
+*  Poly_RegisterHostFunc()
 *
 *  Registers a function with the host API.
 */
 
-int ELF_RegisterHostFunc(ScriptContext *sc, char *pstrName, CRIOLLO_HOST_FUNCTION fnFunc)
+int Poly_RegisterHostFunc(ScriptContext *sc, char *pstrName, CRIOLLO_HOST_FUNCTION fnFunc)
 {
     HOST_API_FUNC** pCFuncTable;
 
@@ -2127,7 +2127,7 @@ int ELF_RegisterHostFunc(ScriptContext *sc, char *pstrName, CRIOLLO_HOST_FUNCTIO
 		return FALSE;
 
 	// 全局API
-	if (sc == ELF_GLOBAL_FUNC)
+	if (sc == Poly_GLOBAL_FUNC)
 		pCFuncTable = &g_HostAPIs;
 	else
 		pCFuncTable = &sc->HostAPIs;
@@ -2154,7 +2154,7 @@ int ELF_RegisterHostFunc(ScriptContext *sc, char *pstrName, CRIOLLO_HOST_FUNCTIO
 }
 
 // 返回栈帧上指定的参数
-Value ELF_GetParam(ScriptContext *sc, int iParamIndex)
+Value Poly_GetParam(ScriptContext *sc, int iParamIndex)
 {
     int iTopIndex = sc->iTopIndex;
     Value arg = sc->stack[iTopIndex - (iParamIndex + 1)];
@@ -2163,15 +2163,15 @@ Value ELF_GetParam(ScriptContext *sc, int iParamIndex)
 
 /******************************************************************************************
 *
-*  ELF_GetParamAsInt()
+*  Poly_GetParamAsInt()
 *
 *  Returns the specified integer parameter to a host API function.
 */
 
-int ELF_GetParamAsInt(ScriptContext *sc, int iParamIndex)
+int Poly_GetParamAsInt(ScriptContext *sc, int iParamIndex)
 {
     // Get the current top element
-    Value Param = ELF_GetParam(sc, iParamIndex);
+    Value Param = Poly_GetParam(sc, iParamIndex);
 
     // Coerce the top element of the stack to an integer
     int iInt = CoerceValueToInt(&Param);
@@ -2182,15 +2182,15 @@ int ELF_GetParamAsInt(ScriptContext *sc, int iParamIndex)
 
 /******************************************************************************************
 *
-*  ELF_GetParamAsFloat()
+*  Poly_GetParamAsFloat()
 *
 *  Returns the specified floating-point parameter to a host API function.
 */
 
-float ELF_GetParamAsFloat(ScriptContext *sc, int iParamIndex)
+float Poly_GetParamAsFloat(ScriptContext *sc, int iParamIndex)
 {
     // Get the current top element
-    Value Param = ELF_GetParam(sc, iParamIndex);
+    Value Param = Poly_GetParam(sc, iParamIndex);
 
     // Coerce the top element of the stack to a float
     float fFloat = CoerceValueToFloat(&Param);
@@ -2200,15 +2200,15 @@ float ELF_GetParamAsFloat(ScriptContext *sc, int iParamIndex)
 
 /******************************************************************************************
 *
-*  ELF_GetParamAsString()
+*  Poly_GetParamAsString()
 *
 *  Returns the specified string parameter to a host API function.
 */
 
-char* ELF_GetParamAsString(ScriptContext *sc, int iParamIndex)
+char* Poly_GetParamAsString(ScriptContext *sc, int iParamIndex)
 {
     // Get the current top element
-    Value Param = ELF_GetParam(sc, iParamIndex);
+    Value Param = Poly_GetParam(sc, iParamIndex);
 
     // Coerce the top element of the stack to a string
     char *pstrString = CoerceValueToString(&Param);
@@ -2218,12 +2218,12 @@ char* ELF_GetParamAsString(ScriptContext *sc, int iParamIndex)
 
 /******************************************************************************************
 *
-*  ELF_ReturnFromHost()
+*  Poly_ReturnFromHost()
 *
 *  Returns from a host API function.
 */
 
-void ELF_ReturnFromHost(ScriptContext *sc)
+void Poly_ReturnFromHost(ScriptContext *sc)
 {
     // Clear the parameters off the stack
     sc->iTopIndex = sc->iFrameIndex;
@@ -2231,45 +2231,45 @@ void ELF_ReturnFromHost(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*  ELF_ReturnIntFromHost()
+*  Poly_ReturnIntFromHost()
 *
 *  Returns an integer from a host API function.
 */
 
-void ELF_ReturnIntFromHost(ScriptContext *sc, int iInt)
+void Poly_ReturnIntFromHost(ScriptContext *sc, int iInt)
 {
     // Put the return value and type in _RetVal
     sc->_RetVal.Type = OP_TYPE_INT;
     sc->_RetVal.Fixnum = iInt;
 
-    ELF_ReturnFromHost(sc);
+    Poly_ReturnFromHost(sc);
 }
 
 /******************************************************************************************
 *
-*  ELF_ReturnFloatFromHost()
+*  Poly_ReturnFloatFromHost()
 *
 *  Returns a float from a host API function.
 */
 
-void ELF_ReturnFloatFromHost(ScriptContext *sc, float fFloat)
+void Poly_ReturnFloatFromHost(ScriptContext *sc, float fFloat)
 {
     // Put the return value and type in _RetVal
     sc->_RetVal.Type = OP_TYPE_FLOAT;
     sc->_RetVal.Realnum = fFloat;
 
     // Clear the parameters off the stack
-    ELF_ReturnFromHost(sc);
+    Poly_ReturnFromHost(sc);
 }
 
 /******************************************************************************************
 *
-*  ELF_ReturnStringFromHost()
+*  Poly_ReturnStringFromHost()
 *
 *  Returns a string from a host API function.
 */
 
-void ELF_ReturnStringFromHost(ScriptContext *sc, char *pstrString)
+void Poly_ReturnStringFromHost(ScriptContext *sc, char *pstrString)
 {
     // Put the return value and type in _RetVal
     Value ReturnValue;
@@ -2278,29 +2278,29 @@ void ELF_ReturnStringFromHost(ScriptContext *sc, char *pstrString)
     CopyValue(&sc->_RetVal, &ReturnValue);
 
     // Clear the parameters off the stack
-    ELF_ReturnFromHost(sc);
+    Poly_ReturnFromHost(sc);
 }
 
 
-int ELF_GetParamCount(ScriptContext *sc)
+int Poly_GetParamCount(ScriptContext *sc)
 {
     return (sc->iTopIndex - sc->iFrameIndex);
 }
 
 
-int ELF_IsScriptStop(ScriptContext *sc)
+int Poly_IsScriptStop(ScriptContext *sc)
 {
     return !sc->IsRunning;
 }
 
 
-int ELF_GetExitCode(ScriptContext *sc)
+int Poly_GetExitCode(ScriptContext *sc)
 {
     return sc->ExitCode;
 }
 
 // .xss => .xse
-void ELF_CompileScript(char *pstrFilename, char *pstrExecFilename)
+void Poly_CompileScript(char *pstrFilename, char *pstrExecFilename)
 {
 	XSC_CompileScript(pstrFilename, pstrExecFilename);
 }

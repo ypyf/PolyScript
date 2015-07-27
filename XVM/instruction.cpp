@@ -1,5 +1,4 @@
 #include "instruction.h"
-#include "mathlib.h"
 
 #ifdef WIN32
 #include <windows.h>
@@ -121,12 +120,12 @@ void exec_exp(const Value& op0, const Value& op1, Value& op2)
 	if (op0.Type == OP_TYPE_INT)
 	{
 		op2.Type = OP_TYPE_INT;
-		op2.Fixnum = math::IntPow(op0.Fixnum, op1.Fixnum);
+		//op2.Fixnum = math::IntPow(op0.Fixnum, op1.Fixnum);
 	}
 	else
 	{
 		op2.Type = OP_TYPE_FLOAT;
-		op2.Realnum = (float)pow(op0.Realnum, op1.Realnum);
+		//op2.Realnum = (float)pow(op0.Realnum, op1.Realnum);
 	}
 }
 

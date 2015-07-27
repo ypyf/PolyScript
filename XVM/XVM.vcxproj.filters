@@ -21,9 +21,6 @@
     <ClInclude Include="bytecode.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="mathlib.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="xqueue.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -75,21 +72,15 @@
     <ClInclude Include="instruction.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="elfvm.h">
+    <ClInclude Include="poly.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="elfvm-internal.h">
+    <ClInclude Include="polyvm.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="mathlib.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="xvm.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="xasm.cpp">
@@ -132,6 +123,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="instruction.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="poly.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

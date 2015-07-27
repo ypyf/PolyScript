@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "elfvm.h"
+#include "poly.h"
 
 #define MAX_PATH    260
 
@@ -27,23 +27,23 @@ void print_error_message(int iErrorCode)
 
     switch (iErrorCode)
     {
-    case ELF_LOAD_ERROR_FILE_IO:
+    case Poly_LOAD_ERROR_FILE_IO:
         printf("File I/O error");
         break;
 
-    case ELF_LOAD_ERROR_INVALID_XSE:
+    case Poly_LOAD_ERROR_INVALID_XSE:
         printf("Invalid .XSE file");
         break;
 
-    case ELF_LOAD_ERROR_UNSUPPORTED_VERS:
+    case Poly_LOAD_ERROR_UNSUPPORTED_VERS:
         printf("Unsupported .XSE version");
         break;
 
-    case ELF_LOAD_ERROR_OUT_OF_MEMORY:
+    case Poly_LOAD_ERROR_OUT_OF_MEMORY:
         printf("Out of memory");
         break;
 
-    case ELF_LOAD_ERROR_OUT_OF_THREADS:
+    case Poly_LOAD_ERROR_OUT_OF_THREADS:
         printf("Out of threads");
         break;
     }
@@ -56,35 +56,35 @@ void print_error_message(int iErrorCode)
 /* 打印平均值 */
 static void average(ScriptContext *sc)
 {
-    int n = ELF_GetParamCount(sc);
+    int n = Poly_GetParamCount(sc);
     int sum = 0;
     for (int i = 0; i < n; i++)
     {
-        sum += ELF_GetParamAsInt(sc, i);
+        sum += Poly_GetParamAsInt(sc, i);
     }
-    ELF_ReturnIntFromHost(sc, sum / n);
+    Poly_ReturnIntFromHost(sc, sum / n);
 }
 
 static void h_PrintString(ScriptContext *sc)
 {
-	char* str = ELF_GetParamAsString(sc, 0);
+	char* str = Poly_GetParamAsString(sc, 0);
 	puts(str);
-	ELF_ReturnFromHost(sc);
+	Poly_ReturnFromHost(sc);
 }
 
 static void h_PrintInt(ScriptContext *sc)
 {
-	int i = ELF_GetParamAsInt(sc, 0);
+	int i = Poly_GetParamAsInt(sc, 0);
 	printf("Explode %d!\n", i);
-	ELF_ReturnFromHost(sc);
+	Poly_ReturnFromHost(sc);
 }
 
 static void h_Division(ScriptContext *sc)
 {
-	float i = ELF_GetParamAsFloat(sc, 0);
-	float j = ELF_GetParamAsFloat(sc, 1);
+	float i = Poly_GetParamAsFloat(sc, 0);
+	float j = Poly_GetParamAsFloat(sc, 1);
 	printf("%f\n", i / j);
-	ELF_ReturnFromHost(sc);
+	Poly_ReturnFromHost(sc);
 }
 
 // ----CRL Entry Main ----------------------------------------------------------------------------------
@@ -106,7 +106,7 @@ int RunScript(char* pstrFilename)
         strcat(ExecFileName, XSE_FILE_EXT);
 
         // 编译
-		ELF_CompileScript(inputFilename, ExecFileName);
+		Poly_CompileScript(inputFilename, ExecFileName);
     }
     else if (strstr(inputFilename, XSE_FILE_EXT))
     {
@@ -119,12 +119,12 @@ int RunScript(char* pstrFilename)
     }
 
     // Initialize the runtime environment
-    ScriptContext *sc = ELF_Create();
+    ScriptContext *sc = Poly_Create();
 
     // 注册宿主api
-	ELF_RegisterHostFunc(ELF_GLOBAL_FUNC, "Explode", h_PrintInt);
-	ELF_RegisterHostFunc(ELF_GLOBAL_FUNC, "Division", h_Division);
-	if (!ELF_RegisterHostFunc(ELF_GLOBAL_FUNC, "PrintString", h_PrintString))
+	Poly_RegisterHostFunc(Poly_GLOBAL_FUNC, "Explode", h_PrintInt);
+	Poly_RegisterHostFunc(Poly_GLOBAL_FUNC, "Division", h_Division);
+	if (!Poly_RegisterHostFunc(Poly_GLOBAL_FUNC, "PrintString", h_PrintString))
     {
         printf("Register Host API Failed!");
         exit(1);
@@ -134,22 +134,22 @@ int RunScript(char* pstrFilename)
     int iErrorCode;
 
     // Load the demo script
-    iErrorCode = ELF_LoadXSE(sc, ExecFileName);
+    iErrorCode = Poly_LoadXSE(sc, ExecFileName);
 
     // Check for an error
-    if (iErrorCode != ELF_LOAD_OK)
+    if (iErrorCode != Poly_LOAD_OK)
     {
         print_error_message(iErrorCode);
         exit(1);
     }
 
     // Run we're loaded script from Main()
-    ELF_RunScript(sc, ELF_INFINITE_TIMESLICE);
+    Poly_RunScript(sc, Poly_INFINITE_TIMESLICE);
 
-    int iExitCode = ELF_GetExitCode(sc);
+    int iExitCode = Poly_GetExitCode(sc);
 
     // Free resources and perform general cleanup
-    ELF_ShutDown(sc);
+    Poly_ShutDown(sc);
 
     return iExitCode;
 }

@@ -33,9 +33,9 @@
 // code
 #define MAX_SOURCE_LINE_SIZE        4096        // Maximum source line length
 
-// ----,XSE Header -----------------------------------------------------------------------
+// ----Poly Header -----------------------------------------------------------------------
 
-#define ELF_ID_STRING               "ELF0"      // Written to the file to state it's validity
+#define POLY_ID_STRING              "POLYSCRIPT"      // Written to the file to state it's validity
 
 #define VERSION_MAJOR               0           // Major version number
 #define VERSION_MINOR               7           // Minor version number
@@ -2917,7 +2917,7 @@ void BuildXSE(const char* file)
 
     // Write the ID string(4 bytes)
 
-    fwrite(ELF_ID_STRING, 4, 1, pExecFile);
+    fwrite(POLY_ID_STRING, 4, 1, pExecFile);
 
 	// 写入源文件创建时间戳
 	struct stat fs;

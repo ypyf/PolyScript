@@ -40,12 +40,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>E:\projects\XVM\include;$(IncludePath)</IncludePath>
-    <TargetName>xvm_d32</TargetName>
+    <TargetName>poly_d32</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>E:\projects\XVM\include;$(IncludePath)</IncludePath>
-    <TargetName>xvm_r32</TargetName>
+    <TargetName>poly_r32</TargetName>
     <EmbedManifest>false</EmbedManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -95,11 +95,10 @@
     <ClInclude Include="Compiler\xsc.h" />
     <ClInclude Include="gc.h" />
     <ClInclude Include="instruction.h" />
-    <ClInclude Include="mathlib.h" />
     <ClInclude Include="xasm.h" />
     <ClInclude Include="xqueue.h" />
-    <ClInclude Include="elfvm.h" />
-    <ClInclude Include="elfvm-internal.h" />
+    <ClInclude Include="poly.h" />
+    <ClInclude Include="polyvm.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Compiler\code_emit.cpp" />
@@ -115,10 +114,9 @@
     <ClCompile Include="Compiler\xsc.cpp" />
     <ClCompile Include="instruction.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="mathlib.cpp" />
     <ClCompile Include="xasm.cpp" />
     <ClCompile Include="gc.cpp" />
-    <ClCompile Include="xvm.cpp" />
+    <ClCompile Include="poly.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
