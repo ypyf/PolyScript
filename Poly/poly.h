@@ -45,18 +45,18 @@ extern "C" {
 
 // ----Script Loading Error Codes --------------------------------------------------------
 
-#define Poly_LOAD_OK                        0        // Load successful
-#define Poly_LOAD_ERROR_FILE_IO             1        // File I/O error (most likely a file not found error
-#define Poly_LOAD_ERROR_INVALID_XSE         2        // Invalid .XSE structure
-#define Poly_LOAD_ERROR_UNSUPPORTED_VERS    3        // The format version is unsupported
-#define Poly_LOAD_ERROR_OUT_OF_MEMORY       4        // Out of memory
-#define Poly_LOAD_ERROR_OUT_OF_THREADS      5        // Out of threads
+#define POLY_LOAD_OK                        0        // Load successful
+#define POLY_LOAD_ERROR_FILE_IO             1        // File I/O error (most likely a file not found error
+#define POLY_LOAD_ERROR_INVALID_XSE         2        // Invalid .XSE structure
+#define POLY_LOAD_ERROR_UNSUPPORTED_VERS    3        // The format version is unsupported
+#define POLY_LOAD_ERROR_OUT_OF_MEMORY       4        // Out of memory
+#define POLY_LOAD_ERROR_OUT_OF_THREADS      5        // Out of threads
 
-#define Poly_INFINITE_TIMESLICE       1          // Allows a thread to run indefinitely
+#define POLY_INFINITE_TIMESLICE       1          // Allows a thread to run indefinitely
 
 // ----The Host API ----------------------------------------------------------------------
 
-#define Poly_GLOBAL_FUNC              0          // Flags a host API function as being global
+#define POLY_GLOBAL_FUNC              0          // Flags a host API function as being global
 
 // 文件名后缀
 #define XSS_FILE_EXT				".POLY"

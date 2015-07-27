@@ -27,23 +27,23 @@ void print_error_message(int iErrorCode)
 
     switch (iErrorCode)
     {
-    case Poly_LOAD_ERROR_FILE_IO:
+    case POLY_LOAD_ERROR_FILE_IO:
         printf("File I/O error");
         break;
 
-    case Poly_LOAD_ERROR_INVALID_XSE:
+    case POLY_LOAD_ERROR_INVALID_XSE:
         printf("Invalid .XSE file");
         break;
 
-    case Poly_LOAD_ERROR_UNSUPPORTED_VERS:
+    case POLY_LOAD_ERROR_UNSUPPORTED_VERS:
         printf("Unsupported .XSE version");
         break;
 
-    case Poly_LOAD_ERROR_OUT_OF_MEMORY:
+    case POLY_LOAD_ERROR_OUT_OF_MEMORY:
         printf("Out of memory");
         break;
 
-    case Poly_LOAD_ERROR_OUT_OF_THREADS:
+    case POLY_LOAD_ERROR_OUT_OF_THREADS:
         printf("Out of threads");
         break;
     }
@@ -122,9 +122,9 @@ int RunScript(char* pstrFilename)
     ScriptContext *sc = Poly_Create();
 
     // 注册宿主api
-	Poly_RegisterHostFunc(Poly_GLOBAL_FUNC, "Explode", h_PrintInt);
-	Poly_RegisterHostFunc(Poly_GLOBAL_FUNC, "Division", h_Division);
-	if (!Poly_RegisterHostFunc(Poly_GLOBAL_FUNC, "PrintString", h_PrintString))
+	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Explode", h_PrintInt);
+	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Division", h_Division);
+	if (!Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "PrintString", h_PrintString))
     {
         printf("Register Host API Failed!");
         exit(1);
@@ -137,14 +137,14 @@ int RunScript(char* pstrFilename)
     iErrorCode = Poly_LoadXSE(sc, ExecFileName);
 
     // Check for an error
-    if (iErrorCode != Poly_LOAD_OK)
+    if (iErrorCode != POLY_LOAD_OK)
     {
         print_error_message(iErrorCode);
         exit(1);
     }
 
     // Run we're loaded script from Main()
-    Poly_RunScript(sc, Poly_INFINITE_TIMESLICE);
+    Poly_RunScript(sc, POLY_INFINITE_TIMESLICE);
 
     int iExitCode = Poly_GetExitCode(sc);
 

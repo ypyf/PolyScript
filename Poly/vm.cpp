@@ -176,7 +176,7 @@ int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
     FILE *pScriptFile;
     if (!(pScriptFile = fopen(pstrFilename, "rb")))
-        return Poly_LOAD_ERROR_FILE_IO;
+        return POLY_LOAD_ERROR_FILE_IO;
 
 
     // ----Read the header
@@ -189,7 +189,7 @@ int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // match
 
     if (memcmp(pstrIDString, POLY_ID_STRING, 4) != 0)
-        return Poly_LOAD_ERROR_INVALID_XSE;
+        return POLY_LOAD_ERROR_INVALID_XSE;
 
 	// 跳过源文件时间戳字段
 	fseek(pScriptFile, sizeof(time_t), SEEK_CUR);
@@ -205,7 +205,7 @@ int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // Validate the version, since this prototype only supports version 1.0 scripts
 
     if (iMajorVersion != VERSION_MAJOR || iMinorVersion != VERSION_MINOR)
-        return Poly_LOAD_ERROR_UNSUPPORTED_VERS;
+        return POLY_LOAD_ERROR_UNSUPPORTED_VERS;
 
     // Read the stack size (4 bytes)
 
@@ -220,7 +220,7 @@ int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
     int iStackSize = sc->iStackSize;
     if (!(sc->stack = (Value *)malloc(iStackSize*sizeof(Value))))
-        return Poly_LOAD_ERROR_OUT_OF_MEMORY;
+        return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read the global data size (4 bytes)
 
@@ -252,7 +252,7 @@ int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // Allocate the stream
 
 	if (!(sc->InstrStream.Instrs = (INSTR *)malloc(sc->InstrStream.Size*sizeof(INSTR))))
-		return Poly_LOAD_ERROR_OUT_OF_MEMORY;
+		return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read the instruction data
 
@@ -274,7 +274,7 @@ int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
         Value *pOpList;
         if (!(pOpList = (Value *)malloc(iOpCount*sizeof(Value))))
-            return Poly_LOAD_ERROR_OUT_OF_MEMORY;
+            return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
         // Read in the operand list (N bytes)
 
@@ -371,7 +371,7 @@ int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
         char **ppstrStringTable;
         if (!(ppstrStringTable = (char **)malloc(iStringTableSize*sizeof(char *))))
-            return Poly_LOAD_ERROR_OUT_OF_MEMORY;
+            return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
         // Read in each string
 
@@ -386,7 +386,7 @@ int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
             char *pstrCurrString;
             if (!(pstrCurrString = (char *)malloc(iStringSize + 1)))
-                return Poly_LOAD_ERROR_OUT_OF_MEMORY;
+                return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
             // Read in the string data (N bytes) and append the null terminator
 
@@ -422,7 +422,7 @@ int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
                     // Allocate a new string to hold a copy of the one in the table
                     char *pstrStringCopy;
                     if (!(pstrStringCopy = (char *)malloc(strlen(ppstrStringTable[iStringIndex]) + 1)))
-                        return Poly_LOAD_ERROR_OUT_OF_MEMORY;
+                        return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
                     // Make a copy of the string
 
@@ -455,7 +455,7 @@ int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // Allocate the table
 
     if (!(sc->FuncTable.Funcs = (FUNC *)malloc(iFuncTableSize*sizeof(FUNC))))
-        return Poly_LOAD_ERROR_OUT_OF_MEMORY;
+        return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read each function
 
@@ -506,7 +506,7 @@ int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
     // Allocate the table
 
 	if (!(sc->HostCallTable.Calls = (char **)malloc(sc->HostCallTable.Size*sizeof(char *))))
-        return Poly_LOAD_ERROR_OUT_OF_MEMORY;
+        return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read each host API call
 
@@ -521,7 +521,7 @@ int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
         char *pstrCurrCall;
         if (!(pstrCurrCall = (char *)malloc(iCallLength + 1)))
-            return Poly_LOAD_ERROR_OUT_OF_MEMORY;
+            return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
         // Read the host API call string data and append the null terminator
 
@@ -543,7 +543,7 @@ int Poly_LoadXSE(ScriptContext *sc, const char *pstrFilename)
 
     // Return a success code
 
-    return Poly_LOAD_OK;
+    return POLY_LOAD_OK;
 }
 
 /******************************************************************************************
@@ -1322,7 +1322,7 @@ static void ExecuteInstruction(ScriptContext *sc, int iTimesliceDur)
             ++sc->CurrInstr;
 
         // 线程耗尽时间片
-        if (iTimesliceDur != Poly_INFINITE_TIMESLICE)
+        if (iTimesliceDur != POLY_INFINITE_TIMESLICE)
             if (iCurrTime > iMainTimesliceStartTime + iTimesliceDur)
                 break;
 
@@ -2085,7 +2085,7 @@ int Poly_CallScriptFunc(ScriptContext *sc, char *pstrName)
 	CallFunc(sc, iFuncIndex, OP_TYPE_STACK_BASE_MARKER);
 
     // Allow the script code to execute uninterrupted until the function returns
-    ExecuteInstruction(sc, Poly_INFINITE_TIMESLICE);
+    ExecuteInstruction(sc, POLY_INFINITE_TIMESLICE);
 
     return TRUE;
 }
@@ -2127,7 +2127,7 @@ int Poly_RegisterHostFunc(ScriptContext *sc, char *pstrName, CRIOLLO_HOST_FUNCTI
 		return FALSE;
 
 	// 全局API
-	if (sc == Poly_GLOBAL_FUNC)
+	if (sc == POLY_GLOBAL_FUNC)
 		pCFuncTable = &g_HostAPIs;
 	else
 		pCFuncTable = &sc->HostAPIs;
