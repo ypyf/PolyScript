@@ -446,18 +446,18 @@ void ParseStatement()
 			break;
 		}
 
+	case TOKEN_TYPE_OP:
 		// 前缀表达式语句
-	default:
-		if (GetCurrToken() == TOKEN_TYPE_OP && 
-			(GetCurrOp() == OP_TYPE_INC || GetCurrOp() == OP_TYPE_DEC))
+		if (GetCurrOp() == OP_TYPE_INC || GetCurrOp() == OP_TYPE_DEC)
 		{
 			RewindTokenStream();
 			ParseUnary();
 			MatchToken(TOKEN_TYPE_SEMICOLON);
-			break;
 		}
+		break;
+	default:
 		// TODO 警告
-		// 无副作用的表达式语句
+		// 可能是无副作用的表达式语句或者不合法的语句
 		break;
 	}
 }
