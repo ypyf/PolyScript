@@ -250,8 +250,8 @@ struct XFuncNode
 	int iIndex;									 // Index
 	char pstrName[MAX_IDENT_SIZE];               // Name
 	int iParamCount;                             // The number of accepted parameters
-	int iEntryPoint;                             // Entry point (XASM专用
-	int iLocalDataSize;                          // Local data size (XASM专用)
+	int iEntryPoint;                             // Entry point
+	int iLocalDataSize;                          // Local data size
 };
 
 // ----Label Table -----------------------------------------------------------------------
@@ -267,7 +267,7 @@ typedef struct _LabelNode                       // A label table node
 struct ASMScriptHeader                    // Script header data
 {
 	int iStackSize;                             // Requested stack size
-	int GlobalDataSize;                         // (XASM专用)
+	int GlobalDataSize;                         //
 
 	int iIsMainFuncPresent;                     // Is _Main () present?
 	int iMainFuncIndex;							// _Main ()'s function index

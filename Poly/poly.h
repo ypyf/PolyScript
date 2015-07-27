@@ -59,9 +59,9 @@ extern "C" {
 #define POLY_GLOBAL_FUNC              0          // Flags a host API function as being global
 
 // 文件名后缀
-#define XSS_FILE_EXT				".POLY"
-#define XASM_FILE_EXT				".PASM"
-#define XSE_FILE_EXT				".PE"
+#define POLY_FILE_EXT				".POLY"
+#define PASM_FILE_EXT				".PASM"
+#define PE_FILE_EXT					".PE"
 
 
 // ----Data Structures -----------------------------------------------------------------------

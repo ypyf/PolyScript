@@ -47,7 +47,7 @@ LinkedList g_SymbolTable;                       // The symbol table
 
 LinkedList g_StringTable;						// The string table
 
-// ---- XASM Invocation -------------------------------------------------------------------
+// ---- PASM Invocation -------------------------------------------------------------------
 
 int g_iPreserveOutputFile;                      // Preserve the assembly file?
 int g_iGenerateXSE;                             // Generate an .PE executable?

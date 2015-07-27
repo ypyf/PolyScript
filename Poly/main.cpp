@@ -98,17 +98,17 @@ int RunScript(char* pstrFilename)
 	strupr(inputFilename);
 
     // 构造 .PE 文件名
-    if (strstr(inputFilename, XSS_FILE_EXT))
+    if (strstr(inputFilename, POLY_FILE_EXT))
     {
         int ExtOffset = strrchr(inputFilename, '.') - inputFilename;
         strncpy(ExecFileName, inputFilename, ExtOffset);
         ExecFileName[ExtOffset] = '\0';
-        strcat(ExecFileName, XSE_FILE_EXT);
+        strcat(ExecFileName, PE_FILE_EXT);
 
         // 编译
 		Poly_CompileScript(inputFilename, ExecFileName);
     }
-    else if (strstr(inputFilename, XSE_FILE_EXT))
+    else if (strstr(inputFilename, PE_FILE_EXT))
     {
         strcpy(ExecFileName, inputFilename);
     }
