@@ -432,9 +432,6 @@ void ParseStatement()
 				AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine());
 				ParseFuncCall();
 
-				// Verify the presence of the semicolon
-
-				MatchToken(TOKEN_TYPE_SEMICOLON);
 			}
 			else
 			{
@@ -442,12 +439,18 @@ void ParseStatement()
 				ExitOnCodeError("Invalid identifier");
 			}
 
+			// Verify the presence of the semicolon
+
+			MatchToken(TOKEN_TYPE_SEMICOLON);
+
 			break;
 		}
 
-		// 表达式语句
+		// 前缀表达式语句
 	default:
-		ParseExpr();
+		RewindTokenStream();
+		ParseUnary();
+		MatchToken(TOKEN_TYPE_SEMICOLON);
 		break;
 	}
 }
@@ -1211,7 +1214,7 @@ void ParseTerm()
 void ParseUnary()
 {
 	// 处理一元运算符
-	if (GetCurrToken() == TOKEN_TYPE_OP && IsOpUnary(GetCurrOp()))
+	if (GetNextToken() == TOKEN_TYPE_OP && IsOpUnary(GetCurrOp()))
 	{
 		int iOpType = GetCurrOp();
 
@@ -1260,8 +1263,6 @@ void ParseUnary()
 				if (pSymbol->iSize > 1)
 					ExitOnCodeError("Arrays must be indexed");
 			}
-
-			MatchToken(TOKEN_TYPE_SEMICOLON);
 
 			// Push Dest
 			if (iIsArray)
@@ -1351,6 +1352,7 @@ void ParseUnary()
 	}
 	else
 	{
+		RewindTokenStream();
 		ParseFactor();
 	}
 }
@@ -1880,10 +1882,6 @@ void ParseAssign()
 	// ---- Parse the value expression
 
 	ParseExpr();
-
-	// Validate the presence of the semicolon
-
-	MatchToken(TOKEN_TYPE_SEMICOLON);
 
 	// 简单赋值 a = b
 	if (iAssignOp == OP_TYPE_ASSIGN)
