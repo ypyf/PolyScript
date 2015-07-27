@@ -6,6 +6,7 @@
 void CopyValue(Value *pDest, Value* Source);
 void exec_push(ScriptContext *sc, Value *Val);
 Value exec_pop(ScriptContext *sc);
+void exec_dup(ScriptContext *sc);
 void exec_remove(ScriptContext *sc);
 
 void exec_add(const Value& op0, const Value& op1, Value& op2);

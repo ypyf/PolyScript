@@ -1113,6 +1113,10 @@ static void ExecuteInstruction(ScriptContext *sc, int iTimesliceDur)
                 break;
             }
 
+		case INSTR_DUP:
+			exec_dup(sc);
+			break;
+
 		case INSTR_REMOVE:
 			exec_remove(sc);
 			break;

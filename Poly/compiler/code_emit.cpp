@@ -18,7 +18,7 @@ char ppstrMnemonics[][12] =
 	"and", "or", "xor", "not", "shl", "shr",
 	"jmp", "je", "jne", "jg", "jl", "jge", "jle",
 	"brtrue", "brfalse",
-	"push", "pop", "remove",
+	"push", "pop", "dup", "remove",
 	"call", "ret",
 	"pause",
 	"iconst0", "iconst1", "fconst0", "fconst1",

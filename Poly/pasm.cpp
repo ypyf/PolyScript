@@ -981,6 +981,9 @@ void InitInstrTable()
     iInstrIndex = AddInstrLookup("Pop", INSTR_POP, 1);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
 
+	// Duplicate
+	AddInstrLookup("dup", INSTR_DUP, 0);
+
 	// Remove
 	 AddInstrLookup("remove", INSTR_REMOVE, 0);
 

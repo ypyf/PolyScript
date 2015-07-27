@@ -38,6 +38,14 @@ Value exec_pop(ScriptContext *sc)
     return Val;
 }
 
+void exec_dup(ScriptContext *sc)
+{
+	int iTop = sc->iTopIndex;
+	CopyValue(&sc->stack[iTop], &sc->stack[iTop - 1]);
+	++sc->iTopIndex;
+	return;
+}
+
 void exec_remove(ScriptContext *sc)
 {
 	--sc->iTopIndex;

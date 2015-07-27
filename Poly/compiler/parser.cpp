@@ -1302,27 +1302,23 @@ void ParseUnary()
 				break;
 			}
 
-			int iInstrIndex;
+			// dup
+			// pop dest
+
+			AddICodeInstr(g_iCurrScope, INSTR_DUP);
+
+			int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+
 			if (iIsArray)
 			{
-				// POP Dest
-				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-				AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1);
-
-				// PUSH again
-				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
+				
 				AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1);
 			}
 			else
 			{	
-				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-				AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
-
-				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
 				AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
 			}
 			
-
 			return;
 		}
 		else
