@@ -29,7 +29,7 @@ struct Loop                                 // Loop instance
 
 void MatchToken(Token ReqToken);
 
-int IsOpUnary(int iOpType);
+int IsOpPrefix(int iOpType);
 int IsOpAssign(int iOpType);
 int IsOpRelational(int iOpType);
 int IsOpLogical(int iOpType);

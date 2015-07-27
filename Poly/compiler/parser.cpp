@@ -195,7 +195,7 @@ void MatchToken(Token ReqToken)
 	}
 }
 
-int IsOpUnary(int iOpType)
+int IsOpPrefix(int iOpType)
 {
 	switch (iOpType)
 	{
@@ -448,9 +448,16 @@ void ParseStatement()
 
 		// 前缀表达式语句
 	default:
-		RewindTokenStream();
-		ParseUnary();
-		MatchToken(TOKEN_TYPE_SEMICOLON);
+		if (GetCurrToken() == TOKEN_TYPE_OP && 
+			(GetCurrOp() == OP_TYPE_INC || GetCurrOp() == OP_TYPE_DEC))
+		{
+			RewindTokenStream();
+			ParseUnary();
+			MatchToken(TOKEN_TYPE_SEMICOLON);
+			break;
+		}
+		// TODO 警告
+		// 无副作用的表达式语句
 		break;
 	}
 }
@@ -1214,7 +1221,7 @@ void ParseTerm()
 void ParseUnary()
 {
 	// 处理一元运算符
-	if (GetNextToken() == TOKEN_TYPE_OP && IsOpUnary(GetCurrOp()))
+	if (GetNextToken() == TOKEN_TYPE_OP && IsOpPrefix(GetCurrOp()))
 	{
 		int iOpType = GetCurrOp();
 
@@ -1874,10 +1881,15 @@ void ParseAssign()
 
 	// ---- Parse the assignment operator
 
-	if (GetNextToken() != TOKEN_TYPE_OP && !IsOpAssign(GetCurrOp()))
-		ExitOnCodeError("Illegal assignment operator");
-	else
+	if (GetNextToken() == TOKEN_TYPE_OP && IsOpAssign(GetCurrOp()))
 		iAssignOp = GetCurrOp();
+	else
+	{
+		// TODO 警告
+		// 可能仅仅是一个无副作用的表达式
+		RewindTokenStream();
+		return;
+	}
 
 	// ---- Parse the value expression
 
