@@ -11,8 +11,8 @@ A game script virtual machine.
     
     func main()
     {
-        var i;
-        i = 10;
+        var i = 10;
+
         while (i > 0)
         {
             print "Hello World";
