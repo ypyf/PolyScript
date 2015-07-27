@@ -25,7 +25,7 @@ static bool IsMainFunc()
 
 /******************************************************************************************
 *
-*   ReadToken()
+*   MatchToken()
 *
 *   Attempts to read a specific token and prints an error if its not found.
 */
@@ -497,12 +497,14 @@ void ParseVar()
 
 	// Copy the current lexeme into a local string buffer to save the variable's identifier
 
-	char pstrIdent [ MAX_LEXEME_SIZE ];
+	char pstrIdent[MAX_LEXEME_SIZE];
 	CopyCurrLexeme(pstrIdent);
 
 	// Set the size to 1 for a variable (an array will update this value)
 
 	int iSize = 1;
+
+	int iIsArray = FALSE;
 
 	// Is the look-ahead character an open brace?
 
@@ -518,17 +520,40 @@ void ParseVar()
 
 		// Convert the current lexeme to an integer to get the size
 
-		iSize = atoi (GetCurrLexeme());
+		iSize = atoi(GetCurrLexeme());
 
 		// Read the closing brace
 
 		MatchToken(TOKEN_TYPE_CLOSE_BRACE);
+
+		iIsArray = TRUE;
 	}
 
 	// Add the identifier and size to the symbol table
 
 	if (AddSymbol(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
 		ExitOnCodeError("Identifier redefinition");
+
+	// 声明时初始化标量
+	if (!iIsArray)
+	{
+		// ---- Parse the assignment operator
+
+		if (GetNextToken() != TOKEN_TYPE_OP || GetCurrOp() != OP_TYPE_ASSIGN)
+		{
+			RewindTokenStream();
+		}
+		else
+		{
+			// ---- Parse the value expression
+
+			ParseExpr();
+
+			int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+			SymbolNode *pSymbol = GetSymbolByIdent(pstrIdent, g_iCurrScope);
+			AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
+		}
+	}
 
 	// Read the semicolon
 
