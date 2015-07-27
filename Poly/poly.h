@@ -43,9 +43,6 @@ extern "C" {
 #define FALSE                   0           // False
 #endif
 
-// ---- Script Exit Code
-#define Poly_EXIT_OK             0
-
 // ----Script Loading Error Codes --------------------------------------------------------
 
 #define Poly_LOAD_OK                        0        // Load successful

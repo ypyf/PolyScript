@@ -718,7 +718,7 @@ static void ExecuteInstruction(ScriptContext *sc, int iTimesliceDur)
 		if (sc->CurrInstr >= sc->InstrStream.Size)
 		{
 			sc->IsRunning = FALSE;
-			sc->ExitCode = Poly_EXIT_OK;
+			sc->ExitCode = EXIT_SUCCESS;
 			break;
 		}
 
