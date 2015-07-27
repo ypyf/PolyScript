@@ -77,7 +77,7 @@ void ResetLexer()
 *   Copies one lexer state structure into another.
 */
 
-void CopyLexerState(LexerState & pDestState, LexerState & pSourceState)
+void CopyLexerState(LexerState & pDestState, const LexerState & pSourceState)
 {
 	// Copy each field individually to ensure a safe copy
 
@@ -900,6 +900,23 @@ Token GetNextToken()
 
 /******************************************************************************************
 *
+*   ReserveCurrentState()
+*
+*   Moves the lexer back one token.
+*/
+
+void SaveLexerState(LexerState& state)
+{
+	CopyLexerState(state, g_CurrLexerState);
+}
+
+void RestoreLexerState(const LexerState& state)
+{
+	CopyLexerState(g_CurrLexerState, state);
+}
+
+/******************************************************************************************
+*
 *   RewindTokenStream ()
 *
 *   Moves the lexer back one token.
@@ -989,6 +1006,13 @@ char GetLookAheadChar()
 	// Return the look-ahead character
 
 	return cCurrChar;
+}
+
+Token GetLookAheadToken()
+{
+	Token t = GetNextChar();
+	RewindTokenStream();
+	return t;
 }
 
 /******************************************************************************************

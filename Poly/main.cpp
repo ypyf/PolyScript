@@ -119,7 +119,7 @@ int RunScript(char* pstrFilename)
     }
 
     // Initialize the runtime environment
-    ScriptContext *sc = Poly_Create();
+    ScriptContext *sc = Poly_CreateInterp();
 
     // 注册宿主api
 	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Explode", h_PrintInt);

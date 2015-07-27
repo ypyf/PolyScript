@@ -150,7 +150,9 @@ struct OpState                             // Operator state
 // ---- Function Prototypes -------------------------------------------------------------------
 
 void ResetLexer();
-void CopyLexerState(LexerState & pDestState, LexerState & pSourceState);
+void CopyLexerState(LexerState & pDestState, const LexerState & pSourceState);
+void SaveLexerState(LexerState& state);
+void RestoreLexerState(const LexerState& state);
 
 int GetOpStateIndex(char cChar, int iCharIndex, int iSubStateIndex, int iSubStateCount);
 int IsCharOpChar(char cChar, int iCharIndex);
@@ -168,6 +170,7 @@ char* GetCurrLexeme();
 void CopyCurrLexeme(char* pstrBuffer);
 int GetCurrOp();
 char GetLookAheadChar();
+Token GetLookAheadToken();
 
 char* GetCurrSourceLine();
 int GetCurrSourceLineIndex();

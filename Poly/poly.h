@@ -100,7 +100,7 @@ struct Value
 
 // ----Main ------------------------------------------------------------------------------
 
-POLY_API ScriptContext* Poly_Create();
+POLY_API ScriptContext* Poly_CreateInterp();
 POLY_API void Poly_ShutDown(ScriptContext *sc);
 
 // ----Script Interface ------------------------------------------------------------------
@@ -108,7 +108,7 @@ POLY_API void Poly_ShutDown(ScriptContext *sc);
 POLY_API void Poly_CompileScript(char *pstrFilename, char *pstrExecFilename);
 POLY_API int Poly_LoadPE(ScriptContext *sc, const char *pstrFilename);
 POLY_API void Poly_UnloadScript(ScriptContext *sc);
-POLY_API void Poly_ResetVM(ScriptContext *sc);
+POLY_API void Poly_ResetInterp(ScriptContext *sc);
 POLY_API void Poly_RunScript(ScriptContext *sc, int iTimesliceDur);
 POLY_API void Poly_StartScript(ScriptContext *sc);
 POLY_API void Poly_StopScript(ScriptContext *sc);
@@ -121,14 +121,14 @@ POLY_API int Poly_CallScriptFunc(ScriptContext *sc, char *pstrName);
 POLY_API void Poly_CallScriptFuncSync(ScriptContext *sc, char *pstrName);
 POLY_API int Poly_GetReturnValueAsInt(ScriptContext *sc);
 POLY_API float Poly_GetReturnValueAsFloat(ScriptContext *sc);
-POLY_API char *Poly_GetReturnValueAsString(ScriptContext *sc);
+POLY_API char* Poly_GetReturnValueAsString(ScriptContext *sc);
 
 // ----Host API Interface ----------------------------------------------------------------
 
 POLY_API int Poly_RegisterHostFunc(ScriptContext *sc, char *pstrName, POLY_HOST_FUNCTION fnFunc);
 POLY_API int Poly_GetParamAsInt(ScriptContext *sc, int iParamIndex);
 POLY_API float Poly_GetParamAsFloat(ScriptContext *sc, int iParamIndex);
-POLY_API char *Poly_GetParamAsString(ScriptContext *sc, int iParamIndex);
+POLY_API char* Poly_GetParamAsString(ScriptContext *sc, int iParamIndex);
 POLY_API Value Poly_GetParam(ScriptContext *sc, int iParamIndex);
 
 POLY_API void Poly_ReturnFromHost(ScriptContext *sc);

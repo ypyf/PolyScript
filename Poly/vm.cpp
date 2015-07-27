@@ -110,7 +110,7 @@ void CallFunc(ScriptContext *sc, int iIndex, int type);
 *    Initializes the runtime environment.
 */
 
-ScriptContext* Poly_Create()
+ScriptContext* Poly_CreateInterp()
 {
 	ScriptContext* thead = new ScriptContext;
 
@@ -539,7 +539,7 @@ int Poly_LoadPE(ScriptContext *sc, const char *pstrFilename)
 
     // Reset the script
 
-    Poly_ResetVM(sc);
+    Poly_ResetInterp(sc);
 
     // Return a success code
 
@@ -640,7 +640,7 @@ void Poly_UnloadScript(ScriptContext *sc)
 *    currently active thread, because scripts can (and will) need to be reset arbitrarily.
 */
 
-void Poly_ResetVM(ScriptContext *sc)
+void Poly_ResetInterp(ScriptContext *sc)
 {
 	// 重置指令指针
 	sc->CurrInstr = 0;

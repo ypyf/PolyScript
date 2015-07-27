@@ -500,6 +500,7 @@ void ParseBlock()
 *
 *       var <Identifier>;
 *       var <Identifier>[<Integer>];
+*		var <Identifier> = <Expression>;
 */
 
 void ParseVar()
