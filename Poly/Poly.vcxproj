@@ -98,7 +98,7 @@
     <ClInclude Include="xasm.h" />
     <ClInclude Include="xqueue.h" />
     <ClInclude Include="poly.h" />
-    <ClInclude Include="polyvm.h" />
+    <ClInclude Include="vm.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Compiler\code_emit.cpp" />
@@ -116,7 +116,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="xasm.cpp" />
     <ClCompile Include="gc.cpp" />
-    <ClCompile Include="poly.cpp" />
+    <ClCompile Include="vm.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

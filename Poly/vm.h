@@ -1,5 +1,5 @@
-﻿#ifndef __POLYVM_H__
-#define __POLYVM_H__
+﻿#ifndef __POLY_VM_H__
+#define __POLY_VM_H__
 
 // ----Platform Detection -----------------------------------------------------
 
@@ -180,4 +180,4 @@ struct ScriptContext
     int iMaxObjects;                // 最大对象数，用于启动GC过程
 };
 
-#endif /* __POLYVM_H__ */
+#endif /* __POLY_VM_H__ */

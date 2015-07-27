@@ -1,7 +1,7 @@
 #ifndef __GC_H__
 #define	__GC_H__
 
-#include "polyvm.h"
+#include "vm.h"
 
 // -------- Garbage Collection Interface ----------------------
 

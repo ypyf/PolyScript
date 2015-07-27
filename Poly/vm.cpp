@@ -3,7 +3,7 @@
 #include "bytecode.h"
 #include "poly.h"
 #include "gc.h"
-#include "polyvm.h"
+#include "vm.h"
 #include "compiler/xsc.h"
 #include <ctype.h>
 #include <time.h>

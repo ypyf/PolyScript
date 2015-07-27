@@ -75,7 +75,7 @@
     <ClInclude Include="poly.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="polyvm.h">
+    <ClInclude Include="vm.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -125,7 +125,7 @@
     <ClCompile Include="instruction.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="poly.cpp">
+    <ClCompile Include="vm.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

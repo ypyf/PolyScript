@@ -1,7 +1,7 @@
 #ifndef __INSTRUCTION_H__
 #define __INSTRUCTION_H__
 
-#include "polyvm.h"
+#include "vm.h"
 
 void CopyValue(Value *pDest, Value* Source);
 void exec_push(ScriptContext *sc, Value *Val);
