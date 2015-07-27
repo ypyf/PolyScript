@@ -447,14 +447,17 @@ void ParseStatement()
 		}
 
 	case TOKEN_TYPE_OP:
-		// 前缀表达式语句
+		// 纯粹产生副作用的语句
 		if (GetCurrOp() == OP_TYPE_INC || GetCurrOp() == OP_TYPE_DEC)
 		{
 			RewindTokenStream();
 			ParseUnary();
 			MatchToken(TOKEN_TYPE_SEMICOLON);
+			// 移出表达式求值的结果，这个结果是没有用的(块中最后一个表达式的值将其返回?)
+			AddICodeInstr(g_iCurrScope, INSTR_REMOVE);
 		}
 		break;
+
 	default:
 		// TODO 警告
 		// 可能是无副作用的表达式语句或者不合法的语句
@@ -1299,12 +1302,26 @@ void ParseUnary()
 				break;
 			}
 
-			// POP Dest
-			int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+			int iInstrIndex;
 			if (iIsArray)
+			{
+				// POP Dest
+				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
 				AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1);
+
+				// PUSH again
+				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
+				AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1);
+			}
 			else
+			{	
+				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
 				AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
+
+				iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
+				AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
+			}
+			
 
 			return;
 		}

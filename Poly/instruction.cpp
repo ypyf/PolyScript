@@ -38,6 +38,11 @@ Value exec_pop(ScriptContext *sc)
     return Val;
 }
 
+void exec_remove(ScriptContext *sc)
+{
+	--sc->iTopIndex;
+	return;
+}
 
 void exec_add(const Value& op0, const Value& op1, Value& op2)
 {

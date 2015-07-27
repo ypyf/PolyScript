@@ -981,6 +981,9 @@ void InitInstrTable()
     iInstrIndex = AddInstrLookup("Pop", INSTR_POP, 1);
     SetOpType(iInstrIndex, 0, OP_FLAG_TYPE_LVALUE);
 
+	// Remove
+	 AddInstrLookup("remove", INSTR_REMOVE, 0);
+
     // ----The Function Interface
 
     // Call          FunctionName
