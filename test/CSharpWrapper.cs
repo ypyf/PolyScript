@@ -12,6 +12,7 @@ namespace TileEngine
         #region Poly.dll 接口声明
         unsafe public struct ScriptContext {};
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void POLY_HOST_FUNCTION(ScriptContext* sc);
 
         [DllImport("poly_d32.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
@@ -81,7 +82,7 @@ namespace TileEngine
         extern static float Poly_GetParamAsFloat(ScriptContext* sc, int iParamIndex);
 
         [DllImport("poly_d32.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        extern static string Poly_GetParamAsString(ScriptContext* sc, int iParamIndex);
+        extern static IntPtr Poly_GetParamAsString(ScriptContext* sc, int iParamIndex);
 
         //[DllImport("poly_d32.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         //extern static Value Poly_GetParam(ScriptContext *sc, int iParamIndex);
@@ -109,7 +110,7 @@ namespace TileEngine
 
         #endregion
 
-        const int POLY_GLOBAL_FUNC = 0;
+        static readonly ScriptContext* POLY_GLOBAL_FUNC = null;
 
         private ScriptContext *m_pScript;
 
@@ -138,19 +139,34 @@ namespace TileEngine
             Poly_StartScript(m_pScript);
         }
 
-        public void registerCFunc(string pstrName, POLY_HOST_FUNCTION fnFunc)
+        public void registerHostFunc(string pstrName, POLY_HOST_FUNCTION fnFunc)
         {
-            Poly_RegisterHostFunc(m_pScript, pstrName, fnFunc);
+            int i = Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, pstrName, fnFunc);
+            if (i != 1)
+            {
+                Console.WriteLine("注册函数 {0} 失败", pstrName);
+            }
         }
 
         public void callScriptFunc(string pstrName)
         {
-            Poly_CallScriptFunc(m_pScript, pstrName);
+	        Poly_CallScriptFunc(m_pScript, pstrName);
         }
 
         public void runScript()
         {
-            Poly_RunScript(m_pScript, 100);
+	        Poly_RunScript(m_pScript, 100);
+        }
+
+        public string getStringParameter(int iIndex)
+        {
+           var x = Poly_GetParamAsString(m_pScript, iIndex);
+           return Marshal.PtrToStringAnsi(x);
+        }
+
+        public void returnFromHost()
+        {
+            Poly_ReturnFromHost(m_pScript);
         }
     }
 }

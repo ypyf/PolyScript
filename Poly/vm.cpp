@@ -2219,9 +2219,7 @@ char* Poly_GetParamAsString(ScriptContext *sc, int iParamIndex)
     Value Param = Poly_GetParam(sc, iParamIndex);
 
     // Coerce the top element of the stack to a string
-    char *pstrString = CoerceValueToString(&Param);
-
-    return pstrString;
+    return CoerceValueToString(&Param);
 }
 
 /******************************************************************************************
