@@ -41,43 +41,47 @@
 #define LEX_STATE_STRING_CLOSE_QUOTE    9       // String closing quote
 
 // ---- Token Types -----------------------------------------------------------------------
+enum TokenType
+{
+	TOKEN_TYPE_END_OF_STREAM        ,		// End of the token stream
+	TOKEN_TYPE_INVALID              ,		// Invalid token
+	TOKEN_TYPE_NEWLINE              ,		// \n
 
-#define TOKEN_TYPE_END_OF_STREAM        0       // End of the token stream
-#define TOKEN_TYPE_INVALID              1       // Invalid token
+	TOKEN_TYPE_INT                  ,		// Integer
+	TOKEN_TYPE_FLOAT                ,		// Float
 
-#define TOKEN_TYPE_INT                  2       // Integer
-#define TOKEN_TYPE_FLOAT                3       // Float
+	TOKEN_TYPE_IDENT                ,		// Identifier
 
-#define TOKEN_TYPE_IDENT                4       // Identifier
+	TOKEN_TYPE_RSRVD_VAR            ,		// var/var []
+	TOKEN_TYPE_RSRVD_TRUE           ,		// true
+	TOKEN_TYPE_RSRVD_FALSE          ,		// false
+	TOKEN_TYPE_RSRVD_IF             ,		// if
+	TOKEN_TYPE_RSRVD_ELSE           ,		// else
+	TOKEN_TYPE_RSRVD_BREAK          ,		// break
+	TOKEN_TYPE_RSRVD_CONTINUE       ,		// continue
+	TOKEN_TYPE_RSRVD_FOR            ,		// for
+	TOKEN_TYPE_RSRVD_WHILE          ,		// while
+	TOKEN_TYPE_RSRVD_DEF            ,		// def
+	TOKEN_TYPE_RSRVD_RETURN         ,		// return
+	TOKEN_TYPE_RSRVD_PRINT			,		// print
+	TOKEN_TYPE_RSRVD_BEEP			,	
+	TOKEN_TYPE_RSRVD_PARAM			,		// param
 
-#define TOKEN_TYPE_RSRVD_VAR            5       // var/var []
-#define TOKEN_TYPE_RSRVD_TRUE           6       // true
-#define TOKEN_TYPE_RSRVD_FALSE          7       // false
-#define TOKEN_TYPE_RSRVD_IF             8       // if
-#define TOKEN_TYPE_RSRVD_ELSE           9       // else
-#define TOKEN_TYPE_RSRVD_BREAK          10      // break
-#define TOKEN_TYPE_RSRVD_CONTINUE       11      // continue
-#define TOKEN_TYPE_RSRVD_FOR            12      // for
-#define TOKEN_TYPE_RSRVD_WHILE          13      // while
-#define TOKEN_TYPE_RSRVD_DEF           14      // func
-#define TOKEN_TYPE_RSRVD_RETURN         15      // return
-#define TOKEN_TYPE_RSRVD_PRINT			16		// print
-#define TOKEN_TYPE_RSRVD_BEEP			17	
-#define TOKEN_TYPE_RSRVD_PARAM			18		// param
+	TOKEN_TYPE_OP                   ,		// Operator
 
-#define TOKEN_TYPE_OP                   33      // Operator
+	TOKEN_TYPE_COMMA				,		// ,
+	TOKEN_TYPE_OPEN_PAREN			,		// (
+	TOKEN_TYPE_CLOSE_PAREN			,		//)
+	TOKEN_TYPE_OPEN_BRACE			,		// [
+	TOKEN_TYPE_CLOSE_BRACE			,		//]
+	TOKEN_TYPE_OPEN_CURLY_BRACE		,		// {
+	TOKEN_TYPE_CLOSE_CURLY_BRACE	,		// }
+	TOKEN_TYPE_SEMICOLON			,		// ;
+	TOKEN_TYPE_COLON				,		// :
 
-#define TOKEN_TYPE_COMMA				34		// ,
-#define TOKEN_TYPE_OPEN_PAREN			35		// (
-#define TOKEN_TYPE_CLOSE_PAREN			36		//)
-#define TOKEN_TYPE_OPEN_BRACE			37		// [
-#define TOKEN_TYPE_CLOSE_BRACE			38		//]
-#define TOKEN_TYPE_OPEN_CURLY_BRACE		39		// {
-#define TOKEN_TYPE_CLOSE_CURLY_BRACE	40		// }
-#define TOKEN_TYPE_SEMICOLON			41		// ;
-#define TOKEN_TYPE_COLON				42		// :
+	TOKEN_TYPE_STRING				,		// String
+};
 
-#define TOKEN_TYPE_STRING				43		// String
 
 // ---- Operators -------------------------------------------------------------------------
 

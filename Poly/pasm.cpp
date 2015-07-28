@@ -52,7 +52,6 @@ enum {
 
 TOKEN_TYPE_QUOTE = 100,           // A double-quote
 
-TOKEN_TYPE_NEWLINE,          // A newline
 TOKEN_TYPE_INSTR,          // An instruction
 //TOKEN_TYPE_RSRVD_SETSTACKSIZE,          // The SetStackSize directive
 
