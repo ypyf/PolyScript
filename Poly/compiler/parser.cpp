@@ -114,8 +114,8 @@ void MatchToken(Token ReqToken)
 
 			// func
 
-		case TOKEN_TYPE_RSRVD_FUNC:
-			strcpy (pstrErrorMssg, "func");
+		case TOKEN_TYPE_RSRVD_DEF:
+			strcpy (pstrErrorMssg, "def");
 			break;
 
 			// return
@@ -371,7 +371,7 @@ void ParseStatement()
 
 		// Function definition
 
-	case TOKEN_TYPE_RSRVD_FUNC:
+	case TOKEN_TYPE_RSRVD_DEF:
 		ParseFunc();
 		break;
 

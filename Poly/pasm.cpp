@@ -1432,27 +1432,13 @@ Token ASM_GetNextToken()
     if (IsStringIdent(g_Lexer.CurrLexeme))
         g_Lexer.CurrToken = TOKEN_TYPE_IDENT;
 
-    // Is it SetStackSize?
-
-    if (_stricmp(g_Lexer.CurrLexeme, "SETSTACKSIZE") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_RSRVD_SETSTACKSIZE;
-
-    // Is it SetPriority?
-
-	if (_stricmp(g_Lexer.CurrLexeme, "SETPRIORITY") == 0)
-		g_Lexer.CurrToken = TOKEN_TYPE_RSRVD_SETPRIORITY;
-
-    //// 是否是 NameSpace?
-    //if (_stricmp(g_Lexer.CurrLexeme, "NAMESPACE") == 0)
-    //    g_Lexer.CurrToken = TOKEN_TYPE_NAMESPACE;
-
     // Is it Var/Var []?
     if (_stricmp(g_Lexer.CurrLexeme, "VAR") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_RSRVD_VAR;
 
     // Is it Func?
     if (_stricmp(g_Lexer.CurrLexeme, "FUNC") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_RSRVD_FUNC;
+        g_Lexer.CurrToken = TOKEN_TYPE_RSRVD_DEF;
 
 	//if (_stricmp(g_Lexer.CurrLexeme, "END") == 0)
 	//	g_Lexer.CurrToken = TOKEN_TYPE_END;
@@ -2011,118 +1997,6 @@ void AssmblSourceFile()
 
         switch(g_Lexer.CurrToken)
         {
-            // ----Start by checking for (directives
-
-            // SetStackSize
-
-        case TOKEN_TYPE_RSRVD_SETSTACKSIZE:
-
-            // SetStackSize can only be found in the global scope, so make sure we
-            // aren't in a function.
-
-            if (iIsFuncActive)
-                ASM_ExitOnCodeError(ERROR_MSSG_LOCAL_SETSTACKSIZE);
-
-            // It can only be found once, so make sure we haven't already found it
-
-            if (g_iIsSetStackSizeFound)
-                ASM_ExitOnCodeError(ERROR_MSSG_MULTIPLE_SETSTACKSIZES);
-
-            // Read the next lexeme, which should contain the stack size
-
-            if (ASM_GetNextToken() != TOKEN_TYPE_INT)
-                ASM_ExitOnCodeError(ERROR_MSSG_INVALID_STACK_SIZE);
-
-            // Convert the lexeme to an integer value from its string
-            // representation and store it in the script header
-
-            g_ASMScriptHeader.iStackSize = strtol(ASM_GetCurrLexeme(), 0, g_Lexer.CurrBase);
-
-            // Mark the presence of SetStackSize for (future encounters
-
-            g_iIsSetStackSizeFound = TRUE;
-
-            break;
-
-            // NameSpace
-
-            //case TOKEN_TYPE_NAMESPACE:
-
-            //    // Read the next lexeme, which is the function name
-
-            //    if (GetNextToken() != TOKEN_TYPE_IDENT)
-            //        ExitOnCodeError(ERROR_MSSG_IDENT_EXPECTED);
-
-            //    char *pstrNameSpaceName = GetCurrLexeme();
-
-            //    break;
-
-            // SetPriority
-
-        case TOKEN_TYPE_RSRVD_SETPRIORITY:
-
-            // SetPriority can only be found in the global scope, so make sure we
-            // aren't in a function.
-
-            if (iIsFuncActive)
-                ASM_ExitOnCodeError(ERROR_MSSG_LOCAL_SETPRIORITY);
-
-            // It can only be found once, so make sure we haven't already found it
-
-            if (g_iIsSetPriorityFound)
-                ASM_ExitOnCodeError(ERROR_MSSG_MULTIPLE_SETPRIORITIES);
-
-            ASM_GetNextToken();
-
-            // Determin
-
-            switch(g_Lexer.CurrToken)
-            {
-                // An integer lexeme means the user is defining a specific priority
-
-            case TOKEN_TYPE_INT:
-
-                // Convert the lexeme to an integer value from its string
-                // representation and store it in the script header
-
-                g_ASMScriptHeader.iUserPriority = strtol(ASM_GetCurrLexeme(), 0, g_Lexer.CurrBase);
-
-                // Set the user priority flag
-
-                g_ASMScriptHeader.iStackSize = PRIORITY_USER;
-
-                break;
-
-                // An identifier means it must be one of the predefined priority
-                // ranks
-
-            case TOKEN_TYPE_IDENT:
-
-                // Determine which rank was specified
-
-                if (_stricmp(g_Lexer.CurrLexeme, PRIORITY_LOW_KEYWORD) == 0)
-                    g_ASMScriptHeader.iPriorityType = PRIORITY_LOW;
-                else if (_stricmp(g_Lexer.CurrLexeme, PRIORITY_MED_KEYWORD) == 0)
-                    g_ASMScriptHeader.iPriorityType = PRIORITY_MED;
-                else if (_stricmp(g_Lexer.CurrLexeme, PRIORITY_HIGH_KEYWORD) == 0)
-                    g_ASMScriptHeader.iPriorityType = PRIORITY_HIGH;
-                else
-                    ASM_ExitOnCodeError(ERROR_MSSG_INVALID_PRIORITY);
-
-                break;
-
-                // Anything else should cause an error
-
-            default:
-                ASM_ExitOnCodeError(ERROR_MSSG_INVALID_PRIORITY);
-            }
-
-            // Mark the presence of SetStackSize for (future encounters
-
-            g_iIsSetPriorityFound = TRUE;
-
-            break;
-
             // Var/Var []
         case TOKEN_TYPE_RSRVD_VAR:
             {
@@ -2208,7 +2082,7 @@ void AssmblSourceFile()
 
             // Func
 
-        case TOKEN_TYPE_RSRVD_FUNC:
+        case TOKEN_TYPE_RSRVD_DEF:
             {
                 // First make sure we aren't in a function already, since nested functions
                 // are illegal
@@ -2410,7 +2284,7 @@ void AssmblSourceFile()
         {
             // Func
 
-        case TOKEN_TYPE_RSRVD_FUNC:
+        case TOKEN_TYPE_RSRVD_DEF:
             {
                 // We've encountered a Func directive, but since we validated the syntax
                 // of all functions in the previous phase, we don't need to perform any

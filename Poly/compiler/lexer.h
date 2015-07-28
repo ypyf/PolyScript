@@ -59,13 +59,11 @@
 #define TOKEN_TYPE_RSRVD_CONTINUE       11      // continue
 #define TOKEN_TYPE_RSRVD_FOR            12      // for
 #define TOKEN_TYPE_RSRVD_WHILE          13      // while
-#define TOKEN_TYPE_RSRVD_FUNC           14      // func
+#define TOKEN_TYPE_RSRVD_DEF           14      // func
 #define TOKEN_TYPE_RSRVD_RETURN         15      // return
 #define TOKEN_TYPE_RSRVD_PRINT			16		// print
 #define TOKEN_TYPE_RSRVD_BEEP			17	
 #define TOKEN_TYPE_RSRVD_PARAM			18		// param
-#define TOKEN_TYPE_RSRVD_SETSTACKSIZE	19		// setstacksize
-#define TOKEN_TYPE_RSRVD_SETPRIORITY	20		// setpriority
 
 #define TOKEN_TYPE_OP                   33      // Operator
 

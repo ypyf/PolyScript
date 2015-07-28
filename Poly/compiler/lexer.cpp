@@ -827,10 +827,10 @@ Token GetNextToken()
 		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "beep") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_BEEP;
 
-		// func
+		// def
 
-		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "func") == 0)
-			TokenType = TOKEN_TYPE_RSRVD_FUNC;
+		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "def") == 0)
+			TokenType = TOKEN_TYPE_RSRVD_DEF;
 
 		// return
 
