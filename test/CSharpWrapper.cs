@@ -145,12 +145,12 @@ namespace TileEngine
 
         public void callScriptFunc(string pstrName)
         {
-	        Poly_CallScriptFunc(m_pScript, pstrName);
+            Poly_CallScriptFunc(m_pScript, pstrName);
         }
 
         public void runScript()
         {
-	        Poly_RunScript(m_pScript, 100);
+            Poly_RunScript(m_pScript, 100);
         }
     }
 }
