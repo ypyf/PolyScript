@@ -353,12 +353,6 @@ void ParseStatement()
 		ParseBlock();
 		break;
 
-		// Variable/array declaration
-
-	//case TOKEN_TYPE_RSRVD_VAR:
-	//	ParseVar();
-	//	break;
-
 		// Print statement
 
 	case TOKEN_TYPE_RSRVD_PRINT:
@@ -431,26 +425,28 @@ void ParseStatement()
 
 				AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine());
 				ParseFuncCall();
-
 			}
 			else
 			{
-				// It's a declaration
+				// 处理变量声明
 
 				char pstrIdent[MAX_LEXEME_SIZE];
 				CopyCurrLexeme(pstrIdent);
-				int iSize = 1;	// 标量
-				if (AddSymbol(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
-					ExitOnCodeError("Identifier redefinition");
 
-				// ---- Parse the assignment operator
+				// ---- Parse the declaration operator
 
 				if (GetNextToken() != TOKEN_TYPE_OP || GetCurrOp() != OP_TYPE_DECL_VAR)
 				{
+					// 未声明的变量使用
 					ExitOnCodeError("Invalid identifier");
 				}
 				else
 				{
+					// 添加变量名到符号表
+					int iSize = 1;	// 标量
+					if (AddSymbol(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
+						ExitOnCodeError("Identifier redefinition");
+
 					// ---- Parse the value expression
 
 					ParseExpr();
