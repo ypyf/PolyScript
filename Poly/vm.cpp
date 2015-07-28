@@ -2277,6 +2277,12 @@ void Poly_ReturnFloatFromHost(ScriptContext *sc, float fFloat)
 
 void Poly_ReturnStringFromHost(ScriptContext *sc, char *pstrString)
 {
+	if (pstrString == NULL)
+	{
+		fprintf(stderr, "VM Error: Null Pointer");
+		exit(0);
+	}
+
     // Put the return value and type in _RetVal
     Value ReturnValue;
     ReturnValue.Type = OP_TYPE_STRING;

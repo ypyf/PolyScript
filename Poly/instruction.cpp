@@ -54,15 +54,23 @@ void exec_remove(ScriptContext *sc)
 
 void exec_add(const Value& op0, const Value& op1, Value& op2)
 {
-	if (op0.Type == OP_TYPE_INT)
+	switch (op0.Type)
 	{
+	case OP_TYPE_INT:
 		op2.Type = OP_TYPE_INT;
 		op2.Fixnum = op0.Fixnum + op1.Fixnum;
-	}
-	else
-	{
+		break;
+
+	case OP_TYPE_FLOAT:
 		op2.Type = OP_TYPE_FLOAT;
 		op2.Realnum = op0.Realnum + op1.Realnum;
+		break;
+
+	case OP_TYPE_STRING:
+		op2.Type = OP_TYPE_STRING;
+		// TODO Œ¥ µœ÷
+		//op2.Realnum = op0.Realnum + op1.Realnum;
+		break;
 	}
 }
 
