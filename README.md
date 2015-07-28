@@ -9,7 +9,7 @@ A game script virtual machine.
     
     /* hello.poly */
     
-    func main()
+    def main()
     {
         i := 10;
 
