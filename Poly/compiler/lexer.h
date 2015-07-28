@@ -86,43 +86,49 @@
 // 运算符的编码等于OpState中的最后一个字段
 
 // 单字符运算符
-#define OP_TYPE_ADD                     0       // +
-#define OP_TYPE_SUB                     1       // -
-#define OP_TYPE_MUL                     2       // *
-#define OP_TYPE_DIV                     3       // /
-#define OP_TYPE_MOD                     4       // %
-#define OP_TYPE_BITWISE_AND             5       // &
-#define OP_TYPE_BITWISE_OR              6       // |
-#define OP_TYPE_BITWISE_NOT             7       // ~
-#define OP_TYPE_BITWISE_XOR             8       // ^
-#define OP_TYPE_LOGICAL_NOT             9       // !
-#define OP_TYPE_ASSIGN                  10      // =
-#define OP_TYPE_LESS                    11      // <
-#define OP_TYPE_GREATER                 12      // >
+enum OpType
+{
+	OP_TYPE_ADD                     ,		// +
+	OP_TYPE_SUB                     ,		// -
+	OP_TYPE_MUL                     ,		// *
+	OP_TYPE_DIV                     ,		// /
+	OP_TYPE_MOD                     ,		// %
+	OP_TYPE_BITWISE_AND             ,		// &
+	OP_TYPE_BITWISE_OR              ,		// |
+	OP_TYPE_BITWISE_NOT             ,		// ~
+	OP_TYPE_BITWISE_XOR             ,		// ^
+	OP_TYPE_LOGICAL_NOT             ,		// !
+	OP_TYPE_ASSIGN                  ,		// =
+	OP_TYPE_LESS                    ,		// <
+	OP_TYPE_GREATER                 ,		// >
+	OP_TYPE_SEP						,		// :
 
-// 双字符运算符
-#define OP_TYPE_ASSIGN_ADD              13      // +=
-#define OP_TYPE_INC                     14      // ++
-#define OP_TYPE_ASSIGN_SUB              15      // -=
-#define OP_TYPE_DEC                     16      // --
-#define OP_TYPE_ASSIGN_MUL              17      // *=
-#define OP_TYPE_ASSIGN_DIV              18      // /=
-#define OP_TYPE_ASSIGN_MOD              19      // %=
-#define OP_TYPE_ASSIGN_AND              20      // &=
-#define OP_TYPE_LOGICAL_AND             21      // &&
-#define OP_TYPE_ASSIGN_OR               22      // |=
-#define OP_TYPE_LOGICAL_OR              23      // ||
-#define OP_TYPE_ASSIGN_XOR              24      // ^=
-#define OP_TYPE_NOT_EQUAL               25      // !=
-#define OP_TYPE_EQUAL                   26      // ==
-#define OP_TYPE_LESS_EQUAL              27      // <=
-#define OP_TYPE_BITWISE_SHIFT_LEFT      28      // <<
-#define OP_TYPE_GREATER_EQUAL           29      // >=
-#define OP_TYPE_BITWISE_SHIFT_RIGHT     30      // >>
+	// 双字符运算符
+	OP_TYPE_ASSIGN_ADD              ,		// +=
+	OP_TYPE_INC                     ,		// ++
+	OP_TYPE_ASSIGN_SUB              ,		// -=
+	OP_TYPE_DEC                     ,		// --
+	OP_TYPE_ASSIGN_MUL              ,		// *=
+	OP_TYPE_ASSIGN_DIV              ,		// /=
+	OP_TYPE_ASSIGN_MOD              ,		// %=
+	OP_TYPE_ASSIGN_AND              ,		// &=
+	OP_TYPE_LOGICAL_AND             ,		// &&
+	OP_TYPE_ASSIGN_OR               ,		// |=
+	OP_TYPE_LOGICAL_OR              ,		// ||
+	OP_TYPE_ASSIGN_XOR              ,		// ^=
+	OP_TYPE_NOT_EQUAL               ,		// !=
+	OP_TYPE_EQUAL                   ,		// ==
+	OP_TYPE_LESS_EQUAL              ,		// <=
+	OP_TYPE_BITWISE_SHIFT_LEFT      ,		// <<
+	OP_TYPE_GREATER_EQUAL           ,		// >=
+	OP_TYPE_BITWISE_SHIFT_RIGHT     ,		// >>
+	OP_TYPE_DECL_VAR				,		// :=
+	OP_TYPE_SCOPE					,		// ::
 
-// 三字符运算符
-#define OP_TYPE_ASSIGN_SHIFT_LEFT       31      // <<=
-#define OP_TYPE_ASSIGN_SHIFT_RIGHT      32      // >>=
+	// 三字符运算符
+	OP_TYPE_ASSIGN_SHIFT_LEFT       ,		// <<=
+	OP_TYPE_ASSIGN_SHIFT_RIGHT      ,		// >>=
+};
 
 // ---- Data Structures -----------------------------------------------------------------------
 
