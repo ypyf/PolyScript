@@ -355,9 +355,9 @@ void ParseStatement()
 
 		// Variable/array declaration
 
-	case TOKEN_TYPE_RSRVD_VAR:
-		ParseVar();
-		break;
+	//case TOKEN_TYPE_RSRVD_VAR:
+	//	ParseVar();
+	//	break;
 
 		// Print statement
 
@@ -435,8 +435,30 @@ void ParseStatement()
 			}
 			else
 			{
-				// It's invalid
-				ExitOnCodeError("Invalid identifier");
+				// It's a declaration
+
+				char pstrIdent[MAX_LEXEME_SIZE];
+				CopyCurrLexeme(pstrIdent);
+				int iSize = 1;	// 标量
+				if (AddSymbol(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
+					ExitOnCodeError("Identifier redefinition");
+
+				// ---- Parse the assignment operator
+
+				if (GetNextToken() != TOKEN_TYPE_OP || GetCurrOp() != OP_TYPE_DECL_VAR)
+				{
+					ExitOnCodeError("Invalid identifier");
+				}
+				else
+				{
+					// ---- Parse the value expression
+
+					ParseExpr();
+
+					int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+					SymbolNode *pSymbol = GetSymbolByIdent(pstrIdent, g_iCurrScope);
+					AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
+				}
 			}
 
 			// Verify the presence of the semicolon
@@ -1851,7 +1873,37 @@ void ParseAssign()
 
 	// Does an array index follow the identifier?
 
+	//// 可能是变量声明
+	//if (pSymbol == NULL)
+	//{
+	//	char pstrIdent[MAX_LEXEME_SIZE];
+	//	CopyCurrLexeme(pstrIdent);
+	//	int iSize = 1;	// 标量
+	//	if (AddSymbol(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
+	//		ExitOnCodeError("Identifier redefinition");
+
+	//	// ---- Parse the assignment operator
+
+	//	if (GetNextToken() != TOKEN_TYPE_OP || GetCurrOp() != OP_TYPE_DECL_VAR)
+	//	{
+	//		ExitOnCodeError("Undeclared Identifier");
+	//	}
+	//	else
+	//	{
+	//		// ---- Parse the value expression
+
+	//		ParseExpr();
+
+	//		int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+	//		SymbolNode *pSymbol = GetSymbolByIdent(pstrIdent, g_iCurrScope);
+	//		AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
+	//	}
+
+	//	return;
+	//}
+
 	int iIsArray = FALSE;
+
 	if (GetLookAheadChar() == '[')
 	{
 		// Ensure the variable is an array
@@ -1893,8 +1945,8 @@ void ParseAssign()
 	}
 
 	// ---- Parse the assignment operator
-
-	if (GetNextToken() == TOKEN_TYPE_OP && IsOpAssign(GetCurrOp()))
+	Token t = GetNextToken();
+	if (t == TOKEN_TYPE_OP && IsOpAssign(GetCurrOp()))
 		iAssignOp = GetCurrOp();
 	else
 	{

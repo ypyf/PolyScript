@@ -28,7 +28,7 @@ OpState g_OpChars0[MAX_OP_STATE_COUNT] = {
 	{ '=', 13, 1, OP_TYPE_ASSIGN },
 	{ '<', 14, 2, OP_TYPE_LESS },
 	{ '>', 16, 2, OP_TYPE_GREATER },
-	{ ':', 16, 2, OP_TYPE_SEP },
+	{ ':', 18, 2, OP_TYPE_SEP },
 };
 
 // ---- Second operator characters
@@ -780,11 +780,6 @@ Token GetNextToken()
 		TokenType = TOKEN_TYPE_IDENT;
 
 		// ---- Determine if the "identifier" is actually a reserved word
-
-		// var/var []
-
-		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "var") == 0)
-			TokenType = TOKEN_TYPE_RSRVD_VAR;
 
 		// true
 
