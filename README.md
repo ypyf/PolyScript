@@ -11,7 +11,7 @@ A game script virtual machine.
     
     func main()
     {
-        var i = 10;
+        i := 10;
 
         while (i > 0)
         {
