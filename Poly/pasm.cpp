@@ -244,7 +244,7 @@ struct Instr                           // An instruction
 
 
 // 函数表节点
-struct XFuncNode
+struct Function
 {
 	int iIndex;									 // Index
 	char pstrName[MAX_IDENT_SIZE];               // Name
@@ -401,7 +401,7 @@ void SetOpType(int iInstrIndex, int iOpIndex, OpTypes iOpType);
 int AddString(LinkedList *pList, char *pstrString);
 
 int ASM_AddFunc(char *pstrName, int iEntryPoint);
-XFuncNode *ASM_GetFuncByName(char *pstrName);
+Function *ASM_GetFuncByName(char *pstrName);
 void ASM_SetFuncInfo(char *pstrName, int iParamCount, int iLocalDataSize);
 
 int AddLabel(char *pstrIdent, int iTargetIndex, int iFuncIndex);
@@ -1602,7 +1602,7 @@ int GetInstrByMnemonic(char *pstrMnemonic, InstrLookup *pInstr)
 *   Returns a XFuncNode structure pointer corresponding to the specified name.
 */
 
-XFuncNode *ASM_GetFuncByName(char *pstrName)
+Function *ASM_GetFuncByName(char *pstrName)
 {
     // If the table is empty, return a NULL pointer
 
@@ -1619,7 +1619,7 @@ XFuncNode *ASM_GetFuncByName(char *pstrName)
     {
         // Create a pointer to the current function structure
 
-        XFuncNode *pCurrFunc = (XFuncNode *) pCurrNode->pData;
+        Function *pCurrFunc = (Function *) pCurrNode->pData;
 
         // If the names match, return the current pointer
 
@@ -1653,7 +1653,7 @@ int ASM_AddFunc(char *pstrName, int iEntryPoint)
 
     // Create a new function node
 
-    XFuncNode *pNewFunc = (XFuncNode *) malloc(sizeof(XFuncNode));
+    Function *pNewFunc = (Function *) malloc(sizeof(Function));
 
     // Initialize the new function
 
@@ -1683,7 +1683,7 @@ int ASM_AddFunc(char *pstrName, int iEntryPoint)
 inline void ASM_SetFuncInfo(char *pstrName, int iParamCount, int iLocalDataSize)
 {
     // Based on the function's name, find its node in the list
-    XFuncNode *pFunc = ASM_GetFuncByName(pstrName);
+    Function *pFunc = ASM_GetFuncByName(pstrName);
 
     // Set the remaining fields
     pFunc->iParamCount = iParamCount;
@@ -1966,7 +1966,7 @@ void AssmblSourceFile()
     // Set the current function's flags and variables
 
     int iIsFuncActive = FALSE;
-    XFuncNode *pCurrFunc;
+    Function *pCurrFunc;
     int iCurrFuncIndex = -1;    // 全局作用域
     char pstrCurrFuncName[MAX_IDENT_SIZE];
     int iCurrFuncParamCount = 0;
@@ -2701,7 +2701,7 @@ void AssmblSourceFile()
 
                                 // Use the function name to get the function's information
 
-                                XFuncNode *pFunc = ASM_GetFuncByName(pstrFuncName);
+                                Function *pFunc = ASM_GetFuncByName(pstrFuncName);
 
                                 // C 函数(host call)
 
@@ -2986,7 +2986,7 @@ void BuildXSE(const char* file)
     {
         // Create a local copy of the function
 
-        XFuncNode *pFunc = (XFuncNode *) pNode->pData;
+        Function *pFunc = (Function *) pNode->pData;
 
         // Write the entry point(4 bytes)
 
