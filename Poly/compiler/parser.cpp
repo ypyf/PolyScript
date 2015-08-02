@@ -29,7 +29,7 @@ static bool IsMainFunc()
 *   Attempts to read a specific token and prints an error if its not found.
 */
 
-void MatchToken(Token ReqToken)
+void ReadToken(Token ReqToken)
 {
 	// Determine if the next token is the required one
 
@@ -329,7 +329,7 @@ void ParseStatement()
 
 	if (GetLookAheadChar() == ';')
 	{
-		MatchToken(TOKEN_TYPE_SEMICOLON);
+		ReadToken(TOKEN_TYPE_SEMICOLON);
 		return;
 	}
 
@@ -459,7 +459,7 @@ void ParseStatement()
 
 			// Verify the presence of the semicolon
 
-			MatchToken(TOKEN_TYPE_SEMICOLON);
+			ReadToken(TOKEN_TYPE_SEMICOLON);
 
 			break;
 		}
@@ -471,7 +471,7 @@ void ParseStatement()
 			RewindTokenStream();
 			AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine());
 			ParseUnary();
-			MatchToken(TOKEN_TYPE_SEMICOLON);
+			ReadToken(TOKEN_TYPE_SEMICOLON);
 			// 移出表达式求值的结果，这个结果是没有用的(块中最后一个表达式的值将其返回?)
 			AddICodeInstr(g_iCurrScope, INSTR_REMOVE);
 		}
@@ -507,7 +507,7 @@ void ParseBlock()
 
 	// Read the closing curly brace
 
-	MatchToken(TOKEN_TYPE_CLOSE_CURLY_BRACE);
+	ReadToken(TOKEN_TYPE_CLOSE_CURLY_BRACE);
 }
 
 // print <expr>
@@ -517,7 +517,7 @@ void ParsePrint()
 	ParseExpr();
 	int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_TRAP);
 	AddIntICodeOp(g_iCurrScope, iInstrIndex, 0);
-	MatchToken(TOKEN_TYPE_SEMICOLON);
+	ReadToken(TOKEN_TYPE_SEMICOLON);
 }
 
 // beep <expr>, <expr>
@@ -525,11 +525,11 @@ void ParseBeep()
 {
 	AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine());
 	ParseExpr();
-	MatchToken(TOKEN_TYPE_COMMA);
+	ReadToken(TOKEN_TYPE_COMMA);
 	ParseExpr();
 	int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_TRAP);
 	AddIntICodeOp(g_iCurrScope, iInstrIndex, 1);
-	MatchToken(TOKEN_TYPE_SEMICOLON);
+	ReadToken(TOKEN_TYPE_SEMICOLON);
 }
 
 /******************************************************************************************
@@ -550,7 +550,7 @@ void ParseFunc()
 
 	// Read the function name
 
-	MatchToken(TOKEN_TYPE_IDENT);
+	ReadToken(TOKEN_TYPE_IDENT);
 
 	// Add the non-host API function to the function table and get its index
 
@@ -567,7 +567,7 @@ void ParseFunc()
 
 	// Read the opening parenthesis
 
-	MatchToken(TOKEN_TYPE_OPEN_PAREN);
+	ReadToken(TOKEN_TYPE_OPEN_PAREN);
 
 	// Use the look-ahead character to determine if the function takes parameters
 
@@ -595,7 +595,7 @@ void ParseFunc()
 		{
 			// Read the identifier
 
-			MatchToken(TOKEN_TYPE_IDENT);
+			ReadToken(TOKEN_TYPE_IDENT);
 
 			// Copy the current lexeme to the parameter list array
 
@@ -612,7 +612,7 @@ void ParseFunc()
 
 			// Otherwise read a comma and move to the next parameter
 
-			MatchToken(TOKEN_TYPE_COMMA);
+			ReadToken(TOKEN_TYPE_COMMA);
 		}
 
 		// Set the final parameter count
@@ -634,11 +634,11 @@ void ParseFunc()
 
 	// Read the closing parenthesis
 
-	MatchToken(TOKEN_TYPE_CLOSE_PAREN);
+	ReadToken(TOKEN_TYPE_CLOSE_PAREN);
 
 	// Read the opening curly brace
 
-	MatchToken(TOKEN_TYPE_OPEN_CURLY_BRACE);
+	ReadToken(TOKEN_TYPE_OPEN_CURLY_BRACE);
 
 	// Parse the function's body
 
@@ -1183,7 +1183,7 @@ void ParseUnary()
 
 				// Verify the opening brace
 
-				MatchToken(TOKEN_TYPE_OPEN_BRACE);
+				ReadToken(TOKEN_TYPE_OPEN_BRACE);
 
 				// Make sure an expression is present
 
@@ -1196,7 +1196,7 @@ void ParseUnary()
 
 				// Make sure the index is closed
 
-				MatchToken(TOKEN_TYPE_CLOSE_BRACE);
+				ReadToken(TOKEN_TYPE_CLOSE_BRACE);
 
 				// Set the array flag
 
@@ -1385,7 +1385,7 @@ void ParseFactor()
 
 					// Verify the opening brace
 
-					MatchToken(TOKEN_TYPE_OPEN_BRACE);
+					ReadToken(TOKEN_TYPE_OPEN_BRACE);
 
 					// Make sure an expression is present
 
@@ -1398,7 +1398,7 @@ void ParseFactor()
 
 					// Make sure the index is closed
 
-					MatchToken(TOKEN_TYPE_CLOSE_BRACE);
+					ReadToken(TOKEN_TYPE_CLOSE_BRACE);
 
 					// Pop the resulting value into _T0 and use it as the index variable
 
@@ -1457,7 +1457,7 @@ void ParseFactor()
 
 	case TOKEN_TYPE_OPEN_PAREN:
 		ParseExpr();
-		MatchToken(TOKEN_TYPE_CLOSE_PAREN);
+		ReadToken(TOKEN_TYPE_CLOSE_PAREN);
 		break;
 
 		// Anything else is invalid
@@ -1496,7 +1496,7 @@ void ParseIf()
 
 	// Read the opening parenthesis
 
-	MatchToken(TOKEN_TYPE_OPEN_PAREN);
+	ReadToken(TOKEN_TYPE_OPEN_PAREN);
 
 	// Parse the expression and leave the result on the stack
 
@@ -1504,7 +1504,7 @@ void ParseIf()
 
 	// Read the closing parenthesis
 
-	MatchToken(TOKEN_TYPE_CLOSE_PAREN);
+	ReadToken(TOKEN_TYPE_CLOSE_PAREN);
 
 	// If the result is zero, jump to the false target
 	iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_BRFALSE, elseBegin);
@@ -1576,7 +1576,7 @@ void ParseWhile()
 
 	// Read the opening parenthesis
 
-	MatchToken(TOKEN_TYPE_OPEN_PAREN);
+	ReadToken(TOKEN_TYPE_OPEN_PAREN);
 
 	// Parse the expression and leave the result on the stack
 
@@ -1584,7 +1584,7 @@ void ParseWhile()
 
 	// Read the closing parenthesis
 
-	MatchToken(TOKEN_TYPE_CLOSE_PAREN);
+	ReadToken(TOKEN_TYPE_CLOSE_PAREN);
 
 	// Pop the result into _T0 and jump out of the loop if it's nonzero
 
@@ -1663,7 +1663,7 @@ void ParseBreak()
 
 	// Attempt to read the semicolon
 
-	MatchToken(TOKEN_TYPE_SEMICOLON);
+	ReadToken(TOKEN_TYPE_SEMICOLON);
 
 	// Get the jump target index for the end of the loop
 
@@ -1694,7 +1694,7 @@ void ParseContinue()
 
 	// Attempt to read the semicolon
 
-	MatchToken(TOKEN_TYPE_SEMICOLON);
+	ReadToken(TOKEN_TYPE_SEMICOLON);
 
 	// Get the jump target index for the start of the loop
 
@@ -1749,7 +1749,7 @@ void ParseReturn()
 
 	// Validate the presence of the semicolon
 
-	MatchToken(TOKEN_TYPE_SEMICOLON);
+	ReadToken(TOKEN_TYPE_SEMICOLON);
 
 	g_iGotReturnStmt = TRUE;
 }
@@ -1798,7 +1798,7 @@ void ParseAssign()
 
 		// Verify the opening brace
 
-		MatchToken(TOKEN_TYPE_OPEN_BRACE);
+		ReadToken(TOKEN_TYPE_OPEN_BRACE);
 
 		// Make sure an expression is present
 
@@ -1815,7 +1815,7 @@ void ParseAssign()
 
 		// Make sure the index is closed
 
-		MatchToken(TOKEN_TYPE_CLOSE_BRACE);
+		ReadToken(TOKEN_TYPE_CLOSE_BRACE);
 
 		// Set the array flag
 
@@ -1972,7 +1972,7 @@ void ParseFuncCall()
 
 	// Attempt to read the opening parenthesis
 
-	MatchToken(TOKEN_TYPE_OPEN_PAREN);
+	ReadToken(TOKEN_TYPE_OPEN_PAREN);
 
 	// Parse each parameter and push it onto the stack
 
@@ -1996,7 +1996,7 @@ void ParseFuncCall()
 			// Unless this is the final parameter, attempt to read a comma
 
 			if (GetLookAheadChar() != ')')
-				MatchToken(TOKEN_TYPE_COMMA);
+				ReadToken(TOKEN_TYPE_COMMA);
 		}
 		else
 		{
@@ -2008,7 +2008,7 @@ void ParseFuncCall()
 
 	// Attempt to read the closing parenthesis
 
-	MatchToken(TOKEN_TYPE_CLOSE_PAREN);
+	ReadToken(TOKEN_TYPE_CLOSE_PAREN);
 
 	// Make sure the parameter wasn't passed too few parameters (unless
 	// it's a host API function)
