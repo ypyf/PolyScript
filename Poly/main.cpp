@@ -53,7 +53,7 @@ void print_error_message(int iErrorCode)
 
 // ----Host API ------------------------------------------------------------------------------
 
-/* 打印平均值 */
+/* 计算平均值 */
 static void average(ScriptContext *sc)
 {
     int n = Poly_GetParamCount(sc);

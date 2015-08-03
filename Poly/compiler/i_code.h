@@ -31,11 +31,7 @@
 //#define OP_TYPE_HOST_FUNC		    8           // Host Function
 #define OP_TYPE_REG                 9           // Register
 
-// ±êºÅ
-typedef struct _Label
-{
-	int id;
-} Label;
+typedef int Label;
 
  // An I-code operand
 struct Op

@@ -25,6 +25,14 @@ char ppstrMnemonics[][12] =
 	"trap",
 };
 
+// 标号，用于记录前向引用
+typedef struct _LabelSymbol
+{
+	int iOffset;		// 标号所在的操作数偏移
+	int iForwardRef;	// 是否前向引用
+	int iDefined;		// 是否已经定义
+} LabelSymbol;
+
 // ---- Functions -----------------------------------------------------------------------------
 
 /******************************************************************************************
@@ -73,42 +81,6 @@ void EmitDirectives()
 	if (g_ScriptHeader.iStackSize)
 	{
 		fprintf(g_pOutputFile, "SetStackSize %d\n", g_ScriptHeader.iStackSize);
-		iAddNewline = TRUE;
-	}
-
-	// If the priority has been set, emit a SetPriority directive
-
-	if (g_ScriptHeader.iPriorityType != PRIORITY_NONE)
-	{
-		fprintf(g_pOutputFile, "SetPriority ");
-		switch (g_ScriptHeader.iPriorityType)
-		{
-			// Low rank
-
-		case PRIORITY_LOW:
-			fprintf(g_pOutputFile, PRIORITY_LOW_KEYWORD);
-			break;
-
-			// Medium rank
-
-		case PRIORITY_MED:
-			fprintf(g_pOutputFile, PRIORITY_MED_KEYWORD);
-			break;
-
-			// High rank
-
-		case PRIORITY_HIGH:
-			fprintf(g_pOutputFile, PRIORITY_HIGH_KEYWORD);
-			break;
-
-			// User-defined timeslice
-
-		case PRIORITY_USER:
-			fprintf(g_pOutputFile, "%d", g_ScriptHeader.iUserPriority);
-			break;
-		}
-		fprintf(g_pOutputFile, "\n");
-
 		iAddNewline = TRUE;
 	}
 
@@ -342,7 +314,7 @@ void EmitFunc(FuncNode * pFunc)
 						// Jump target index
 
 					case OP_TYPE_JUMP_TARGET_INDEX:
-						fprintf(g_pOutputFile, "_L%d", pOp->label.id);
+						fprintf(g_pOutputFile, "_L%d", pOp->label);
 						break;
 					}
 

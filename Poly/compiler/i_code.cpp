@@ -444,7 +444,7 @@ Label DefineLabel()
 {
 	// Return and increment the current target index
 	Label new_label;
-	new_label.id = g_iCurrJumpTargetIndex++;
+	new_label = g_iCurrJumpTargetIndex++;
 	return new_label;
 }
 
