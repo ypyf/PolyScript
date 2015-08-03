@@ -28,30 +28,31 @@ OpState g_OpChars0[MAX_OP_STATE_COUNT] = {
 	{ '=', 13, 1, OP_TYPE_ASSIGN },
 	{ '<', 14, 2, OP_TYPE_LESS },
 	{ '>', 16, 2, OP_TYPE_GREATER },
+	{ '.', 0, 0, OP_TYPE_MEMBER_ACCESS },
 	{ ':', 18, 2, OP_TYPE_SEP },
 };
 
 // ---- Second operator characters
 
 OpState g_OpChars1[MAX_OP_STATE_COUNT] = { 
-	{ '=', 0, 0, 14 }, { '+', 0, 0, 15 },		// +=, ++
-	{ '=', 0, 0, 16 }, { '-', 0, 0, 17 },		// -=, --
-	{ '=', 0, 0, 18 },							// *=
-	{ '=', 0, 0, 19 },							// /=
-	{ '=', 0, 0, 20 },							// %=
-	{ '=', 0, 0, 21 }, { '&', 0, 0, 22 },		// &=, &&
-	{ '=', 0, 0, 23 }, { '|', 0, 0, 24 },		// |=, ||
-	{ '=', 0, 0, 25 },							// ^=
-	{ '=', 0, 0, 26 },							// !=
-	{ '=', 0, 0, 27 },							// ==
-	{ '=', 0, 0, 28 }, { '<', 0, 1, 29 },		// <=, <<
-	{ '=', 0, 0, 30 }, { '>', 1, 1, 31 },		// >=, >>
-	{ '=', 0, 0, 32 }, { ':', 0, 0, 33 },		// :=, ::
+	{ '=', 0, 0, OP_TYPE_ASSIGN_ADD }, { '+', 0, 0, OP_TYPE_INC },		// +=, ++
+	{ '=', 0, 0, OP_TYPE_ASSIGN_SUB }, { '-', 0, 0, OP_TYPE_DEC },		// -=, --
+	{ '=', 0, 0, OP_TYPE_ASSIGN_MUL },							// *=
+	{ '=', 0, 0, OP_TYPE_ASSIGN_DIV },							// /=
+	{ '=', 0, 0, OP_TYPE_ASSIGN_MOD },							// %=
+	{ '=', 0, 0, OP_TYPE_ASSIGN_AND }, { '&', 0, 0, OP_TYPE_LOGICAL_AND },		// &=, &&
+	{ '=', 0, 0, OP_TYPE_ASSIGN_OR }, { '|', 0, 0, OP_TYPE_LOGICAL_OR },		// |=, ||
+	{ '=', 0, 0, OP_TYPE_ASSIGN_XOR },							// ^=
+	{ '=', 0, 0, OP_TYPE_NOT_EQUAL },							// !=
+	{ '=', 0, 0, OP_TYPE_EQUAL },							// ==
+	{ '=', 0, 0, OP_TYPE_LESS_EQUAL }, { '<', 0, 1, OP_TYPE_BITWISE_SHIFT_LEFT },		// <=, <<
+	{ '=', 0, 0, OP_TYPE_GREATER_EQUAL }, { '>', 1, 1, OP_TYPE_BITWISE_SHIFT_RIGHT },		// >=, >>
+	{ '=', 0, 0, OP_TYPE_DECL_VAR }, { ':', 0, 0, OP_TYPE_SCOPE },		// :=, ::
 };
 
 // ---- Third operator characters
 
-OpState g_OpChars2[MAX_OP_STATE_COUNT] = { { '=', 0, 0, 34 }, { '=', 0, 0, 35 } }; // <<=, >>=
+OpState g_OpChars2[MAX_OP_STATE_COUNT] = { { '=', 0, 0, OP_TYPE_ASSIGN_SHIFT_LEFT }, { '=', 0, 0, OP_TYPE_ASSIGN_SHIFT_RIGHT } }; // <<=, >>=
 
 // ---- Delimiters ------------------------------------------------------------------------
 
@@ -847,6 +848,10 @@ Token GetNextToken()
 
 		switch (g_CurrLexerState.pstrCurrLexeme[0])
 		{
+		//case '.':
+		//	TokenType = TOKEN_TYPE_DOT;
+		//	break;
+
 		case ',':
 			TokenType = TOKEN_TYPE_COMMA;
 			break;

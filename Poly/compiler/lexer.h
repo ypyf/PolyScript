@@ -68,6 +68,7 @@ enum TokenType
 
 	TOKEN_TYPE_OP                   ,		// Operator
 
+	//TOKEN_TYPE_DOT					,		// .
 	TOKEN_TYPE_COMMA				,		// ,
 	TOKEN_TYPE_OPEN_PAREN			,		// (
 	TOKEN_TYPE_CLOSE_PAREN			,		//)
@@ -102,6 +103,7 @@ enum OpType
 	OP_TYPE_ASSIGN                  ,		// =
 	OP_TYPE_LESS                    ,		// <
 	OP_TYPE_GREATER                 ,		// >
+	OP_TYPE_MEMBER_ACCESS					    ,		// .
 	OP_TYPE_SEP						,		// :
 
 	// Ë«×Ö·ûÔËËã·û

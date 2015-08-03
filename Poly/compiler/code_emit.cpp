@@ -460,8 +460,8 @@ void EmitCode()
 				{
 					// No, so emit it
 
-					EmitFunc (pCurrFunc);
-					fprintf (g_pOutputFile, "\n\n");
+					EmitFunc(pCurrFunc);
+					fprintf(g_pOutputFile, "\n\n");
 				}
 			}
 
