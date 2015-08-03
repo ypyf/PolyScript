@@ -32,7 +32,6 @@
 
 #define LEX_STATE_IDENT                 4       // Identifier
 
-
 #define LEX_STATE_OP                    5       // Operator
 #define LEX_STATE_DELIM                 6       // Delimiter    
 
