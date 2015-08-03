@@ -50,7 +50,7 @@
 
 enum {
 
-TOKEN_TYPE_QUOTE = 100,           // A double-quote
+TOKEN_TYPE_QUOTE = 255,           // A double-quote
 
 TOKEN_TYPE_INSTR,          // An instruction
 //TOKEN_TYPE_RSRVD_SETSTACKSIZE,          // The SetStackSize directive
@@ -384,7 +384,7 @@ void ExitOnCharExpectedError(char cChar);
 // ----Lexical Analysis ------------------------------------------------------------------
 
 void ASM_ResetLexer();
-Token ASM_GetNextToken();
+Token ASM_GetNextToken(bool IsIgnoreReserved = false);
 char *ASM_GetCurrLexeme();
 char ASM_GetLookAheadChar();
 int SkipToNextLine();
@@ -1208,7 +1208,7 @@ int escapeChar(char cChar)
 *   the current lexeme for use with GetCurrLexeme().
 */
 
-Token ASM_GetNextToken()
+Token ASM_GetNextToken(bool IgnoreReserved)
 {
     // ----Lexeme Extraction
 
@@ -1430,6 +1430,10 @@ Token ASM_GetNextToken()
 
     if (IsStringIdent(g_Lexer.CurrLexeme))
         g_Lexer.CurrToken = TOKEN_TYPE_IDENT;
+
+	// 不检查保留字
+	if (IgnoreReserved)
+		return g_Lexer.CurrToken;
 
     // Is it Var/Var []?
     if (_stricmp(g_Lexer.CurrLexeme, "VAR") == 0)
@@ -2405,7 +2409,7 @@ void AssmblSourceFile()
 
                     // Read in the next token, which is the initial token of the operand
 
-                    Token InitOpToken = ASM_GetNextToken();
+                    Token InitOpToken = ASM_GetNextToken(true);
                     switch(InitOpToken)
                     {
                         // An integer literal

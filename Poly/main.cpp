@@ -65,6 +65,12 @@ static void average(ScriptContext *sc)
     Poly_ReturnIntFromHost(sc, sum / n);
 }
 
+static void poly_pause(ScriptContext *sc)
+{
+	system("pause");
+	Poly_ReturnFromHost(sc);
+}
+
 static void h_PrintString(ScriptContext *sc)
 {
 	char* str = Poly_GetParamAsString(sc, 0);
@@ -123,6 +129,7 @@ int RunScript(char* pstrFilename)
 
     // 注册宿主api
 	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Explode", h_PrintInt);
+	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "pause", poly_pause);
 	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Division", h_Division);
 	if (!Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "PrintString", h_PrintString))
     {
