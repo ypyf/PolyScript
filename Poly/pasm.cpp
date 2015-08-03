@@ -1437,7 +1437,7 @@ Token ASM_GetNextToken()
 
     // Is it Func?
     if (_stricmp(g_Lexer.CurrLexeme, "FUNC") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_RSRVD_DEF;
+        g_Lexer.CurrToken = TOKEN_TYPE_RSRVD_FUNC;
 
 	//if (_stricmp(g_Lexer.CurrLexeme, "END") == 0)
 	//	g_Lexer.CurrToken = TOKEN_TYPE_END;
@@ -2081,7 +2081,7 @@ void AssmblSourceFile()
 
             // Func
 
-        case TOKEN_TYPE_RSRVD_DEF:
+        case TOKEN_TYPE_RSRVD_FUNC:
             {
                 // First make sure we aren't in a function already, since nested functions
                 // are illegal
@@ -2283,7 +2283,7 @@ void AssmblSourceFile()
         {
             // Func
 
-        case TOKEN_TYPE_RSRVD_DEF:
+        case TOKEN_TYPE_RSRVD_FUNC:
             {
                 // We've encountered a Func directive, but since we validated the syntax
                 // of all functions in the previous phase, we don't need to perform any

@@ -60,7 +60,7 @@ enum TokenType
 	TOKEN_TYPE_RSRVD_CONTINUE       ,		// continue
 	TOKEN_TYPE_RSRVD_FOR            ,		// for
 	TOKEN_TYPE_RSRVD_WHILE          ,		// while
-	TOKEN_TYPE_RSRVD_DEF            ,		// def
+	TOKEN_TYPE_RSRVD_FUNC            ,		// def
 	TOKEN_TYPE_RSRVD_RETURN         ,		// return
 	TOKEN_TYPE_RSRVD_PRINT			,		// print
 	TOKEN_TYPE_RSRVD_BEEP			,	

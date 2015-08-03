@@ -833,8 +833,8 @@ Token GetNextToken()
 
 		// def
 
-		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "def") == 0)
-			TokenType = TOKEN_TYPE_RSRVD_DEF;
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "func") == 0)
+			TokenType = TOKEN_TYPE_RSRVD_FUNC;
 
 		// return
 
@@ -851,10 +851,6 @@ Token GetNextToken()
 
 		switch (g_CurrLexerState.pstrCurrLexeme[0])
 		{
-		//case '.':
-		//	TokenType = TOKEN_TYPE_DOT;
-		//	break;
-
 		case ',':
 			TokenType = TOKEN_TYPE_COMMA;
 			break;
