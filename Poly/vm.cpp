@@ -678,7 +678,7 @@ void Poly_ResetInterp(ScriptContext *sc)
 *    Runs the currenty loaded script for a given timeslice duration.
 */
 
-static void ExecuteInstruction(ScriptContext *sc, int iTimesliceDur)
+static void ExecuteInstructions(ScriptContext *sc, int iTimesliceDur)
 {
     int iExitExecLoop = FALSE;
 
@@ -2093,7 +2093,7 @@ int Poly_CallScriptFunc(ScriptContext *sc, char *pstrName)
 	CallFunc(sc, iFuncIndex, OP_TYPE_STACK_BASE_MARKER);
 
     // Allow the script code to execute uninterrupted until the function returns
-    ExecuteInstruction(sc, POLY_INFINITE_TIMESLICE);
+    ExecuteInstructions(sc, POLY_INFINITE_TIMESLICE);
 
     return TRUE;
 }
