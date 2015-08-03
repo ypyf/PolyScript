@@ -34,7 +34,6 @@ Value exec_pop(ScriptContext *sc)
 {
     Value Val;
     CopyValue(&Val, &sc->stack[--sc->iTopIndex]);
-
     return Val;
 }
 

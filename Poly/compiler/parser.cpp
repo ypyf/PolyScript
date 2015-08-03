@@ -24,7 +24,7 @@ static bool IsMainFunc()
 
 /******************************************************************************************
 *
-*   MatchToken()
+*   ReadToken()
 *
 *   Attempts to read a specific token and prints an error if its not found.
 */
@@ -347,6 +347,10 @@ void ParseStatement()
 		ExitOnCodeError("Unexpected end of file");
 		break;
 
+	case TOKEN_TYPE_RSRVD_VAR:
+		ParseVar();
+		break;
+
 		// Block
 
 	case TOKEN_TYPE_OPEN_CURLY_BRACE:
@@ -426,36 +430,36 @@ void ParseStatement()
 				AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine());
 				ParseFuncCall();
 			}
-			else
-			{
-				// 处理变量声明
+			//else
+			//{
+			//	// 处理变量声明
 
-				char pstrIdent[MAX_LEXEME_SIZE];
-				CopyCurrLexeme(pstrIdent);
+			//	char pstrIdent[MAX_LEXEME_SIZE];
+			//	CopyCurrLexeme(pstrIdent);
 
-				// ---- Parse the declaration operator
+			//	// ---- Parse the declaration operator
 
-				if (GetNextToken() != TOKEN_TYPE_OP || GetCurrOp() != OP_TYPE_DECL_VAR)
-				{
-					// 未声明的变量使用
-					ExitOnCodeError("Invalid identifier");
-				}
-				else
-				{
-					// 添加变量名到符号表
-					int iSize = 1;	// 标量
-					if (AddSymbol(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
-						ExitOnCodeError("Identifier redefinition");
+			//	if (GetNextToken() != TOKEN_TYPE_OP || GetCurrOp() != OP_TYPE_DECL_VAR)
+			//	{
+			//		// 未声明的变量使用
+			//		ExitOnCodeError("Invalid identifier");
+			//	}
+			//	else
+			//	{
+			//		// 添加变量名到符号表
+			//		int iSize = 1;	// 标量
+			//		if (AddSymbol(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
+			//			ExitOnCodeError("Identifier redefinition");
 
-					// ---- Parse the value expression
+			//		// ---- Parse the value expression
 
-					ParseExpr();
+			//		ParseExpr();
 
-					int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
-					SymbolNode *pSymbol = GetSymbolByIdent(pstrIdent, g_iCurrScope);
-					AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
-				}
-			}
+			//		int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+			//		SymbolNode *pSymbol = GetSymbolByIdent(pstrIdent, g_iCurrScope);
+			//		AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
+			//	}
+			//}
 
 			// Verify the presence of the semicolon
 
@@ -482,6 +486,88 @@ void ParseStatement()
 		// 可能是无副作用的表达式语句或者不合法的语句
 		break;
 	}
+}
+
+/******************************************************************************************
+*
+*   ParseVar()
+*
+*   Parses the declaration of a variable or array and adds it to the symbol table.
+*
+*       var <Identifier>;
+*       var <Identifier>[<Integer>];
+*		var <Identifier> = <Expression>;
+*/
+
+void ParseVar()
+{
+	// Read an identifier token
+
+	ReadToken(TOKEN_TYPE_IDENT);
+
+	// Copy the current lexeme into a local string buffer to save the variable's identifier
+
+	char pstrIdent[MAX_LEXEME_SIZE];
+	CopyCurrLexeme(pstrIdent);
+
+	// Set the size to 1 for a variable (an array will update this value)
+
+	int iSize = 1;
+
+	int iIsArray = FALSE;
+
+	// Is the look-ahead character an open brace?
+
+	if (GetLookAheadChar() == '[')
+	{
+		// Verify the open brace
+
+		ReadToken(TOKEN_TYPE_OPEN_BRACE);
+
+		// If so, read an integer token
+
+		ReadToken(TOKEN_TYPE_INT);
+
+		// Convert the current lexeme to an integer to get the size
+
+		iSize = atoi(GetCurrLexeme());
+
+		// Read the closing brace
+
+		ReadToken(TOKEN_TYPE_CLOSE_BRACE);
+
+		iIsArray = TRUE;
+	}
+
+	// Add the identifier and size to the symbol table
+
+	if (AddSymbol(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
+		ExitOnCodeError("Identifier redefinition");
+
+	// 声明时初始化标量
+	if (!iIsArray)
+	{
+		// ---- Parse the assignment operator
+
+		if (GetNextToken() != TOKEN_TYPE_OP || GetCurrOp() != OP_TYPE_ASSIGN)
+		{
+			RewindTokenStream();
+		}
+		else
+		{
+			// ---- Parse the value expression
+
+			ParseExpr();
+
+			int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+			SymbolNode *pSymbol = GetSymbolByIdent(pstrIdent, g_iCurrScope);
+			AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
+		}
+	}
+
+	// Read the semicolon
+
+	ReadToken(TOKEN_TYPE_SEMICOLON);
 }
 
 /******************************************************************************************

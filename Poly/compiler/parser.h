@@ -38,7 +38,7 @@ void ParseSourceCode();
 
 void ParseStatement();
 void ParseBlock();
-
+void ParseVar();
 void ParsePrint();
 void ParseBeep();
 void ParseFunc();

@@ -789,53 +789,56 @@ Token GetNextToken()
 
 		// false
 
-		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "false") == 0)
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "false") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_FALSE;
 
 		// if
 
-		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "if") == 0)
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "if") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_IF;
 
 		// else
 
-		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "else") == 0)
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "else") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_ELSE;
 
 		// break
 
-		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "break") == 0)
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "break") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_BREAK;
 
 		// continue
 
-		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "continue") == 0)
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "continue") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_CONTINUE;
 
 		// for
 
-		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "for") == 0)
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "for") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_FOR;
 
 		// while
 
-		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "while") == 0)
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "while") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_WHILE;
 
-		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "print") == 0)
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "print") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_PRINT;
 
-		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "beep") == 0)
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "beep") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_BEEP;
+
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "var") == 0)
+			TokenType = TOKEN_TYPE_RSRVD_VAR;
 
 		// def
 
-		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "def") == 0)
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "def") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_DEF;
 
 		// return
 
-		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "return") == 0)
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "return") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_RETURN;
 
 		break;
