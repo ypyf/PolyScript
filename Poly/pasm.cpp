@@ -58,8 +58,8 @@ TOKEN_TYPE_INSTR,          // An instruction
 //TOKEN_TYPE_RSRVD_SETPRIORITY,		// The SetPriority directive
 
 //TOKEN_TYPE_RSRVD_PARAM,          // The Param directives
-TOKEN_TYPE_REG_RETVAL,          // The _RetVal register
-TOKEN_TYPE_REG_THISVAL,          // The _ThisVal register
+//TOKEN_TYPE_REG_RETVAL,          // The _RetVal register
+//TOKEN_TYPE_REG_THISVAL,          // The _ThisVal register
 END_OF_TOKEN_STREAM,          // The end of the stream has been reached
 };
 
@@ -1429,7 +1429,7 @@ Token ASM_GetNextToken(bool IgnoreReserved)
     // Is it an identifier(which may also be a line label or instruction)?
 
     if (IsStringIdent(g_Lexer.CurrLexeme))
-        g_Lexer.CurrToken = TOKEN_TYPE_IDENT;
+		g_Lexer.CurrToken = TOKEN_TYPE_IDENT;
 
 	// 不检查保留字
 	if (IgnoreReserved)
@@ -1457,14 +1457,6 @@ Token ASM_GetNextToken(bool IgnoreReserved)
 
     if (_stricmp(g_Lexer.CurrLexeme, "PARAM") == 0)
         g_Lexer.CurrToken = TOKEN_TYPE_RSRVD_PARAM;
-
-    // Is it _RetVal?
-
-    if (_stricmp(g_Lexer.CurrLexeme, "_RETVAL") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_REG_RETVAL;
-
-    if (_stricmp(g_Lexer.CurrLexeme, "_THISVAL") == 0)
-        g_Lexer.CurrToken = TOKEN_TYPE_REG_THISVAL;
 
     // Is it an instruction?
     InstrLookup Instr;
@@ -2519,23 +2511,6 @@ void AssmblSourceFile()
                             break;
                         }
 
-                    case TOKEN_TYPE_REG_THISVAL:
-                    case TOKEN_TYPE_REG_RETVAL:
-
-                        // Make sure the operand type is valid
-
-                        if (CurrOpTypes & OP_FLAG_TYPE_REG)
-                        {
-                            // Set a register type
-
-                            pOpList[iCurrOpIndex].Type = OP_TYPE_REG;
-                            pOpList[iCurrOpIndex].Reg = 0;
-                        }
-                        else
-                            ASM_ExitOnCodeError(ERROR_MSSG_INVALID_OP);
-
-                        break;
-
                         // Identifiers
 
                         // These operands can be any of the following
@@ -2546,6 +2521,21 @@ void AssmblSourceFile()
 
                     case TOKEN_TYPE_IDENT:
                         {
+
+							if (_stricmp(g_Lexer.CurrLexeme, "_RetVal") == 0)
+							{
+								if (CurrOpTypes & OP_FLAG_TYPE_REG)
+								{
+									// Set a register type
+
+									pOpList[iCurrOpIndex].Type = OP_TYPE_REG;
+									pOpList[iCurrOpIndex].Reg = 0;
+								}
+								else
+									ASM_ExitOnCodeError(ERROR_MSSG_INVALID_OP);
+
+								break;
+							}
                             // Find out which type of identifier is expected. Since no
                             // instruction in CRL assebly accepts more than one type
                             // of identifier per operand, we can use the operand types

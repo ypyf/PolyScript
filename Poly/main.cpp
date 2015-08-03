@@ -67,7 +67,17 @@ static void average(ScriptContext *sc)
 
 static void poly_pause(ScriptContext *sc)
 {
-	system("pause");
+	int nParam = Poly_GetParamCount(sc);
+	if (nParam > 0)
+	{
+		char *prompt = Poly_GetParamAsString(sc, 0);
+		printf("%s", prompt);
+		system("pause>nul");
+	}
+	else
+	{
+		system("pause");
+	}
 	Poly_ReturnFromHost(sc);
 }
 
@@ -128,6 +138,7 @@ int RunScript(char* pstrFilename)
     ScriptContext *sc = Poly_CreateInterp();
 
     // 注册宿主api
+	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Average", average);
 	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Explode", h_PrintInt);
 	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "pause", poly_pause);
 	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Division", h_Division);
