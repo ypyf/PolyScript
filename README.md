@@ -11,7 +11,7 @@ A game script virtual machine.
     
     def main()
     {
-        i := 10;
+        var i = 10;
 
         while (i > 0)
         {
