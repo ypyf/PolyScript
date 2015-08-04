@@ -398,20 +398,21 @@ void SetOpType(int iInstrIndex, int iOpIndex, OpTypes iOpType);
 
 // ----Tables ----------------------------------------------------------------------------
 
+// 字符串表接口
 int AddString(LinkedList *pList, char *pstrString);
 
+// 函数表接口
 int ASM_AddFunc(char *pstrName, int iEntryPoint);
 Function *ASM_GetFuncByName(char *pstrName);
 void ASM_SetFuncInfo(char *pstrName, int iParamCount, int iLocalDataSize);
 
+// 标号表接口
 int AddLabel(char *pstrIdent, int iTargetIndex, int iFuncIndex);
 LabelNode *GetLabelByIdent(char *pstrIdent, int iFuncIndex);
 
-// 定义符号
+// 符号表接口
 int AddSymbol(char *pstrIdent, int iSize, int iLevel, int iStackIndex, int iFuncIndex);
 SymbolNode *GetSymbolByFuncIndex(char *pstrIdent, int iFuncIndex);
-
-// 使用符号
 SymbolNode *GetSymbolByLevel(char *pstrIdent, int iLevel, int iFuncIndex);
 int GetStackIndexByIdent(char *pstrIdent, int iLevel, int iFuncIndex);
 static int GetSizeByIdent(char *pstrIdent, int iLevel, int iFuncIndex);
@@ -2258,7 +2259,7 @@ void AssmblSourceFile()
 
     g_iCurrInstrIndex = 0;
 
-    // ----Perfor (m the second pass over the source
+    // ----Perform the second pass over the source
 
     // Reset the lexer so we begin at the top of the source again
 

@@ -26,12 +26,13 @@ typedef struct _SymbolNode                          // A symbol table node
 	int iSize;                                      // Size (1 for variables, N for arrays)
 	int iScope;                                     // Scope (0 for globals, N for locals' function index)
 	int iType;                                      // Symbol type (parameter or variable)
+	int iStackIndex;								// Symbol stack index
 } SymbolNode;
 
 // ---- Function Prototypes -------------------------------------------------------------------
 
 SymbolNode* GetSymbolByIndex(int iIndex);
-SymbolNode* GetSymbolByIdent(char* pstrIdent, int iScope);
+SymbolNode* GetSymbolByIdent(const char* pstrIdent, int iScope);
 int GetSizeByIdent(char* pstrIdent, int iScope);
 int AddSymbol(char* pstrIdent, int iSize, int iScope, int iType);
 

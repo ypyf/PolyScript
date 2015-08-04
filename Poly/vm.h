@@ -31,7 +31,7 @@
 #define OP_TYPE_NULL                        -1          // Uninitialized/Null data
 #define OP_TYPE_INT                         0           // Integer literal value
 #define OP_TYPE_FLOAT                       1           // Floating-point literal value
-#define OP_TYPE_STRING                      2           // String literal value
+#define OP_TYPE_STRING						2
 #define OP_TYPE_ABS_STACK_INDEX             3           // Absolute stack index
 #define OP_TYPE_REL_STACK_INDEX             4           // Relative stack index
 #define OP_TYPE_INSTR_INDEX                 5           // Instruction index
@@ -40,6 +40,10 @@
 #define OP_TYPE_REG                         8           // Register
 #define OP_TYPE_STACK_BASE_MARKER           9           // 从C函数调用脚本中的函数，返回时这个标志被检测到
 #define OP_TYPE_OBJECT                      10          // Object type
+#define OP_TYPE_STRING_INDEX                32
+#define ICODE_OP_TYPE_VAR_NAME			    33			// 变量，仅供编译器生成代码
+//#define OP_TYPE_REL_STACK_INDEX				33			// 数组索引变量，仅供编译器生成代码
+#define ICODE_OP_TYPE_JUMP_TARGET			34			// 标号，，仅供编译器生成代码
 
 // 位于对象实际数据前部的元数据记录信息
 struct MetaObject
@@ -120,6 +124,13 @@ struct FUNC_TABLE                       // A function table
     int Size;                                  // The number of functions in the array
 };
 
+// 常量字符串表
+struct STRING_TABLE
+{
+	char **StringPool;
+	int Size;
+};
+
 // ----Host API Call Table ---------------------------------------------------------------
 struct HOST_CALL_TABLE                // A host API call table
 {
@@ -172,6 +183,8 @@ struct ScriptContext
     INSTR_STREAM InstrStream;                    // The instruction stream
     FUNC_TABLE FuncTable;                        // The function table
     HOST_CALL_TABLE HostCallTable;            // The host API call table
+
+	STRING_TABLE StringTable;				// 字符串常量表
 
     // 动态内存分配
     MetaObject *pLastObject;        // 指向最近一个已分配的对象

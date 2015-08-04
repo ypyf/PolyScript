@@ -40,6 +40,8 @@ LinkedList g_ICodeStream;                       // I-code stream
 
 LinkedList g_FuncTable;                         // The function table
 
+LinkedList g_HostFuncTable;
+
 // ---- Symbol Table ----------------------------------------------------------------------
 
 LinkedList g_SymbolTable;                       // The symbol table
@@ -91,6 +93,7 @@ void Init()
 	// Initialize the tables
 
 	InitLinkedList(&g_FuncTable);
+	InitLinkedList(&g_HostFuncTable);
 	InitLinkedList(&g_SymbolTable);
 	InitLinkedList(&g_StringTable);
 }
@@ -111,6 +114,7 @@ void ShutDown()
 	// Free the tables
 
 	FreeLinkedList(&g_FuncTable);
+	FreeLinkedList(&g_HostFuncTable);
 	FreeLinkedList(&g_SymbolTable);
 	FreeLinkedList(&g_StringTable);
 }
@@ -228,7 +232,7 @@ void XSC_CompileScript(ScriptContext *sc, const char* pstrFilename)
 	LoadSourceFile();
 	PreprocessSourceFile();
 	CompileSourceFile();
-	EmitCode();
+	EmitCode(sc);
 	ShutDown();
 
 	//PASM_Assembly(g_pstrOutputFilename, pstrExecFilename);

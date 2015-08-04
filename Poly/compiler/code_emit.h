@@ -1,4 +1,3 @@
-
 #ifndef XSC_CODE_EMIT
 #define XSC_CODE_EMIT
 
@@ -12,15 +11,11 @@
 
 // ---- Constants -----------------------------------------------------------------------------
 
-#define TAB_STOP_WIDTH                      8       // The width of a tab stop in
-// characters
+#define TAB_STOP_WIDTH                      8       // The width of a tab stop in characters
 
 // ---- Function Prototypes -------------------------------------------------------------------
 
-void EmitHeader();
-void EmitDirectives();
-void EmitScopeSymbols(int iScope, int iType);
-void EmitFunc(FuncNode * pFunc);
 void EmitCode();
+void EmitCode(ScriptContext *sc);
 
 #endif

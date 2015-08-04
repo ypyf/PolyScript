@@ -1,8 +1,15 @@
 #include "code_emit.h"
+#include "../vm.h"
 
 // ---- Globals -------------------------------------------------------------------------------
 
 FILE * g_pOutputFile = NULL;                        // Pointer to the output file
+
+void EmitHeader();
+void EmitDirectives();
+void EmitFunc(FuncNode * pFunc);
+void EmitScopeSymbols(int iScope, int iType);
+
 
 // ---- Instruction Mnemonics -------------------------------------------------------------
 
@@ -262,51 +269,51 @@ void EmitFunc(FuncNode * pFunc)
 					{
 						// Integer literal
 
-					case ICODE_OP_TYPE_INT:
+					case OP_TYPE_INT:
 						fprintf(g_pOutputFile, "%d", pOp->iIntLiteral);
 						break;
 
 						// Float literal
 
-					case ICODE_OP_TYPE_FLOAT:
+					case OP_TYPE_FLOAT:
 						fprintf(g_pOutputFile, "%f", pOp->fFloatLiteral);
 						break;
 
 						// String literal
 
-					case ICODE_OP_TYPE_STRING_INDEX:
+					case OP_TYPE_STRING_INDEX:
 						fprintf(g_pOutputFile, "\"%s\"", GetStringByIndex(&g_StringTable, pOp->iStringIndex));
 						break;
 
 						// Variable
 
-					case ICODE_OP_TYPE_VAR:
+					case ICODE_OP_TYPE_VAR_NAME:
 						fprintf(g_pOutputFile, "%s", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent);
 						break;
 
 						// Array index absolute
 
-					case ICODE_OP_TYPE_INDEX_ABS:
+					case OP_TYPE_ABS_STACK_INDEX:
 						fprintf(g_pOutputFile, "%s[%d]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
 							pOp->iOffset);
 						break;
 
 						// Array index variable
 
-					case ICODE_OP_TYPE_INDEX_VAR:
+					case OP_TYPE_REL_STACK_INDEX:
 						fprintf(g_pOutputFile, "%s[%s]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
 							GetSymbolByIndex(pOp->iOffsetSymbolIndex)->pstrIdent);
 						break;
 
 						// Function
 
-					case ICODE_OP_TYPE_FUNC_INDEX:
+					case OP_TYPE_FUNC_INDEX:
 						fprintf(g_pOutputFile, "%s", GetFuncByIndex(pOp->iSymbolIndex)->pstrName);
 						break;
 
 						// Register (just _RetVal for now)
 
-					case ICODE_OP_TYPE_REG:
+					case OP_TYPE_REG:
 						fprintf(g_pOutputFile, "_RetVal");
 						break;
 
@@ -360,7 +367,7 @@ void EmitFunc(FuncNode * pFunc)
 
 /******************************************************************************************
 *
-*   EmitCode ()
+*   EmitCode()
 *
 *   Translates the I-code representation of the script to an ASCII-foramtted CRL assembly
 *   file.

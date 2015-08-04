@@ -51,7 +51,7 @@ FuncNode * GetFuncByIndex(int iIndex)
 *   Returns a FuncNode structure pointer corresponding to the specified name.
 */
 
-FuncNode * GetFuncByName(char* pstrName)
+FuncNode* GetFuncByName(char* pstrName)
 {
 	// Local function node pointer
 
@@ -85,11 +85,20 @@ FuncNode * GetFuncByName(char* pstrName)
 
 int AddFunc(char* pstrName, int iIsHostAPI)
 {
-	// If a function already exists with the specified name, exit and return an invalid
-	// index
 	// 脚本中的函数声明可以覆盖host api
-	if (GetFuncByName(pstrName) && iIsHostAPI)
-		return -1;
+	FuncNode* pFunc = GetFuncByName(pstrName);
+	if (pFunc != NULL)
+	{
+		// 主机函数不得覆盖同名的脚本函数
+		if (iIsHostAPI)
+			return -1;
+		else
+		{
+			// 之前假定了一个未声明的函数是外部函数，现在定义为脚本函数
+			pFunc->iIsHostAPI = FALSE;
+			return pFunc->iIndex;
+		}
+	}
 
 	// Create a new function node
 

@@ -82,7 +82,7 @@ struct Value
         MetaObject* ObjectPtr;			// Object Reference
         int         Fixnum;				// Integer literal
         float       Realnum;			// Float literal
-        char*       String;				// String literal
+        char*       String;				// String literal index
         int         StackIndex;			// Stack Index
         int         InstrIndex;			// Instruction index
         int         FuncIndex;			// Function index

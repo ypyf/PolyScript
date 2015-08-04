@@ -112,25 +112,25 @@ void CallFunc(ScriptContext *sc, int iIndex, int type);
 
 ScriptContext* Poly_CreateInterp()
 {
-	ScriptContext* thead = new ScriptContext;
+	ScriptContext* sc = (ScriptContext*)calloc(sizeof(ScriptContext), 1);
 
-	thead->ThreadActiveTime = 0;
+	sc->ThreadActiveTime = 0;
 
-	thead->IsRunning = FALSE;
-	thead->IsMainFuncPresent = FALSE;
-	thead->IsPaused = FALSE;
+	sc->IsRunning = FALSE;
+	sc->IsMainFuncPresent = FALSE;
+	sc->IsPaused = FALSE;
 
-	thead->InstrStream.Instrs = NULL;
-	thead->stack = NULL;
-	thead->FuncTable.Funcs = NULL;
-	thead->HostCallTable.Calls = NULL;
-	thead->HostAPIs = NULL;
+	sc->InstrStream.Instrs = NULL;
+	sc->stack = NULL;
+	sc->FuncTable.Funcs = NULL;
+	sc->HostCallTable.Calls = NULL;
+	sc->HostAPIs = NULL;
 
-	thead->pLastObject = NULL;
-	thead->iNumberOfObjects = 0;
-	thead->iMaxObjects = INITIAL_GC_THRESHOLD;
+	sc->pLastObject = NULL;
+	sc->iNumberOfObjects = 0;
+	sc->iMaxObjects = INITIAL_GC_THRESHOLD;
 
-	return thead;
+	return sc;
 }
 
 /******************************************************************************************
@@ -555,7 +555,7 @@ static int LoadPE(ScriptContext *sc, const char *pstrFilename)
 void Poly_ShutDown(ScriptContext *sc)
 {
 	Poly_UnloadScript(sc);
-	delete sc;
+	free(sc);
 }
 
 /******************************************************************************************
@@ -582,8 +582,8 @@ void Poly_UnloadScript(ScriptContext *sc)
         // Loop through each operand and free its string pointer
 
         for (int j = 0; j < iOpCount; ++j)
-            if (pOpList[j].String)
-                pOpList[j].String;
+            if (pOpList[j].Type == OP_TYPE_STRING)
+                free(pOpList[j].String);
     }
 
     // Now free the stream itself
@@ -2259,30 +2259,36 @@ int Poly_GetExitCode(ScriptContext *sc)
 
 int Poly_LoadScript(ScriptContext *sc, const char *pstrFilename)
 {
-	char pstrExecFilename[MAX_PATH];
-	char inputFilename[MAX_PATH];
+	//char pstrExecFilename[MAX_PATH];
+	//char inputFilename[MAX_PATH];
 
-	strcpy(inputFilename, pstrFilename);
-	strupr(inputFilename);
+	//strcpy(inputFilename, pstrFilename);
+	//strupr(inputFilename);
 
-	// 构造 .PE 文件名
-	if (strstr(inputFilename, POLY_FILE_EXT))
-	{
-		int ExtOffset = strrchr(inputFilename, '.') - inputFilename;
-		strncpy(pstrExecFilename, inputFilename, ExtOffset);
-		pstrExecFilename[ExtOffset] = '\0';
-		strcat(pstrExecFilename, PE_FILE_EXT);
-	}
-	else
-	{
-		return POLY_LOAD_ERROR_FILE_IO;
-	}
+	//// 构造 .PE 文件名
+	//if (strstr(inputFilename, POLY_FILE_EXT))
+	//{
+	//	int ExtOffset = strrchr(inputFilename, '.') - inputFilename;
+	//	strncpy(pstrExecFilename, inputFilename, ExtOffset);
+	//	pstrExecFilename[ExtOffset] = '\0';
+	//	strcat(pstrExecFilename, PE_FILE_EXT);
+	//}
+	//else
+	//{
+	//	return POLY_LOAD_ERROR_FILE_IO;
+	//}
 
 	// 编译
-	XSC_CompileScript(pstrFilename, pstrExecFilename);
+	//XSC_CompileScript(pstrFilename, pstrExecFilename);
+	XSC_CompileScript(sc, pstrFilename);
 
 	// 载入PE文件
-	LoadPE(sc, pstrExecFilename);
+	//LoadPE(sc, pstrExecFilename);
+
+	// 分配堆栈
+	int iStackSize = sc->iStackSize;
+	if (!(sc->stack = (Value *)malloc(iStackSize*sizeof(Value))))
+		return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
 	return POLY_LOAD_OK;
 }

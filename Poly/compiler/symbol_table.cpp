@@ -53,7 +53,7 @@ SymbolNode * GetSymbolByIndex(int iIndex)
 *   Returns a pointer to the symbol structure corresponding to the identifier and scope.
 */
 
-SymbolNode * GetSymbolByIdent(char* pstrIdent, int iScope)
+SymbolNode* GetSymbolByIdent(const char* pstrIdent, int iScope)
 {
 	// Local symbol node pointer
 

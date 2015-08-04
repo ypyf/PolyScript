@@ -27,7 +27,9 @@ void CopyValue(Value *pDest, Value* Source)
 void exec_push(ScriptContext *sc, Value *Val)
 {
     // Put the value into the current top index
-    CopyValue(&sc->stack[sc->iTopIndex++], Val);
+	int top = sc->iTopIndex;
+    CopyValue(&sc->stack[top], Val);
+	sc->iTopIndex++;
 }
 
 Value exec_pop(ScriptContext *sc)

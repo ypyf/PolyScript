@@ -128,5 +128,8 @@
     <ClCompile Include="pasm.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="compiler\code_emit2.cpp">
+      <Filter>编译器</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

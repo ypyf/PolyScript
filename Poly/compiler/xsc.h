@@ -93,6 +93,8 @@ extern ScriptHeader g_ScriptHeader;
 
 extern LinkedList g_FuncTable;
 
+extern LinkedList g_HostFuncTable;
+
 // ---- Symbol Table ----------------------------------------------------------------------
 
 extern LinkedList g_SymbolTable;

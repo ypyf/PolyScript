@@ -2,6 +2,7 @@
 // ---- Include Files -------------------------------------------------------------------------
 
 #include "i_code.h"
+#include "../vm.h"
 
 // ---- Global Variables ----------------------------------------------------------------------
 
@@ -236,7 +237,7 @@ void AddIntICodeOp(int iFuncIndex, int iInstrIndex, int iValue)
 
 	// Set the operand type to integer and store the value
 
-	Value.iType = ICODE_OP_TYPE_INT;
+	Value.iType = OP_TYPE_INT;
 	Value.iIntLiteral = iValue;
 
 	// Add the operand to the instruction
@@ -259,7 +260,7 @@ void AddFloatICodeOp(int iFuncIndex, int iInstrIndex, float fValue)
 
 	// Set the operand type to float and store the value
 
-	Value.iType = ICODE_OP_TYPE_FLOAT;
+	Value.iType = OP_TYPE_FLOAT;
 	Value.fFloatLiteral = fValue;
 
 	// Add the operand to the instruction
@@ -282,7 +283,7 @@ void AddStringICodeOp(int iFuncIndex, int iInstrIndex, int iStringIndex)
 
 	// Set the operand type to string index and store the index
 
-	Value.iType = ICODE_OP_TYPE_STRING_INDEX;
+	Value.iType = OP_TYPE_STRING_INDEX;
 	Value.iStringIndex = iStringIndex;
 
 	// Add the operand to the instruction
@@ -305,7 +306,7 @@ void AddVarICodeOp(int iFuncIndex, int iInstrIndex, int iSymbolIndex)
 
 	// Set the operand type to variable and store the symbol index
 
-	Value.iType = ICODE_OP_TYPE_VAR;
+	Value.iType = ICODE_OP_TYPE_VAR_NAME;
 	Value.iSymbolIndex = iSymbolIndex;
 
 	// Add the operand to the instruction
@@ -329,7 +330,7 @@ void AddArrayIndexAbsICodeOp(int iFuncIndex, int iInstrIndex, int iArraySymbolIn
 
 	// Set the operand type to array index absolute and store the indices
 
-	Value.iType = ICODE_OP_TYPE_INDEX_ABS;
+	Value.iType = OP_TYPE_ABS_STACK_INDEX;
 	Value.iSymbolIndex = iArraySymbolIndex;
 	Value.iOffset = iOffset;
 
@@ -354,7 +355,7 @@ void AddArrayIndexVarICodeOp(int iFuncIndex, int iInstrIndex, int iArraySymbolIn
 
 	// Set the operand type to array index variable and store the indices
 
-	Value.iType = ICODE_OP_TYPE_INDEX_VAR;
+	Value.iType = OP_TYPE_REL_STACK_INDEX;
 	Value.iSymbolIndex = iArraySymbolIndex;
 	Value.iOffsetSymbolIndex = iOffsetSymbolIndex;
 
@@ -378,7 +379,7 @@ void AddFuncICodeOp(int iFuncIndex, int iInstrIndex, int iOpFuncIndex)
 
 	// Set the operand type to function index and store the index
 
-	Value.iType = ICODE_OP_TYPE_FUNC_INDEX;
+	Value.iType = OP_TYPE_FUNC_INDEX;
 	Value.iFuncIndex = iOpFuncIndex;
 
 	// Add the operand to the instruction
@@ -402,7 +403,7 @@ void AddRegICodeOp(int iFuncIndex, int iInstrIndex, int iRegCode)
 
 	// Set the operand type to register and store the code (even though we'll ignore it)
 
-	Value.iType = ICODE_OP_TYPE_REG;
+	Value.iType = OP_TYPE_REG;
 	Value.iRegCode = iRegCode;
 
 	// Add the operand to the instruction

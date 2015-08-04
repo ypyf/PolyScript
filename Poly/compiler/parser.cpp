@@ -640,7 +640,7 @@ void ParseFunc()
 
 	// Add the non-host API function to the function table and get its index
 
-	int iFuncIndex = AddFunc (GetCurrLexeme(), FALSE);
+	int iFuncIndex = AddFunc(GetCurrLexeme(), FALSE);
 
 	// Check for a function redefinition
 
