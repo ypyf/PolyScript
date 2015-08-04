@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <time.h>
 
+static int LoadPE(ScriptContext *sc, const char *pstrFilename);
 
 // ----The Global Host API ----------------------------------------------------------------------
 HOST_API_FUNC* g_HostAPIs;    // The host API
@@ -170,7 +171,7 @@ time_t Poly_GetSourceTimestamp(const char* filename)
 *    Loads an .PE file into memory.
 */
 
-int Poly_LoadPE(ScriptContext *sc, const char *pstrFilename)
+static int LoadPE(ScriptContext *sc, const char *pstrFilename)
 {
     // ----Open the input file
 
@@ -2311,8 +2312,34 @@ int Poly_GetExitCode(ScriptContext *sc)
     return sc->ExitCode;
 }
 
-// .poly => .pe
-void Poly_CompileScript(char *pstrFilename, char *pstrExecFilename)
+
+int Poly_LoadScript(ScriptContext *sc, const char *pstrFilename)
 {
+	char pstrExecFilename[MAX_PATH];
+	char inputFilename[MAX_PATH];
+
+	strcpy(inputFilename, pstrFilename);
+	strupr(inputFilename);
+
+	// 构造 .PE 文件名
+	if (strstr(inputFilename, POLY_FILE_EXT))
+	{
+		int ExtOffset = strrchr(inputFilename, '.') - inputFilename;
+		strncpy(pstrExecFilename, inputFilename, ExtOffset);
+		pstrExecFilename[ExtOffset] = '\0';
+		strcat(pstrExecFilename, PE_FILE_EXT);
+	}
+	else
+	{
+		printf("unexpected script file name.\n");
+		return FALSE;
+	}
+
+	// 编译
 	XSC_CompileScript(pstrFilename, pstrExecFilename);
+
+	// 载入PE文件
+	LoadPE(sc, pstrExecFilename);
+
+	return POLY_LOAD_OK;
 }

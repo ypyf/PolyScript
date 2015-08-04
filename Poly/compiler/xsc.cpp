@@ -192,7 +192,7 @@ void Exit()
 	exit(0);
 }
 
-void XSC_CompileScript(char* pstrFilename, char* pstrExecFilename)
+void XSC_CompileScript(const char* pstrFilename, const char* pstrExecFilename)
 {
 	strcpy(g_pstrSourceFilename, pstrFilename);
 	strupr(g_pstrSourceFilename);

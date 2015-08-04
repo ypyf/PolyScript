@@ -109,7 +109,7 @@ g_iTempVar1;
 
 // ---- Function Prototypes -------------------------------------------------------------------
 
-void XSC_CompileScript(char* pstrFilename, char* pstrExecFilename);
+void XSC_CompileScript(const char* pstrFilename, const char* pstrExecFilename);
 void Exit();
 
 #endif

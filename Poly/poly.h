@@ -104,9 +104,7 @@ POLY_API ScriptContext* Poly_CreateInterp();
 POLY_API void Poly_ShutDown(ScriptContext *sc);
 
 // ----Script Interface ------------------------------------------------------------------
-
-POLY_API void Poly_CompileScript(char *pstrFilename, char *pstrExecFilename);
-POLY_API int Poly_LoadPE(ScriptContext *sc, const char *pstrFilename);
+POLY_API int Poly_LoadScript(ScriptContext *sc, const char *pstrFilename);
 POLY_API void Poly_UnloadScript(ScriptContext *sc);
 POLY_API void Poly_ResetInterp(ScriptContext *sc);
 POLY_API void Poly_RunScript(ScriptContext *sc, int iTimesliceDur);

@@ -2761,7 +2761,7 @@ void AssmblSourceFile()
 }
 
 /* Assembly .PASM to .PE */
-void PASM_Assembly(char* pstrFilename, char* pstrExecFilename)
+void PASM_Assembly(const char* pstrFilename, const char* pstrExecFilename)
 {
     InitAssembler();
     LoadSourceFile(pstrFilename);
