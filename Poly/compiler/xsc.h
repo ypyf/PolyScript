@@ -81,8 +81,7 @@ struct ScriptHeader                    // Script header data
 
 // ---- Source Code -----------------------------------------------------------------------
 
-extern char g_pstrSourceFilename[MAX_FILENAME_SIZE],
-	        g_pstrOutputFilename[MAX_FILENAME_SIZE];
+extern char g_pstrSourceFilename[MAX_FILENAME_SIZE], g_pstrOutputFilename[MAX_FILENAME_SIZE];
 
 extern LinkedList g_SourceCode;
 
@@ -104,12 +103,14 @@ extern LinkedList g_StringTable;
 
 // ---- Expression Evaluation -------------------------------------------------------------
 
-extern int g_iTempVar0,
-g_iTempVar1;
+extern int g_iTempVar0, g_iTempVar1;
 
 // ---- Function Prototypes -------------------------------------------------------------------
 
+struct ScriptContext;
+
 void XSC_CompileScript(const char* pstrFilename, const char* pstrExecFilename);
+void XSC_CompileScript(ScriptContext *sc, const char* pstrFilename);
 void Exit();
 
 #endif

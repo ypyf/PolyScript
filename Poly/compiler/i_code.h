@@ -20,16 +20,16 @@
 
 // ---- I-Code Operand Types ---------------------------------------------------------------------
 
-#define OP_TYPE_INT                 0           // Integer literal value
-#define OP_TYPE_FLOAT               1           // Floating-point literal value
-#define OP_TYPE_STRING_INDEX        2           // String literal value
-#define OP_TYPE_VAR                 3           // Variable
-#define OP_TYPE_ARRAY_INDEX_ABS     4           // Array with absolute index
-#define OP_TYPE_ARRAY_INDEX_VAR     5           // Array with relative index
-#define OP_TYPE_JUMP_TARGET_INDEX   6           // Jump target index
-#define OP_TYPE_FUNC_INDEX          7           // Function index
-//#define OP_TYPE_HOST_FUNC		    8           // Host Function
-#define OP_TYPE_REG                 9           // Register
+#define ICODE_OP_TYPE_INT					0           // Integer literal value
+#define ICODE_OP_TYPE_FLOAT					1           // Floating-point literal value
+#define ICODE_OP_TYPE_STRING_INDEX			2           // String literal value
+#define ICODE_OP_TYPE_VAR					3           // Variable
+#define ICODE_OP_TYPE_INDEX_ABS				4           // Array with absolute index
+#define ICODE_OP_TYPE_INDEX_VAR				5           // Array with relative index
+#define ICODE_OP_TYPE_JUMP_TARGET			6           // Jump target index
+#define ICODE_OP_TYPE_FUNC_INDEX			7           // Function index
+//#define OP_TYPE_HOST_FUNC					8           // Host Function
+#define ICODE_OP_TYPE_REG					9           // Register
 
 typedef int Label;
 

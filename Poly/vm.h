@@ -41,7 +41,6 @@
 #define OP_TYPE_STACK_BASE_MARKER           9           // 从C函数调用脚本中的函数，返回时这个标志被检测到
 #define OP_TYPE_OBJECT                      10          // Object type
 
-
 // 位于对象实际数据前部的元数据记录信息
 struct MetaObject
 {

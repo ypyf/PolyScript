@@ -7,9 +7,10 @@
 #include "preprocessor.h"
 #include "lexer.h"
 #include "parser.h"
-#include "i_code.h"
+//#include "i_code.h"
 #include "code_emit.h"
 
+#include "../vm.h"
 #include "../pasm.h"
 
 void Init();
@@ -22,8 +23,8 @@ void Exit();
 
 // ---- Source Code -----------------------------------------------------------------------
 
-char g_pstrSourceFilename [MAX_FILENAME_SIZE],	// Source code filename
-	 g_pstrOutputFilename [MAX_FILENAME_SIZE];	// Executable filename
+char g_pstrSourceFilename[MAX_FILENAME_SIZE];
+char g_pstrOutputFilename[MAX_FILENAME_SIZE];
 
 LinkedList g_SourceCode;                        // Source code linked list
 
@@ -218,4 +219,17 @@ void XSC_CompileScript(const char* pstrFilename, const char* pstrExecFilename)
 	{
 		fprintf(stderr, "unexpected script file name: %s.\n", g_pstrSourceFilename);
 	}
+}
+
+void XSC_CompileScript(ScriptContext *sc, const char* pstrFilename)
+{
+	strcpy(g_pstrSourceFilename, pstrFilename);
+	Init();
+	LoadSourceFile();
+	PreprocessSourceFile();
+	CompileSourceFile();
+	EmitCode();
+	ShutDown();
+
+	//PASM_Assembly(g_pstrOutputFilename, pstrExecFilename);
 }

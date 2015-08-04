@@ -1,4 +1,3 @@
-
 #include "code_emit.h"
 
 // ---- Globals -------------------------------------------------------------------------------
@@ -263,57 +262,57 @@ void EmitFunc(FuncNode * pFunc)
 					{
 						// Integer literal
 
-					case OP_TYPE_INT:
+					case ICODE_OP_TYPE_INT:
 						fprintf(g_pOutputFile, "%d", pOp->iIntLiteral);
 						break;
 
 						// Float literal
 
-					case OP_TYPE_FLOAT:
+					case ICODE_OP_TYPE_FLOAT:
 						fprintf(g_pOutputFile, "%f", pOp->fFloatLiteral);
 						break;
 
 						// String literal
 
-					case OP_TYPE_STRING_INDEX:
+					case ICODE_OP_TYPE_STRING_INDEX:
 						fprintf(g_pOutputFile, "\"%s\"", GetStringByIndex(&g_StringTable, pOp->iStringIndex));
 						break;
 
 						// Variable
 
-					case OP_TYPE_VAR:
+					case ICODE_OP_TYPE_VAR:
 						fprintf(g_pOutputFile, "%s", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent);
 						break;
 
 						// Array index absolute
 
-					case OP_TYPE_ARRAY_INDEX_ABS:
+					case ICODE_OP_TYPE_INDEX_ABS:
 						fprintf(g_pOutputFile, "%s[%d]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
 							pOp->iOffset);
 						break;
 
 						// Array index variable
 
-					case OP_TYPE_ARRAY_INDEX_VAR:
+					case ICODE_OP_TYPE_INDEX_VAR:
 						fprintf(g_pOutputFile, "%s[%s]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
 							GetSymbolByIndex(pOp->iOffsetSymbolIndex)->pstrIdent);
 						break;
 
 						// Function
 
-					case OP_TYPE_FUNC_INDEX:
+					case ICODE_OP_TYPE_FUNC_INDEX:
 						fprintf(g_pOutputFile, "%s", GetFuncByIndex(pOp->iSymbolIndex)->pstrName);
 						break;
 
 						// Register (just _RetVal for now)
 
-					case OP_TYPE_REG:
+					case ICODE_OP_TYPE_REG:
 						fprintf(g_pOutputFile, "_RetVal");
 						break;
 
 						// Jump target index
 
-					case OP_TYPE_JUMP_TARGET_INDEX:
+					case ICODE_OP_TYPE_JUMP_TARGET:
 						fprintf(g_pOutputFile, "_L%d", pOp->label);
 						break;
 					}

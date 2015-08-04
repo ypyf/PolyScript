@@ -8,11 +8,10 @@
 #include <ctype.h>
 #include <time.h>
 
-static int LoadPE(ScriptContext *sc, const char *pstrFilename);
-
 // ----The Global Host API ----------------------------------------------------------------------
 HOST_API_FUNC* g_HostAPIs;    // The host API
 
+static int LoadPE(ScriptContext *sc, const char *pstrFilename);
 
 #ifdef WIN32
 #define stricmp _stricmp
