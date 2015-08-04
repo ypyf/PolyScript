@@ -115,11 +115,7 @@ int RunScript(char* pstrFilename)
 	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Explode", h_PrintInt);
 	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "pause", poly_pause);
 	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Division", h_Division);
-	if (!Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "PrintString", h_PrintString))
-    {
-        printf("Register Host API Failed!");
-        exit(1);
-    }
+	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "PrintString", h_PrintString);
 
     // An error code
     int iErrorCode;

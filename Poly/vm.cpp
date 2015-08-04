@@ -166,7 +166,7 @@ time_t Poly_GetSourceTimestamp(const char* filename)
 
 /******************************************************************************************
 *
-*    Poly_LoadXSE()
+*    LoadPE()
 *
 *    Loads an .PE file into memory.
 */
@@ -178,7 +178,6 @@ static int LoadPE(ScriptContext *sc, const char *pstrFilename)
     FILE *pScriptFile;
     if (!(pScriptFile = fopen(pstrFilename, "rb")))
         return POLY_LOAD_ERROR_FILE_IO;
-
 
     // ----Read the header
 
@@ -635,7 +634,7 @@ void Poly_UnloadScript(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    Poly_ResetVM()
+*    Poly_ResetInterp()
 *
 *    Resets the script. This function accepts a thread index rather than relying on the
 *    currently active thread, because scripts can (and will) need to be reset arbitrarily.
@@ -674,7 +673,7 @@ void Poly_ResetInterp(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    ExecuteInstruction()
+*    ExecuteInstructions()
 *
 *    Runs the currenty loaded script for a given timeslice duration.
 */
@@ -1356,23 +1355,14 @@ void Poly_RunScript(ScriptContext *sc, int iTimesliceDur)
 
 /******************************************************************************************
 *
-*	XS_StartScript ()
+*	XS_StartScript()
 *
 *   Starts the execution of a script.
 */
 
 void Poly_StartScript(ScriptContext *sc)
 {
-	// Set the thread's execution flag
-
 	sc->IsRunning = TRUE;
-
-	// Set the current thread to the script
-
-	sc = sc;
-
-	// Set the activation time for the current thread to get things rolling
-
 	sc->ThreadActiveTime = GetCurrTime();
 }
 
@@ -1385,8 +1375,6 @@ void Poly_StartScript(ScriptContext *sc)
 
 void Poly_StopScript(ScriptContext *sc)
 {
-    // Clear the thread's execution flag
-
     sc->IsRunning = FALSE;
 }
 
@@ -1399,12 +1387,7 @@ void Poly_StopScript(ScriptContext *sc)
 
 void Poly_PauseScript(ScriptContext *sc, int iDur)
 {
-    // Set the pause flag
-
     sc->IsPaused = TRUE;
-
-    // Set the duration of the pause
-
     sc->PauseEndTime = GetCurrTime() + iDur;
 }
 
@@ -1417,8 +1400,6 @@ void Poly_PauseScript(ScriptContext *sc, int iDur)
 
 void Poly_ResumeScript(ScriptContext *sc)
 {
-    // Clear the pause flag
-
     sc->IsPaused = FALSE;
 }
 
@@ -1809,42 +1790,6 @@ inline char*ResolveOpAsHostAPICall(ScriptContext *sc, int iOpIndex)
 
 /******************************************************************************************
 *
-*  ResolveOpPntr()
-*
-*  Resolves an operand and returns a pointer to its Value structure.
-*/
-
-//inline Value* ResolveOpValue(VMState* sc, int iOpIndex)
-//{
-//    Value OpValue = sc->InstrStream.Instrs[sc->CurrInstr].pOpList[iOpIndex];
-//
-//    switch (OpValue.Type)
-//    {
-//        // It's on the stack
-//
-//    case OP_TYPE_ABS_STACK_INDEX:
-//		return GetStackValue(sc, OpValue.StackIndex);
-//		//return &sc->Stack[ResolveStackIndex(sc->FrameIndex, OpValue.StackIndex)];
-//    case OP_TYPE_REL_STACK_INDEX:
-//        {
-//            int iAbsStackIndex = ResolveOpRelStackIndex(sc, &OpValue);
-//			return GetStackValue(sc, iAbsStackIndex);
-//        }
-//
-//        // It's _RetVal
-//
-//    case OP_TYPE_REG:
-//        return &sc->_RetVal;
-//
-//    }
-//
-//    // Return NULL for anything else
-//
-//    return NULL;
-//}
-
-/******************************************************************************************
-*
 *    GetStackValue()
 *
 *    Returns the specified stack value.
@@ -1940,7 +1885,7 @@ inline int GetCurrTime()
 {
     unsigned theTick;
 
-#if defined(WIN32_PLATFORM)
+#if defined(WIN32)
     theTick = GetTickCount();
 #else
     struct timespec ts;
@@ -2331,8 +2276,7 @@ int Poly_LoadScript(ScriptContext *sc, const char *pstrFilename)
 	}
 	else
 	{
-		printf("unexpected script file name.\n");
-		return FALSE;
+		return POLY_LOAD_ERROR_FILE_IO;
 	}
 
 	// 编译
