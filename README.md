@@ -1,7 +1,7 @@
 PolyScript
 ====
 
-A game script virtual machine.
+A game script language.
 
 ##Examples
 
@@ -19,3 +19,18 @@ A game script virtual machine.
             --i;
         }
     }
+    
+###Example 2
+    
+    /* fibonacci.poly */
+    
+    func fib(n)
+    {
+        if (n == 1)
+            return 0;
+
+        if (n == 2)
+            return 1;
+
+        return fib(n-1) + fib(n-2);
+    }   
