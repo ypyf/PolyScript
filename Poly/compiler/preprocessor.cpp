@@ -3,12 +3,12 @@
 
 /******************************************************************************************
 *
-*   PreprocessSourceFile ()
+*   PreprocessSourceFile()
 *
 *   Preprocesses the source file to expand preprocessor directives and strip comments.
 */
 
-void PreprocessSourceFile ()
+void PreprocessSourceFile()
 {
 	// Are we inside a block comment?
 

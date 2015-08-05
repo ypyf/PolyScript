@@ -299,16 +299,16 @@ void ParseSourceCode()
 
 	while (TRUE)
 	{
-		// Parse the next statement and ignore an end of file marker
-
-		ParseStatement();
-
 		// If we're at the end of the token stream, break the parsing loop
 
 		if (GetNextToken() == TOKEN_TYPE_END_OF_STREAM)
 			break;
 		else
 			RewindTokenStream();
+
+		// Parse the next statement and ignore an end of file marker
+
+		ParseStatement();
 	}
 
 	// Free the loop stack

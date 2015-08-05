@@ -231,9 +231,17 @@ void XSC_CompileScript(ScriptContext *sc, const char* pstrFilename)
 	Init();
 	LoadSourceFile();
 	PreprocessSourceFile();
+
+	// 输出预处理后的脚本
+	//LinkedListNode *pNode = g_SourceCode.pHead;
+	//while (pNode != NULL)
+	//{
+	//	printf("%s", (char*)pNode->pData);
+
+	//	pNode = pNode->pNext;
+	//}
+
 	CompileSourceFile();
 	EmitCode(sc);
 	ShutDown();
-
-	//PASM_Assembly(g_pstrOutputFilename, pstrExecFilename);
 }

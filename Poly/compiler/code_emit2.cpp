@@ -334,29 +334,29 @@ void EmitCode(ScriptContext *pSC)
 	// 创建VM的HostCall表
 	pSC->HostCallTable.Size = g_HostFuncTable.iNodeCount;
 
-	if (pSC->HostCallTable.Size <= 0)
-		return;
-
-	pSC->HostCallTable.Calls = (char **)calloc(1, pSC->HostCallTable.Size*sizeof(char *));
-	pNode = g_HostFuncTable.pHead;
-	for (int i = 0; i < pSC->HostCallTable.Size; ++i)
+	if (pSC->HostCallTable.Size > 0)
 	{
+		pSC->HostCallTable.Calls = (char **)calloc(1, pSC->HostCallTable.Size*sizeof(char *));
+		pNode = g_HostFuncTable.pHead;
+		for (int i = 0; i < pSC->HostCallTable.Size; ++i)
+		{
 
-		// Allocate space for the string plus the null terminator in a temporary pointer
-		FuncNode *fn = (FuncNode*)pNode->pData;
+			// Allocate space for the string plus the null terminator in a temporary pointer
+			FuncNode *fn = (FuncNode*)pNode->pData;
 
-		char *pstrCurrCall = (char*)malloc(strlen(fn->pstrName) + 1);
+			char *pstrCurrCall = (char*)malloc(strlen(fn->pstrName) + 1);
 
-		// Read the host API call string data and append the null terminator
-		strcpy(pstrCurrCall, fn->pstrName);
+			// Read the host API call string data and append the null terminator
+			strcpy(pstrCurrCall, fn->pstrName);
 
-		pstrCurrCall[strlen(fn->pstrName)] = '\0';
+			pstrCurrCall[strlen(fn->pstrName)] = '\0';
 
-		// Assign the temporary pointer to the table
+			// Assign the temporary pointer to the table
 
-		pSC->HostCallTable.Calls[i] = pstrCurrCall;
+			pSC->HostCallTable.Calls[i] = pstrCurrCall;
 
-		pNode = pNode->pNext;
+			pNode = pNode->pNext;
+		}
 	}
 
 	// 创建VM函数表
