@@ -51,6 +51,9 @@ enum TokenType
 	TOKEN_TYPE_STRING				,		// String Literal
 	TOKEN_TYPE_IDENT                ,		// Identifier
 
+	TOKEN_TYPE_RSRVD_TRUE           ,		// true
+	TOKEN_TYPE_RSRVD_FALSE          ,		// false
+
 	// ÀàÐÍ¹Ø¼ü×Ö
 	TOKEN_TYPE_RSRVD_VAR            ,		// var/var []
 	TOKEN_TYPE_RSRVD_VOID           ,
@@ -61,9 +64,8 @@ enum TokenType
 	TOKEN_TYPE_RSRVD_STRING         ,
 	TOKEN_TYPE_RSRVD_OBJECT         ,
 	TOKEN_TYPE_RSRVD_CLASS          ,
+	TOKEN_TYPE_RSRVD_NEW            ,
 
-	TOKEN_TYPE_RSRVD_TRUE           ,		// true
-	TOKEN_TYPE_RSRVD_FALSE          ,		// false
 	TOKEN_TYPE_RSRVD_IF             ,		// if
 	TOKEN_TYPE_RSRVD_ELSE           ,		// else
 	TOKEN_TYPE_RSRVD_BREAK          ,		// break

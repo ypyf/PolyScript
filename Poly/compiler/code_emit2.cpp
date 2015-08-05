@@ -76,6 +76,9 @@ void EmitScopeSymbols(ScriptContext *pSC, int iScope, int iType, int iIndex)
 
 void EmitFunc(ScriptContext *pSC, FuncNode *pFunc, int iVMFuncTableIndex)
 {
+	// Clear Label Table
+	g_LabelTable.clear();
+
 	// Emit parameter declarations
 
 	EmitScopeSymbols(pSC, pFunc->iIndex, SYMBOL_TYPE_PARAM, iVMFuncTableIndex);
@@ -242,7 +245,6 @@ void EmitFunc(ScriptContext *pSC, FuncNode *pFunc, int iVMFuncTableIndex)
 							oprand->Type = OP_TYPE_INSTR_INDEX;
 						}
 
-						//fprintf(g_pOutputFile, "_L%d", pOp->label);
 						break;
 
 					default:

@@ -741,9 +741,10 @@ void ParseFunc()
 			AddIntICodeOp(g_iCurrScope, iInstrIndex, 0);
 		}
 		AddICodeInstr(g_iCurrScope, INSTR_RET);
-
-		g_iGotReturnStmt = FALSE;
 	}
+
+	// ÷ÿ÷√±Í÷æ
+	g_iGotReturnStmt = FALSE;
 
 	// Return to the global scope
 
