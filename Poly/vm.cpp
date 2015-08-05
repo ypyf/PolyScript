@@ -3,6 +3,7 @@
 #include "bytecode.h"
 #include "poly.h"
 #include "gc.h"
+#include "instruction.h"
 #include "vm.h"
 #include "compiler/xsc.h"
 #include <ctype.h>
@@ -51,6 +52,8 @@ inline int ResolveStackIndex(int iFrameIndex, int iIndex)
 
 // ----Function Prototypes -------------------------------------------------------------------
 
+void DisplayStatus(ScriptContext *sc);
+
 // GC
 static void RunGC(ScriptContext *sc);
 
@@ -79,12 +82,6 @@ void SetStackValue(ScriptContext *sc, int iIndex, Value Val);
 void PushFrame(ScriptContext *sc, int iSize);
 void PopFrame(ScriptContext *sc, int iSize);
 
-// VM Instruction Implementation --------------------------------------
-#include "instruction.h"
-
-
-
-
 // ----Function Table Interface ----------------------------------------------------------
 
 FUNC *GetFunc(ScriptContext *sc, int iIndex);
@@ -102,6 +99,15 @@ int GetCurrTime();
 void CallFunc(ScriptContext *sc, int iIndex, int type);
 
 // ----Functions -----------------------------------------------------------------------------
+
+// 显示虚拟机的内部状态
+static void DisplayStatus(ScriptContext *sc)
+{
+	fprintf(stdout, "Instruction Size: %d\n", sc->InstrStream.Size);
+	fprintf(stdout, "Function Size: %d\n", sc->FuncTable.Size);
+	fprintf(stdout, "Host Call Size: %d\n", sc->HostCallTable.Size);
+
+}
 
 /******************************************************************************************
 *
@@ -2293,6 +2299,8 @@ int Poly_LoadScript(ScriptContext *sc, const char *pstrFilename)
 	int iStackSize = sc->iStackSize;
 	if (!(sc->stack = (Value *)malloc(iStackSize*sizeof(Value))))
 		return POLY_LOAD_ERROR_OUT_OF_MEMORY;
+
+	//DisplayStatus(sc);
 
 	return POLY_LOAD_OK;
 }
