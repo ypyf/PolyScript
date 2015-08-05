@@ -29,7 +29,7 @@ OpState g_OpChars0[MAX_OP_STATE_COUNT] = {
 	{ '<', 14, 2, OP_TYPE_LESS },
 	{ '>', 16, 2, OP_TYPE_GREATER },
 	{ '.', 0, 0, OP_TYPE_MEMBER_ACCESS },
-	{ ':', 18, 2, OP_TYPE_SEP },
+	//{ ':', 18, 2, OP_TYPE_SEP },
 };
 
 // ---- Second operator characters
@@ -47,7 +47,7 @@ OpState g_OpChars1[MAX_OP_STATE_COUNT] = {
 	{ '=', 0, 0, OP_TYPE_EQUAL },							// ==
 	{ '=', 0, 0, OP_TYPE_LESS_EQUAL }, { '<', 0, 1, OP_TYPE_BITWISE_SHIFT_LEFT },		// <=, <<
 	{ '=', 0, 0, OP_TYPE_GREATER_EQUAL }, { '>', 1, 1, OP_TYPE_BITWISE_SHIFT_RIGHT },		// >=, >>
-	{ '=', 0, 0, OP_TYPE_DECL_VAR }, { ':', 0, 0, OP_TYPE_SCOPE },		// :=, ::
+	//{ '=', 0, 0, OP_TYPE_DECL_VAR }, { ':', 0, 0, OP_TYPE_SCOPE },		// :=, ::
 };
 
 // ---- Third operator characters
