@@ -90,202 +90,197 @@ void EmitFunc(ScriptContext *pSC, FuncNode *pFunc, int iVMFuncTableIndex)
 	func->StackFrameSize = func->LocalDataSize + func->ParamCount + 1;
 	strcpy(func->Name, pFunc->pstrName);
 
-	// Does the function have an I-code block?
+	// Loop through each I-code node to emit the code
 
-	if (pFunc->ICodeStream.iNodeCount > 0)
+	for (int iCurrInstrIndex = 0; iCurrInstrIndex < pFunc->ICodeStream.iNodeCount; ++iCurrInstrIndex)
 	{
-		// Yes, so loop through each I-code node to emit the code
+		// Get the I-code instruction structure at the current node
 
-		for (int iCurrInstrIndex = 0; iCurrInstrIndex < pFunc->ICodeStream.iNodeCount; ++iCurrInstrIndex)
+		ICodeNode *pCurrNode = GetICodeNodeByImpIndex(pFunc->iIndex, iCurrInstrIndex);
+
+		// Determine the node type
+
+		switch (pCurrNode->iType)
 		{
-			// Get the I-code instruction structure at the current node
+			// An I-code instruction
 
-			ICodeNode *pCurrNode = GetICodeNodeByImpIndex(pFunc->iIndex, iCurrInstrIndex);
-
-			// Determine the node type
-
-			switch (pCurrNode->iType)
+		case ICODE_NODE_INSTR:
 			{
-				// An I-code instruction
+				// Emit the opcode
 
-			case ICODE_NODE_INSTR:
+				pSC->InstrStream.Instrs[g_iCurrInstr].Opcode = pCurrNode->Instr.iOpcode;
+
+				// Determine the number of operands
+
+				int iOpCount = pCurrNode->Instr.OpList.iNodeCount;
+
+				pSC->InstrStream.Instrs[g_iCurrInstr].OpCount = iOpCount;
+
+				pSC->InstrStream.Instrs[g_iCurrInstr].pOpList = (Value*)malloc(iOpCount*sizeof(Value));
+
+				// Emit each operand
+
+				for (int iCurrOpIndex = 0; iCurrOpIndex < iOpCount; ++iCurrOpIndex)
 				{
-					// Emit the opcode
-					
-					pSC->InstrStream.Instrs[g_iCurrInstr].Opcode = pCurrNode->Instr.iOpcode;
+					// Get a pointer to the operand structure
 
-					// Determine the number of operands
+					Op *pOp = GetICodeOpByIndex(pCurrNode, iCurrOpIndex);
 
-					int iOpCount = pCurrNode->Instr.OpList.iNodeCount;
+					Value *oprand = &(pSC->InstrStream.Instrs[g_iCurrInstr].pOpList[iCurrOpIndex]);
 
-					pSC->InstrStream.Instrs[g_iCurrInstr].OpCount = iOpCount;
+					// Emit the operand based on its type
 
-					pSC->InstrStream.Instrs[g_iCurrInstr].pOpList = (Value*)malloc(iOpCount*sizeof(Value));
-
-					// Emit each operand
-
-					for (int iCurrOpIndex = 0; iCurrOpIndex < iOpCount; ++iCurrOpIndex)
+					switch (pOp->iType)
 					{
-						// Get a pointer to the operand structure
+						// Integer literal
 
-						Op *pOp = GetICodeOpByIndex(pCurrNode, iCurrOpIndex);
+					case OP_TYPE_INT:
+						oprand->Fixnum = pOp->iIntLiteral;
+						oprand->Type = OP_TYPE_INT;
+						break;
 
-						Value *oprand = &(pSC->InstrStream.Instrs[g_iCurrInstr].pOpList[iCurrOpIndex]);
+						// Float literal
 
-						// Emit the operand based on its type
+					case OP_TYPE_FLOAT:
+						oprand->Realnum = pOp->fFloatLiteral;
+						oprand->Type = OP_TYPE_FLOAT;
+						//fprintf(g_pOutputFile, "%f", pOp->fFloatLiteral);
+						break;
 
-						switch (pOp->iType)
+						// String literal
+
+					case OP_TYPE_STRING_INDEX:
 						{
-							// Integer literal
-
-						case OP_TYPE_INT:
-							oprand->Fixnum = pOp->iIntLiteral;
-							oprand->Type = OP_TYPE_INT;
-							break;
-
-							// Float literal
-
-						case OP_TYPE_FLOAT:
-							oprand->Realnum = pOp->fFloatLiteral;
-							oprand->Type = OP_TYPE_FLOAT;
-							//fprintf(g_pOutputFile, "%f", pOp->fFloatLiteral);
-							break;
-
-							// String literal
-
-						case OP_TYPE_STRING_INDEX:
-							{
-								char *str = GetStringByIndex(&g_StringTable, pOp->iStringIndex);
-								oprand->String = (char*)malloc(strlen(str)+1);
-								strcpy(oprand->String, str);
-								oprand->String[strlen(str)] = '\0';
-								oprand->Type = OP_TYPE_STRING;
-							}
-							//fprintf(g_pOutputFile, "\"%s\"", GetStringByIndex(&g_StringTable, pOp->iStringIndex));
-							break;
-
-							// Variable
-
-						case ICODE_OP_TYPE_VAR_NAME:
-							oprand->StackIndex = GetSymbolByIndex(pOp->iSymbolIndex)->iStackIndex;
-							oprand->Type = OP_TYPE_ABS_STACK_INDEX;
-							//fprintf(g_pOutputFile, "%s", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent);
-							break;
-
-							// Array index absolute
-
-						case OP_TYPE_ABS_STACK_INDEX:
-							{
-								int index = GetSymbolByIndex(pOp->iSymbolIndex)->iStackIndex + pOp->iOffset;
-								oprand->StackIndex = index;
-								oprand->Type = OP_TYPE_ABS_STACK_INDEX;
-							}
-							//fprintf(g_pOutputFile, "%s[%d]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
-							//	pOp->iOffset);
-							break;
-
-							// Array index variable
-
-						case OP_TYPE_REL_STACK_INDEX:
-							oprand->StackIndex = GetSymbolByIndex(pOp->iSymbolIndex)->iStackIndex;
-							oprand->OffsetIndex = GetSymbolByIndex(pOp->iOffsetSymbolIndex)->iStackIndex;
-							oprand->Type = OP_TYPE_REL_STACK_INDEX;
-							//fprintf(g_pOutputFile, "%s[%s]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
-							//	GetSymbolByIndex(pOp->iOffsetSymbolIndex)->pstrIdent);
-							break;
-
-							// Function
-
-						case OP_TYPE_FUNC_INDEX:
-							{
-								FuncNode *fn = GetFuncByIndex(pOp->iSymbolIndex);
-								if (fn->iIsHostAPI)
-								{
-									oprand->Type = OP_TYPE_HOST_CALL_INDEX;
-									oprand->FuncIndex = GetHostFuncIndex(fn->pstrName);
-									assert(oprand->FuncIndex >= 0);
-								}
-								else
-								{
-									oprand->FuncIndex = GetFuncByIndex(pOp->iSymbolIndex)->iIndex - 1;
-									oprand->Type = OP_TYPE_FUNC_INDEX;
-								}
-							}
-							//fprintf(g_pOutputFile, "%s", GetFuncByIndex(pOp->iSymbolIndex)->pstrName);
-							break;
-
-							// Register (just _RetVal for now)
-
-						case OP_TYPE_REG:
-							oprand->Register = 0;	// R0
-							oprand->Type = OP_TYPE_REG;
-							//fprintf(g_pOutputFile, "_RetVal");
-							break;
-
-							// Jump target index
-
-						case ICODE_OP_TYPE_JUMP_TARGET:
-							{
-								auto it = g_LabelTable.find(pOp->label);
-								// 如果标号之前出现过（定义或前向引用）
-								if (it != g_LabelTable.end())
-								{
-									if (it->second.iDefined)
-										oprand->InstrIndex = it->second.iOffset;
-									else
-										it->second.OpList.push_back(oprand);
-								}
-								else
-								{
-									LabelSymbol label;
-									label.iDefined = FALSE;
-									label.iForwardRef = TRUE;
-									label.OpList.push_back(oprand);
-									g_LabelTable[pOp->label] = label;
-								}
-								oprand->Type = OP_TYPE_INSTR_INDEX;
-							}
-							
-							//fprintf(g_pOutputFile, "_L%d", pOp->label);
-							break;
-
-						default:
-							assert(0);
+							char *str = GetStringByIndex(&g_StringTable, pOp->iStringIndex);
+							oprand->String = (char*)malloc(strlen(str)+1);
+							strcpy(oprand->String, str);
+							oprand->String[strlen(str)] = '\0';
+							oprand->Type = OP_TYPE_STRING;
 						}
+						//fprintf(g_pOutputFile, "\"%s\"", GetStringByIndex(&g_StringTable, pOp->iStringIndex));
+						break;
+
+						// Variable
+
+					case ICODE_OP_TYPE_VAR_NAME:
+						oprand->StackIndex = GetSymbolByIndex(pOp->iSymbolIndex)->iStackIndex;
+						oprand->Type = OP_TYPE_ABS_STACK_INDEX;
+						//fprintf(g_pOutputFile, "%s", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent);
+						break;
+
+						// Array index absolute
+
+					case OP_TYPE_ABS_STACK_INDEX:
+						{
+							int index = GetSymbolByIndex(pOp->iSymbolIndex)->iStackIndex + pOp->iOffset;
+							oprand->StackIndex = index;
+							oprand->Type = OP_TYPE_ABS_STACK_INDEX;
+						}
+						//fprintf(g_pOutputFile, "%s[%d]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
+						//	pOp->iOffset);
+						break;
+
+						// Array index variable
+
+					case OP_TYPE_REL_STACK_INDEX:
+						oprand->StackIndex = GetSymbolByIndex(pOp->iSymbolIndex)->iStackIndex;
+						oprand->OffsetIndex = GetSymbolByIndex(pOp->iOffsetSymbolIndex)->iStackIndex;
+						oprand->Type = OP_TYPE_REL_STACK_INDEX;
+						//fprintf(g_pOutputFile, "%s[%s]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
+						//	GetSymbolByIndex(pOp->iOffsetSymbolIndex)->pstrIdent);
+						break;
+
+						// Function
+
+					case OP_TYPE_FUNC_INDEX:
+						{
+							FuncNode *fn = GetFuncByIndex(pOp->iSymbolIndex);
+							if (fn->iIsHostAPI)
+							{
+								oprand->Type = OP_TYPE_HOST_CALL_INDEX;
+								oprand->FuncIndex = GetHostFuncIndex(fn->pstrName);
+								assert(oprand->FuncIndex >= 0);
+							}
+							else
+							{
+								oprand->FuncIndex = GetFuncByIndex(pOp->iSymbolIndex)->iIndex - 1;
+								oprand->Type = OP_TYPE_FUNC_INDEX;
+							}
+						}
+						//fprintf(g_pOutputFile, "%s", GetFuncByIndex(pOp->iSymbolIndex)->pstrName);
+						break;
+
+						// Register (just _RetVal for now)
+
+					case OP_TYPE_REG:
+						oprand->Register = 0;	// R0
+						oprand->Type = OP_TYPE_REG;
+						//fprintf(g_pOutputFile, "_RetVal");
+						break;
+
+						// Jump target index
+
+					case ICODE_OP_TYPE_JUMP_TARGET:
+						{
+							auto it = g_LabelTable.find(pOp->label);
+							// 如果标号之前出现过（定义或前向引用）
+							if (it != g_LabelTable.end())
+							{
+								if (it->second.iDefined)
+									oprand->InstrIndex = it->second.iOffset;
+								else
+									it->second.OpList.push_back(oprand);
+							}
+							else
+							{
+								LabelSymbol label;
+								label.iDefined = FALSE;
+								label.iForwardRef = TRUE;
+								label.OpList.push_back(oprand);
+								g_LabelTable[pOp->label] = label;
+							}
+							oprand->Type = OP_TYPE_INSTR_INDEX;
+						}
+
+						//fprintf(g_pOutputFile, "_L%d", pOp->label);
+						break;
+
+					default:
+						assert(0);
 					}
-
-					g_iCurrInstr++;
-
-					break;
 				}
 
-				// A jump target
+				g_iCurrInstr++;
 
-			case ICODE_NODE_JUMP_TARGET:
+				break;
+			}
+
+			// A jump target
+
+		case ICODE_NODE_JUMP_TARGET:
+			{
+				auto it = g_LabelTable.find(pCurrNode->iJumpTargetIndex);
+				if (it != g_LabelTable.end())
 				{
-					auto it = g_LabelTable.find(pCurrNode->iJumpTargetIndex);
-					if (it != g_LabelTable.end())
+					if (!it->second.iDefined && it->second.iForwardRef)
 					{
-						if (!it->second.iDefined && it->second.iForwardRef)
+						it->second.iDefined = TRUE;
+						// 回填所有前向引用
+						for (size_t i = 0; i < it->second.OpList.size(); ++i)
 						{
-							it->second.iDefined = TRUE;
-							// 回填所有前向引用
-							for (size_t i = 0; i < it->second.OpList.size(); ++i)
-							{
-								it->second.OpList[i]->InstrIndex = g_iCurrInstr;
-							}
-							it->second.iOffset = g_iCurrInstr;
+							it->second.OpList[i]->InstrIndex = g_iCurrInstr;
 						}
+						it->second.iOffset = g_iCurrInstr;
 					}
-					else
-					{
-						// 定义新标号
-						LabelSymbol label;
-						label.iDefined = TRUE;
-						label.iForwardRef = FALSE;
-						label.iOffset = g_iCurrInstr;
-						g_LabelTable[pCurrNode->iJumpTargetIndex] = label;
-					}
+				}
+				else
+				{
+					// 定义新标号
+					LabelSymbol label;
+					label.iDefined = TRUE;
+					label.iForwardRef = FALSE;
+					label.iOffset = g_iCurrInstr;
+					g_LabelTable[pCurrNode->iJumpTargetIndex] = label;
 				}
 			}
 		}
@@ -316,32 +311,31 @@ void EmitCode(ScriptContext *pSC)
 	FuncNode * pCurrFunc;
 
 	// 通过函数表创建Host函数表
-	if (g_FuncTable.iNodeCount > 0)
+
+	while (pNode != NULL)
 	{
-		while (TRUE)
+		pCurrFunc = (FuncNode *)pNode->pData;
+
+		if (pCurrFunc->iIsHostAPI)
 		{
-			pCurrFunc = (FuncNode *)pNode->pData;
-
-			if (pCurrFunc->iIsHostAPI)
-			{
-				FuncNode *pNewFunc = (FuncNode *)malloc(sizeof(FuncNode));
-				memcpy(pNewFunc, pCurrFunc, sizeof(FuncNode));
-				int iIndex = AddNode(&g_HostFuncTable, pNewFunc);
-				pNewFunc->iIndex = iIndex;
-			}
-
-			// Move to the next node
-
-			pNode = pNode->pNext;
-
-			if (!pNode)
-				break;
+			FuncNode *pNewFunc = (FuncNode *)malloc(sizeof(FuncNode));
+			memcpy(pNewFunc, pCurrFunc, sizeof(FuncNode));
+			int iIndex = AddNode(&g_HostFuncTable, pNewFunc);
+			pNewFunc->iIndex = iIndex;
 		}
+
+		// Move to the next node
+
+		pNode = pNode->pNext;
 	}
 
 	// 创建VM的HostCall表
 	pSC->HostCallTable.Size = g_HostFuncTable.iNodeCount;
-	pSC->HostCallTable.Calls = (char **)malloc(pSC->HostCallTable.Size*sizeof(char *));
+
+	if (pSC->HostCallTable.Size <= 0)
+		return;
+
+	pSC->HostCallTable.Calls = (char **)calloc(1, pSC->HostCallTable.Size*sizeof(char *));
 	pNode = g_HostFuncTable.pHead;
 	for (int i = 0; i < pSC->HostCallTable.Size; ++i)
 	{
@@ -363,32 +357,32 @@ void EmitCode(ScriptContext *pSC)
 		pNode = pNode->pNext;
 	}
 
+	// 创建VM函数表
 
-	// Loop through each function and emit its declaration and code, if functions exist
-	
 	pSC->FuncTable.Size = g_FuncTable.iNodeCount - g_HostFuncTable.iNodeCount;
 
+	if (pSC->FuncTable.Size <= 0)
+		return;
+	
+	pSC->FuncTable.Funcs = (FUNC *)calloc(1, pSC->FuncTable.Size*sizeof(FUNC));
+
 	pNode = g_FuncTable.pHead;
+	
+	int i = 0;
 
-	if (g_FuncTable.iNodeCount > 0)
+	while (pNode != NULL)
 	{
-		// 创建VM函数表
-		pSC->FuncTable.Funcs = (FUNC *)calloc(1, pSC->FuncTable.Size*sizeof(FUNC));
-		int i = 0;
-		while (pNode != NULL)
+		// Get a pointer to the node
+
+		pCurrFunc = (FuncNode *)pNode->pData;
+
+		if (!pCurrFunc->iIsHostAPI)
 		{
-			// Get a pointer to the node
-
-			pCurrFunc = (FuncNode *)pNode->pData;
-
-			if (!pCurrFunc->iIsHostAPI)
-			{
-				EmitFunc(pSC, pCurrFunc, i);
-				i++;
-			}
-
-			pNode = pNode->pNext;
+			EmitFunc(pSC, pCurrFunc, i);
+			i++;
 		}
+
+		pNode = pNode->pNext;
 	}
 }
 
@@ -415,7 +409,7 @@ void InitInstrStream(ScriptContext *pSC)
 	// 统计所有函数的指令总数
 
 	int iInstrStreamSize = 0;
-	
+
 	LinkedListNode *pNode = g_FuncTable.pHead;
 
 	while (pNode != NULL)
