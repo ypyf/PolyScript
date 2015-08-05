@@ -82,11 +82,8 @@ int RunScript(char* pstrFilename)
 	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Division", h_Division);
 	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "PrintString", h_PrintString);
 
-    // An error code
-    int iErrorCode;
-
     // Load the demo script
-    iErrorCode = Poly_LoadScript(sc, pstrFilename);
+    int iErrorCode = Poly_LoadScript(sc, pstrFilename);
 
     // Check for an error
     if (iErrorCode != POLY_LOAD_OK)

@@ -6,9 +6,9 @@
 #include <vector>
 #include <map>
 
+
 void InitInstrStream(ScriptContext *pSC);
 int GetHostFuncIndex(const char* fnName);
-void EmitStackSize(ScriptContext *pSC, int iStackSize);
 void EmitFunc(ScriptContext *pSC, FuncNode *pFunc, int iIndex);
 void EmitScopeSymbols(ScriptContext *pSC, int iScope, int iType, int iVMFuncTableIndex);
 
@@ -17,30 +17,16 @@ void EmitScopeSymbols(ScriptContext *pSC, int iScope, int iType, int iVMFuncTabl
 typedef struct _LabelSymbol
 {
 	std::vector<Value*> OpList;		// 引用了标号的操作数
-	int iForwardRef;	// 是否前向引用
-	int iDefined;		// 是否已经定义
-	int iOffset;		// 定义标号的指令索引
+	int iForwardRef;				// 是否前向引用
+	int iDefined;					// 是否已经定义
+	int iOffset;					// 定义标号的指令索引
 } LabelSymbol;
 
 // <标号值, 标号对象>
-std::map<int, LabelSymbol> g_labelTable;
+std::map<int, LabelSymbol> g_LabelTable;
 
 // 记录发射了多少条指令
 int g_iCurrInstr = 0;
-
-
-
-/******************************************************************************************
-*
-*   EmitDirectives()
-*
-*   Emits the script's directives.
-*/
-
-void EmitStackSize(ScriptContext *pSC, int iStackSize)
-{
-	pSC->iStackSize = iStackSize;
-}
 
 
 void EmitScopeSymbols(ScriptContext *pSC, int iScope, int iType, int iIndex)
@@ -240,9 +226,9 @@ void EmitFunc(ScriptContext *pSC, FuncNode *pFunc, int iVMFuncTableIndex)
 
 						case ICODE_OP_TYPE_JUMP_TARGET:
 							{
-								auto it = g_labelTable.find(pOp->label);
+								auto it = g_LabelTable.find(pOp->label);
 								// 如果标号之前出现过（定义或前向引用）
-								if (it != g_labelTable.end())
+								if (it != g_LabelTable.end())
 								{
 									if (it->second.iDefined)
 										oprand->InstrIndex = it->second.iOffset;
@@ -255,7 +241,7 @@ void EmitFunc(ScriptContext *pSC, FuncNode *pFunc, int iVMFuncTableIndex)
 									label.iDefined = FALSE;
 									label.iForwardRef = TRUE;
 									label.OpList.push_back(oprand);
-									g_labelTable[pOp->label] = label;
+									g_LabelTable[pOp->label] = label;
 								}
 								oprand->Type = OP_TYPE_INSTR_INDEX;
 							}
@@ -277,8 +263,8 @@ void EmitFunc(ScriptContext *pSC, FuncNode *pFunc, int iVMFuncTableIndex)
 
 			case ICODE_NODE_JUMP_TARGET:
 				{
-					auto it = g_labelTable.find(pCurrNode->iJumpTargetIndex);
-					if (it != g_labelTable.end())
+					auto it = g_LabelTable.find(pCurrNode->iJumpTargetIndex);
+					if (it != g_LabelTable.end())
 					{
 						if (!it->second.iDefined && it->second.iForwardRef)
 						{
@@ -298,7 +284,7 @@ void EmitFunc(ScriptContext *pSC, FuncNode *pFunc, int iVMFuncTableIndex)
 						label.iDefined = TRUE;
 						label.iForwardRef = FALSE;
 						label.iOffset = g_iCurrInstr;
-						g_labelTable[pCurrNode->iJumpTargetIndex] = label;
+						g_LabelTable[pCurrNode->iJumpTargetIndex] = label;
 					}
 				}
 			}
@@ -309,9 +295,9 @@ void EmitFunc(ScriptContext *pSC, FuncNode *pFunc, int iVMFuncTableIndex)
 
 void EmitCode(ScriptContext *pSC)
 {
-	// ---- Emit directives
+	// 设置堆栈大小
 
-	EmitStackSize(pSC, 1024);
+	pSC->iStackSize = 1024;
 
 	// ---- Emit global variable declarations
 
@@ -389,7 +375,7 @@ void EmitCode(ScriptContext *pSC)
 		// 创建VM函数表
 		pSC->FuncTable.Funcs = (FUNC *)calloc(1, pSC->FuncTable.Size*sizeof(FUNC));
 		int i = 0;
-		while (TRUE)
+		while (pNode != NULL)
 		{
 			// Get a pointer to the node
 
@@ -401,12 +387,7 @@ void EmitCode(ScriptContext *pSC)
 				i++;
 			}
 
-			// Move to the next node
-
 			pNode = pNode->pNext;
-
-			if (!pNode)
-				break;
 		}
 	}
 }
