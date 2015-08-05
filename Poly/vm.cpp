@@ -1349,7 +1349,8 @@ static void ExecuteInstructions(ScriptContext *sc, int iTimesliceDur)
 void Poly_RunScript(ScriptContext *sc, int iTimesliceDur)
 {
 	Poly_StartScript(sc);
-    Poly_CallScriptFunc(sc, "Main");
+    if (Poly_CallScriptFunc(sc, "Main") == FALSE)
+		fprintf(stderr, "VM ERROR: Main() Function Not Found.\n");
 }
 
 /******************************************************************************************
@@ -1914,6 +1915,9 @@ void CallFunc(ScriptContext *sc, int iIndex, int type)
     ++sc->CurrInstr;
 
     FUNC *DestFunc = GetFunc(sc, iIndex);
+
+	if (DestFunc == NULL)
+		return;
 
     // Save the current stack frame index
     int iFrameIndex = sc->iFrameIndex;
