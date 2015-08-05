@@ -1,6 +1,4 @@
-﻿#if 1
-
-#define STANDALONE
+﻿#define STANDALONE
 
 // ----Include Files -------------------------------------------------------------------------
 
@@ -10,45 +8,12 @@
 
 #include "poly.h"
 
-#define MAX_PATH    260
-
 inline unsigned long GetCurrTime()
 {
 	unsigned long theTick;
 
 	theTick = GetTickCount();
 	return theTick;
-}
-
-void print_error_message(int iErrorCode)
-{
-    // Print the error based on the code
-    printf("Error: ");
-
-    switch (iErrorCode)
-    {
-    case POLY_LOAD_ERROR_FILE_IO:
-        printf("File I/O error");
-        break;
-
-    case POLY_LOAD_ERROR_INVALID_XSE:
-        printf("Invalid .PE file");
-        break;
-
-    case POLY_LOAD_ERROR_UNSUPPORTED_VERS:
-        printf("Unsupported .PE version");
-        break;
-
-    case POLY_LOAD_ERROR_OUT_OF_MEMORY:
-        printf("Out of memory");
-        break;
-
-    case POLY_LOAD_ERROR_OUT_OF_THREADS:
-        printf("Out of threads");
-        break;
-    }
-
-    printf(".\n");
 }
 
 // ----Host API ------------------------------------------------------------------------------
@@ -126,12 +91,17 @@ int RunScript(char* pstrFilename)
     // Check for an error
     if (iErrorCode != POLY_LOAD_OK)
     {
-        print_error_message(iErrorCode);
+        printf("载入脚本失败\n");
         exit(1);
     }
 
+	unsigned long start = GetCurrTime();
+
     // Run we're loaded script from Main()
+
     Poly_RunScript(sc, POLY_INFINITE_TIMESLICE);
+
+	printf("耗时 %fs\n", (GetCurrTime()-start)/1000.0);
 
     int iExitCode = Poly_GetExitCode(sc);
 
@@ -144,7 +114,6 @@ int RunScript(char* pstrFilename)
 
 int main(int argc, char* argv[])
 {
-	unsigned long start = GetCurrTime();
 	if (argc < 2) 
 	{
 		printf("CRL: No input files\n");
@@ -152,8 +121,4 @@ int main(int argc, char* argv[])
 	}
 
 	RunScript(argv[1]);
-
-	printf("耗时 %fs\n", (GetCurrTime()-start)/1000.0);
 }
-
-#endif

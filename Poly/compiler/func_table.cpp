@@ -85,19 +85,19 @@ FuncNode* GetFuncByName(char* pstrName)
 
 int AddFunc(char* pstrName, int iIsHostAPI)
 {
-	// 脚本中的函数声明可以覆盖host api
+	// 脚本中的函数声明可以覆盖主机函数
 	FuncNode* pFunc = GetFuncByName(pstrName);
 	if (pFunc != NULL)
 	{
-		// 主机函数不得覆盖同名的脚本函数
-		if (iIsHostAPI)
-			return -1;
-		else
+		// 之前假定了一个未声明的函数是外部函数，现在定义为脚本函数
+		if (!iIsHostAPI)
 		{
-			// 之前假定了一个未声明的函数是外部函数，现在定义为脚本函数
 			pFunc->iIsHostAPI = FALSE;
 			return pFunc->iIndex;
 		}
+
+		// 主机函数不得覆盖同名的脚本函数
+		return -1;
 	}
 
 	// Create a new function node

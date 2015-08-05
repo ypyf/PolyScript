@@ -1,5 +1,5 @@
-#ifndef BYTE_CODE_H_
-#define BYTE_CODE_H_
+#ifndef __BYTECODE_H__
+#define __BYTECODE_H__
 
 // ----Instruction Opcodes -----------------------------------------------------------
 
@@ -49,9 +49,4 @@ enum Opcodes {
 	INSTR_HALT,
 };
 
-//#define INSTR_DEL             0x52
-//#define INSTR_GET_PROP        0x53
-//#define INSTR_SET_PROP        0x54
-
-
-#endif /* BYTE_CODE_H_ */
+#endif /* __BYTECODE_H__ */
