@@ -99,6 +99,8 @@ extern LinkedList g_HostFuncTable;
 
 extern LinkedList g_SymbolTable;
 
+extern LinkedList g_TypeTable;
+
 // ---- String Table ----------------------------------------------------------------------
 
 extern LinkedList g_StringTable;

@@ -70,7 +70,7 @@ SymbolNode* GetSymbolByIdent(const char* pstrIdent, int iScope)
 		// Return the symbol if the identifier and scope matches
 
 		if (pCurrSymbol && strcmp(pCurrSymbol->pstrIdent, pstrIdent) == 0 &&
-			(pCurrSymbol->iScope == iScope || pCurrSymbol->iScope == 0))
+			(pCurrSymbol->iScope == iScope || pCurrSymbol->iScope == SCOPE_GLOBAL))
 			return pCurrSymbol;
 	}
 
@@ -125,6 +125,96 @@ int AddSymbol(char* pstrIdent, int iSize, int iScope, int iType)
 	// Add the symbol to the list and get its index
 
 	int iIndex = AddNode(&g_SymbolTable, pNewSymbol);
+
+	// Set the symbol node's index
+
+	pNewSymbol->iIndex = iIndex;
+
+	// Return the new symbol's index
+
+	return iIndex;
+}
+
+StructSymbol* GetTypeByIndex(int iIndex)
+{
+	// If the table is empty, return a NULL pointer
+
+	if (!g_TypeTable.iNodeCount)
+		return NULL;
+
+	// Create a pointer to traverse the list
+
+	LinkedListNode *pCurrNode = g_TypeTable.pHead;
+
+	// Traverse the list until the matching structure is found
+
+	for (int iCurrNode = 0; iCurrNode < g_TypeTable.iNodeCount; ++iCurrNode)
+	{
+		// Create a pointer to the current symbol structure
+
+		StructSymbol *pCurrSymbol = (StructSymbol *)pCurrNode->pData;
+
+		// If the indices match, return the symbol
+
+		if (iIndex == pCurrSymbol->iIndex)
+			return pCurrSymbol;
+
+		// Otherwise move to the next node
+
+		pCurrNode = pCurrNode->pNext;
+	}
+
+	// The symbol was not found, so return a NULL pointer
+
+	return NULL;
+}
+
+StructSymbol* GetTypeByIdent(const char* pstrIdent, int iScope)
+{
+	// Local symbol node pointer
+
+	StructSymbol *pCurrSymbol;
+
+	// Loop through each symbol in the table to find the match
+
+	for (int iCurrSymbolIndex = 0; iCurrSymbolIndex < g_TypeTable.iNodeCount; ++iCurrSymbolIndex)
+	{
+		// Get the current symbol structure
+
+		pCurrSymbol = GetTypeByIndex(iCurrSymbolIndex);
+
+		// Return the symbol if the identifier and scope matches
+
+		if (pCurrSymbol && strcmp(pCurrSymbol->pstrIdent, pstrIdent) == 0 &&
+			(pCurrSymbol->iScope == iScope || pCurrSymbol->iScope == SCOPE_GLOBAL))
+			return pCurrSymbol;
+	}
+
+	// The symbol was not found, so return a NULL pointer
+
+	return NULL;
+}
+
+int AddType(char* pstrIdent, int iScope, StructSymbol *pOuter)
+{
+	// If a label already exists
+
+	if (GetSymbolByIdent(pstrIdent, iScope))
+		return -1;
+
+	// Create a new symbol node
+
+	StructSymbol *pNewSymbol = (StructSymbol *)malloc(sizeof(StructSymbol));
+
+	// Initialize the new label
+
+	strcpy(pNewSymbol->pstrIdent, pstrIdent);
+	pNewSymbol->iScope = iScope;
+	pNewSymbol->pOuter = pOuter;
+
+	// Add the symbol to the list and get its index
+
+	int iIndex = AddNode(&g_TypeTable, pNewSymbol);
 
 	// Set the symbol node's index
 

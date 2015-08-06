@@ -4,6 +4,47 @@
 #include "symbol_table.h"
 #include "func_table.h"
 
+// 用于嵌套的循环结构的代码生成
+struct Loop                                 
+{
+	Label start;                          // The starting jump target
+	Label end;                            // The ending jump target
+};
+
+
+void ReadToken(Token ReqToken);
+
+int IsOpPrefix(int iOpType);
+int IsOpAssign(int iOpType);
+int IsOpRelational(int iOpType);
+int IsOpLogical(int iOpType);
+
+void ParseStatement();
+void ParseBlock();
+void ParseStruct(StructSymbol *pOuter);
+void ParseVar();
+void ParsePrint();
+void ParseBeep();
+void ParseFunc();
+
+void ParseExpr();
+void ParseLogical();
+void ParseEquality();
+void ParseRelationality();
+void ParseSubExpr();
+void ParseTerm();
+void ParseUnary();
+void ParseFactor();
+
+void ParseIf();
+void ParseWhile();
+void ParseFor();
+void ParseBreak();
+void ParseContinue();
+void ParseReturn();
+
+void ParseAssign();
+void ParseFuncCall();
 
 // ---- Functions -------------------------------------------------------------------------
 
@@ -162,13 +203,13 @@ void ReadToken(Token ReqToken)
 
 			// Open curly brace
 
-		case TOKEN_TYPE_OPEN_CURLY_BRACE:
+		case TOKEN_TYPE_OPEN_BLOCK:
 			strcpy (pstrErrorMssg, "{");
 			break;
 
 			// Close curly brace
 
-		case TOKEN_TYPE_CLOSE_CURLY_BRACE:
+		case TOKEN_TYPE_CLOSE_BLOCK:
 			strcpy (pstrErrorMssg, "}");
 			break;
 
@@ -351,9 +392,13 @@ void ParseStatement()
 		ParseVar();
 		break;
 
+	case TOKEN_TYPE_RSRVD_STRUCT:
+		ParseStruct(NULL);
+		break;
+
 		// Block
 
-	case TOKEN_TYPE_OPEN_CURLY_BRACE:
+	case TOKEN_TYPE_OPEN_BLOCK:
 		ParseBlock();
 		break;
 
@@ -488,6 +533,98 @@ void ParseStatement()
 	}
 }
 
+// 定义结构体
+void ParseStruct(StructSymbol *pOuter)
+{
+	ReadToken(TOKEN_TYPE_IDENT);
+
+	// 拷贝结构名
+	char pstrTypeName[MAX_LEXEME_SIZE];
+	CopyCurrLexeme(pstrTypeName);
+
+	int iTypeIndex = AddType(GetCurrLexeme(), g_iCurrScope, pOuter);
+
+	ReadToken(TOKEN_TYPE_OPEN_BLOCK);
+
+	while (GetLookAheadChar() != '}')
+	{
+		ReadToken(TOKEN_TYPE_RSRVD_VAR);
+
+		// Read an identifier token
+
+		ReadToken(TOKEN_TYPE_IDENT);
+
+		// Copy the current lexeme into a local string buffer to save the variable's identifier
+
+		char pstrIdent[MAX_LEXEME_SIZE];
+		CopyCurrLexeme(pstrIdent);
+
+		// Set the size to 1 for a variable (an array will update this value)
+
+		int iSize = 1;
+
+		int iIsArray = FALSE;
+
+		// Is the look-ahead character an open brace?
+
+		if (GetLookAheadChar() == '[')
+		{
+			// Verify the open brace
+
+			ReadToken(TOKEN_TYPE_OPEN_BRACE);
+
+			// If so, read an integer token
+
+			ReadToken(TOKEN_TYPE_INT);
+
+			// Convert the current lexeme to an integer to get the size
+
+			iSize = atoi(GetCurrLexeme());
+
+			// Read the closing brace
+
+			ReadToken(TOKEN_TYPE_CLOSE_BRACE);
+
+			iIsArray = TRUE;
+		}
+
+		// Add the identifier and size to the symbol table
+
+		if (AddSymbol(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
+			ExitOnCodeError("Identifier redefinition");
+
+		// 声明时初始化标量
+		if (!iIsArray)
+		{
+			// ---- Parse the assignment operator
+
+			if (GetNextToken() != TOKEN_TYPE_OP || GetCurrOp() != OP_TYPE_ASSIGN)
+			{
+				RewindTokenStream();
+			}
+			else
+			{
+				// ---- Parse the value expression
+
+				ParseExpr();
+
+				int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
+				SymbolNode *pSymbol = GetSymbolByIdent(pstrIdent, g_iCurrScope);
+				AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
+			}
+		}
+
+		// Read the semicolon
+
+		ReadToken(TOKEN_TYPE_SEMICOLON);
+	}
+	
+	// '}'
+	ReadToken(TOKEN_TYPE_CLOSE_BLOCK);
+
+
+}
+
 /******************************************************************************************
 *
 *   ParseVar()
@@ -593,7 +730,7 @@ void ParseBlock()
 
 	// Read the closing curly brace
 
-	ReadToken(TOKEN_TYPE_CLOSE_CURLY_BRACE);
+	ReadToken(TOKEN_TYPE_CLOSE_BLOCK);
 }
 
 // print <expr>
@@ -724,7 +861,7 @@ void ParseFunc()
 
 	// Read the opening curly brace
 
-	ReadToken(TOKEN_TYPE_OPEN_CURLY_BRACE);
+	ReadToken(TOKEN_TYPE_OPEN_BLOCK);
 
 	// Parse the function's body
 

@@ -46,6 +46,10 @@ LinkedList g_HostFuncTable;
 
 LinkedList g_SymbolTable;                       // The symbol table
 
+// 全局范围的结构体
+
+LinkedList g_TypeTable;                       // The type table
+
 // ---- String Table ----------------------------------------------------------------------
 
 LinkedList g_StringTable;						// The string table
@@ -95,6 +99,7 @@ void Init()
 	InitLinkedList(&g_FuncTable);
 	InitLinkedList(&g_HostFuncTable);
 	InitLinkedList(&g_SymbolTable);
+	InitLinkedList(&g_TypeTable);
 	InitLinkedList(&g_StringTable);
 }
 
@@ -116,6 +121,7 @@ void ShutDown()
 	FreeLinkedList(&g_FuncTable);
 	FreeLinkedList(&g_HostFuncTable);
 	FreeLinkedList(&g_SymbolTable);
+	FreeLinkedList(&g_TypeTable);
 	FreeLinkedList(&g_StringTable);
 }
 

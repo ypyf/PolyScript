@@ -782,42 +782,26 @@ Token GetNextToken()
 
 		// ---- Determine if the "identifier" is actually a reserved word
 
-		// true
-
 		if (stricmp(g_CurrLexerState.pstrCurrLexeme, "true") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_TRUE;
-
-		// false
 
 		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "false") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_FALSE;
 
-		// if
-
 		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "if") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_IF;
-
-		// else
 
 		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "else") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_ELSE;
 
-		// break
-
 		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "break") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_BREAK;
-
-		// continue
 
 		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "continue") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_CONTINUE;
 
-		// for
-
 		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "for") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_FOR;
-
-		// while
 
 		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "while") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_WHILE;
@@ -831,12 +815,14 @@ Token GetNextToken()
 		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "var") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_VAR;
 
-		// def
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "struct") == 0)
+			TokenType = TOKEN_TYPE_RSRVD_STRUCT;
+
+		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "static") == 0)
+			TokenType = TOKEN_TYPE_RSRVD_STATIC;
 
 		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "func") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_FUNC;
-
-		// return
 
 		else if (stricmp(g_CurrLexerState.pstrCurrLexeme, "return") == 0)
 			TokenType = TOKEN_TYPE_RSRVD_RETURN;
@@ -872,11 +858,11 @@ Token GetNextToken()
 			break;
 
 		case '{':
-			TokenType = TOKEN_TYPE_OPEN_CURLY_BRACE;
+			TokenType = TOKEN_TYPE_OPEN_BLOCK;
 			break;
 
 		case '}':
-			TokenType = TOKEN_TYPE_CLOSE_CURLY_BRACE;
+			TokenType = TOKEN_TYPE_CLOSE_BLOCK;
 			break;
 
 		case ';':

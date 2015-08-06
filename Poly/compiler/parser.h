@@ -14,52 +14,13 @@
 
 // ---- Data Structures -----------------------------------------------------------------------
 
-struct Expr                                // Expression instance
-{
-	int iStackOffset;                               // The current offset of the stack
-};
-
-struct Loop                                 // Loop instance
-{
-	Label start;                          // The starting jump target
-	Label end;                            // The ending jump target
-};
+//struct Expr                                // Expression instance
+//{
+//	int iStackOffset;                               // The current offset of the stack
+//};
 
 // ---- Function Prototypes -------------------------------------------------------------------
 
-void ReadToken(Token ReqToken);
-
-int IsOpPrefix(int iOpType);
-int IsOpAssign(int iOpType);
-int IsOpRelational(int iOpType);
-int IsOpLogical(int iOpType);
-
 void ParseSourceCode();
-
-void ParseStatement();
-void ParseBlock();
-void ParseVar();
-void ParsePrint();
-void ParseBeep();
-void ParseFunc();
-
-void ParseExpr();
-void ParseLogical();
-void ParseEquality();
-void ParseRelationality();
-void ParseSubExpr();
-void ParseTerm();
-void ParseUnary();
-void ParseFactor();
-
-void ParseIf();
-void ParseWhile();
-void ParseFor();
-void ParseBreak();
-void ParseContinue();
-void ParseReturn();
-
-void ParseAssign();
-void ParseFuncCall();
 
 #endif
