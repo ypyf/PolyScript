@@ -50,10 +50,14 @@ typedef struct _StructSymbol
 } StructSymbol;
 
 
-StructSymbol* GetTypeByIndex(int iIndex);
-StructSymbol* GetTypeByIdent(const char* pstrIdent, int iScope);
+StructSymbol* GetTypeByIndex(int iTypeIndex);
+
+// 首先在嵌套链条上查找(pOuter非空时)，然后在当前或全局范围内查找类型
+StructSymbol* GetTypeByIdent(const char* pstrIdent, int iScope, StructSymbol *pOuter);
+
 int AddType(char* pstrIdent, int iScope, StructSymbol *pOuter);
-int AddField(int iIndex, SymbolNode *symbol);
+SymbolNode* GetFieldByIdent(int iTypeIndex, const char* pstrIdent);
+int AddField(int iTypeIndex, char* pstrIdent, int iSize, int iScope);
 //int AddMethod(int iIndex, FuncNode *method);
 
 #endif

@@ -224,3 +224,34 @@ int AddType(char* pstrIdent, int iScope, StructSymbol *pOuter)
 
 	return iIndex;
 }
+
+//int AddField(int iTypeIndex, char* pstrIdent, int iSize, int iScope)
+//{
+//	// If a label already exists
+//
+//	if (GetSymbolByIdent(pstrIdent, iScope))
+//		return -1;
+//
+//	// Create a new symbol node
+//
+//	SymbolNode * pNewSymbol = (SymbolNode *)malloc(sizeof(SymbolNode));
+//
+//	// Initialize the new label
+//
+//	strcpy(pNewSymbol->pstrIdent, pstrIdent);
+//	pNewSymbol->iSize = iSize;
+//	pNewSymbol->iScope = iScope;
+//	pNewSymbol->iType = iType;
+//
+//	// Add the symbol to the list and get its index
+//
+//	int iIndex = AddNode(&g_SymbolTable, pNewSymbol);
+//
+//	// Set the symbol node's index
+//
+//	pNewSymbol->iIndex = iIndex;
+//
+//	// Return the new symbol's index
+//
+//	return iIndex;
+//}

@@ -590,8 +590,8 @@ void ParseStruct(StructSymbol *pOuter)
 
 		// Add the identifier and size to the symbol table
 
-		if (AddSymbol(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
-			ExitOnCodeError("Identifier redefinition");
+		//if (AddField(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
+		//	ExitOnCodeError("Field name redefinition");
 
 		// 声明时初始化标量
 		if (!iIsArray)
