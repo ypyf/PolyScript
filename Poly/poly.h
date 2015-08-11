@@ -6,18 +6,18 @@
 	#define _CRT_SECURE_NO_WARNINGS 1
 	#pragma warning(disable:4996)
 	#define WIN32_LEAN_AND_MEAN	1
-	#include <Windows.h>
+	#include <windows.h>
 #endif
 
 /* Dynamic Link */
 #if !defined(_MSC_VER) || defined(STANDALONE)
-#   define POLY_API
+	#define POLY_API
 #else
-# ifdef _POLY_SOURCE
-#   define POLY_API __declspec(dllexport)
-# else
-#   define POLY_API __declspec(dllimport)
-# endif
+	#ifdef _POLY_SOURCE
+	#define POLY_API __declspec(dllexport)
+	#else
+	#define POLY_API __declspec(dllimport)
+	#endif
 #endif
 
 
