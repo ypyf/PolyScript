@@ -113,7 +113,7 @@ int main(int argc, char* argv[])
 {
 	if (argc < 2) 
 	{
-		printf("CRL: No input files\n");
+		printf("%s: No input files\n", argv[0]);
 		exit(0);
 	}
 
