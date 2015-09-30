@@ -100,7 +100,7 @@ struct Value
 
 // ----Main ------------------------------------------------------------------------------
 
-POLY_API ScriptContext* Poly_CreateInterp();
+POLY_API ScriptContext* Poly_Initialize();
 POLY_API void Poly_ShutDown(ScriptContext *sc);
 
 // ----Script Interface ------------------------------------------------------------------

@@ -68,12 +68,12 @@ static void h_Division(ScriptContext *sc)
 	Poly_ReturnFromHost(sc);
 }
 
-// ----CRL Entry Main ----------------------------------------------------------------------------------
+// ---- Entry Main ----------------------------------------------------------------------------------
 
 int RunScript(char* pstrFilename)
 {
     // Initialize the runtime environment
-    ScriptContext *sc = Poly_CreateInterp();
+    ScriptContext *sc = Poly_Initialize();
 
     // 注册宿主api
 	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Average", average);

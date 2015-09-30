@@ -111,12 +111,12 @@ static void DisplayStatus(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    Poly_Create()
+*    Poly_Initialize()
 *
 *    Initializes the runtime environment.
 */
 
-ScriptContext* Poly_CreateInterp()
+ScriptContext* Poly_Initialize()
 {
 	ScriptContext* sc = (ScriptContext*)calloc(sizeof(ScriptContext), 1);
 

@@ -16,7 +16,7 @@ namespace TileEngine
         public delegate void POLY_HOST_FUNCTION(ScriptContext* sc);
 
         [DllImport("poly_d32.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        extern static ScriptContext* Poly_CreateInterp();
+        extern static ScriptContext* Poly_Initialize();
 
         [DllImport("poly_d32.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         extern static void Poly_ShutDown(ScriptContext* sc);
