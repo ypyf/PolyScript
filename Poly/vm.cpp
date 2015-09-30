@@ -1361,7 +1361,7 @@ void Poly_RunScript(ScriptContext *sc, int iTimesliceDur)
 
 /******************************************************************************************
 *
-*	XS_StartScript()
+*	Poly_StartScript()
 *
 *   Starts the execution of a script.
 */
@@ -1374,7 +1374,7 @@ void Poly_StartScript(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    Poly_StopScript()
+*  Poly_StopScript()
 *
 *  Stops the execution of a script.
 */
@@ -1386,7 +1386,7 @@ void Poly_StopScript(ScriptContext *sc)
 
 /******************************************************************************************
 *
-*    Poly_PauseScript()
+*  Poly_PauseScript()
 *
 *  Pauses a script for a specified duration.
 */
@@ -1399,7 +1399,7 @@ void Poly_PauseScript(ScriptContext *sc, int iDur)
 
 /******************************************************************************************
 *
-*    Poly_ResumeScript()
+*  Poly_ResumeScript()
 *
 *  Unpauses a script.
 */
