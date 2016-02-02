@@ -108,12 +108,13 @@ int RunScript(char* pstrFilename)
     return iExitCode;
 }
 
+#define PROGRAM_NAME	"polyscript"
 
 int main(int argc, char* argv[])
 {
 	if (argc < 2) 
 	{
-		printf("%s: No input files\n", argv[0]);
+		printf("%s: no input files\n", argv[0]);
 		exit(0);
 	}
 

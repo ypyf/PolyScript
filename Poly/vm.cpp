@@ -106,7 +106,6 @@ static void DisplayStatus(ScriptContext *sc)
 	fprintf(stdout, "Instruction Size: %d\n", sc->InstrStream.Size);
 	fprintf(stdout, "Function Size: %d\n", sc->FuncTable.Size);
 	fprintf(stdout, "Host Call Size: %d\n", sc->HostCallTable.Size);
-
 }
 
 /******************************************************************************************
