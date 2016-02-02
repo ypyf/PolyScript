@@ -3002,7 +3002,7 @@ void BuildXSE(const char* file)
 
         // Write the function name length(1 byte)
 
-        char cFuncNameLength = strlen(pFunc->pstrName);
+        char cFuncNameLength = (char)strlen(pFunc->pstrName);
         fwrite(&cFuncNameLength, 1, 1, pExecFile);
 
         // Write the function name(N bytes)
@@ -3030,8 +3030,8 @@ void BuildXSE(const char* file)
     {
         // Copy the string pointer and calculate its length
 
-        char *pstrCurrHostAPICall = (char *) pNode->pData;
-        char cCurrHostAPICallLength = strlen(pstrCurrHostAPICall);
+        char *pstrCurrHostAPICall = (char *)pNode->pData;
+        char cCurrHostAPICallLength = (char)strlen(pstrCurrHostAPICall);
 
         // Write the length(1 byte), followed by the string data(N bytes)
 
