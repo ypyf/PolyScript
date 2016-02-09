@@ -10,16 +10,16 @@
 
 inline unsigned long GetCurrTime()
 {
-	unsigned long theTick;
+    unsigned long theTick;
 
-	theTick = GetTickCount();
-	return theTick;
+    theTick = GetTickCount();
+    return theTick;
 }
 
 // ----Host API ------------------------------------------------------------------------------
 
 /* 计算平均值 */
-static void average(ScriptContext *sc)
+static void average(script_env *sc)
 {
     int n = Poly_GetParamCount(sc);
     int sum = 0;
@@ -30,42 +30,42 @@ static void average(ScriptContext *sc)
     Poly_ReturnIntFromHost(sc, sum / n);
 }
 
-static void poly_pause(ScriptContext *sc)
+static void poly_pause(script_env *sc)
 {
-	int nParam = Poly_GetParamCount(sc);
-	if (nParam > 0)
-	{
-		char *prompt = Poly_GetParamAsString(sc, 0);
-		printf("%s", prompt);
-		system("pause>nul");
-	}
-	else
-	{
-		system("pause");
-	}
-	Poly_ReturnFromHost(sc);
+    int nParam = Poly_GetParamCount(sc);
+    if (nParam > 0)
+    {
+        char *prompt = Poly_GetParamAsString(sc, 0);
+        printf("%s", prompt);
+        system("pause>nul");
+    }
+    else
+    {
+        system("pause");
+    }
+    Poly_ReturnFromHost(sc);
 }
 
-static void h_PrintString(ScriptContext *sc)
+static void h_PrintString(script_env *sc)
 {
-	char* str = Poly_GetParamAsString(sc, 0);
-	puts(str);
-	Poly_ReturnFromHost(sc);
+    char* str = Poly_GetParamAsString(sc, 0);
+    puts(str);
+    Poly_ReturnFromHost(sc);
 }
 
-static void h_PrintInt(ScriptContext *sc)
+static void h_PrintInt(script_env *sc)
 {
-	int i = Poly_GetParamAsInt(sc, 0);
-	printf("Explode %d!\n", i);
-	Poly_ReturnFromHost(sc);
+    int i = Poly_GetParamAsInt(sc, 0);
+    printf("Explode %d!\n", i);
+    Poly_ReturnFromHost(sc);
 }
 
-static void h_Division(ScriptContext *sc)
+static void h_Division(script_env *sc)
 {
-	float i = Poly_GetParamAsFloat(sc, 0);
-	float j = Poly_GetParamAsFloat(sc, 1);
-	printf("%f\n", i / j);
-	Poly_ReturnFromHost(sc);
+    float i = Poly_GetParamAsFloat(sc, 0);
+    float j = Poly_GetParamAsFloat(sc, 1);
+    printf("%f\n", i / j);
+    Poly_ReturnFromHost(sc);
 }
 
 // ---- Entry Main ----------------------------------------------------------------------------------
@@ -73,14 +73,14 @@ static void h_Division(ScriptContext *sc)
 int RunScript(char* pstrFilename)
 {
     // Initialize the runtime environment
-    ScriptContext *sc = Poly_Initialize();
+    script_env *sc = Poly_Initialize();
 
     // 注册宿主api
-	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Average", average);
-	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Explode", h_PrintInt);
-	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "pause", poly_pause);
-	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Division", h_Division);
-	Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "PrintString", h_PrintString);
+    Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Average", average);
+    Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Explode", h_PrintInt);
+    Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "pause", poly_pause);
+    Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "Division", h_Division);
+    Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, "PrintString", h_PrintString);
 
     // Load the demo script
     int iErrorCode = Poly_LoadScript(sc, pstrFilename);
@@ -92,13 +92,13 @@ int RunScript(char* pstrFilename)
         exit(1);
     }
 
-	unsigned long start = GetCurrTime();
+    unsigned long start = GetCurrTime();
 
     // Run we're loaded script from Main()
 
     Poly_RunScript(sc, POLY_INFINITE_TIMESLICE);
 
-	printf("耗时 %fs\n", (GetCurrTime()-start)/1000.0);
+    printf("耗时 %fs\n", (GetCurrTime() - start) / 1000.0);
 
     int iExitCode = Poly_GetExitCode(sc);
 
@@ -108,15 +108,12 @@ int RunScript(char* pstrFilename)
     return iExitCode;
 }
 
-#define PROGRAM_NAME	"polyscript"
-
 int main(int argc, char* argv[])
 {
-	if (argc < 2) 
-	{
-		printf("%s: no input files\n", argv[0]);
-		exit(0);
-	}
+    if (argc < 2) {
+        printf("%s: no input files\n", argv[0]);
+        exit(0);
+    }
 
-	RunScript(argv[1]);
+    RunScript(argv[1]);
 }

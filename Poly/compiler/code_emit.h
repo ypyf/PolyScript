@@ -16,6 +16,6 @@
 // ---- Function Prototypes -------------------------------------------------------------------
 
 void EmitCode();
-void EmitCode(ScriptContext *sc);
+void EmitCode(script_env *sc);
 
 #endif

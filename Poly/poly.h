@@ -9,7 +9,7 @@
 	#include <windows.h>
 #endif
 
-/* Dynamic Link */
+/* DLL */
 #if !defined(_MSC_VER) || defined(STANDALONE)
 	#define POLY_API
 #else
@@ -52,22 +52,22 @@ extern "C" {
 #define POLY_LOAD_ERROR_OUT_OF_MEMORY       4        // Out of memory
 #define POLY_LOAD_ERROR_OUT_OF_THREADS      5        // Out of threads
 
-#define POLY_INFINITE_TIMESLICE       1          // Allows a thread to run indefinitely
+#define POLY_INFINITE_TIMESLICE             1        // Allows a thread to run indefinitely
 
 // ----The Host API ----------------------------------------------------------------------
 
-#define POLY_GLOBAL_FUNC              0          // Flags a host API function as being global
+#define POLY_GLOBAL_FUNC                    0        // Flags a host API function as being global
 
 // 文件名后缀
 #define POLY_FILE_EXT				".POLY"
 #define PASM_FILE_EXT				".PASM"
-#define PE_FILE_EXT					".PE"
+#define PE_FILE_EXT			        ".PE"
 
 
 // ----Data Structures -----------------------------------------------------------------------
 
-struct ScriptContext;
-typedef void (*POLY_HOST_FUNCTION)(ScriptContext*);  // Host API function pointer alias
+struct script_env;
+typedef void (*POLY_HOST_FUNCTION)(script_env*);  // Host API function pointer alias
 
 
 // ----Runtime Value ---------------------------------------------------------------------
@@ -76,13 +76,13 @@ struct MetaObject;
 
 struct Value
 {
-    int Type;							// The type
-    union								// The value
+    int Type;				        // The type
+    union					// The value
     {
         MetaObject* ObjectPtr;			// Object Reference
-        int         Fixnum;				// Integer literal
+        int         Fixnum;			// Integer literal
         float       Realnum;			// Float literal
-        char*       String;				// String literal index
+        char*       String;			// String literal index
         int         StackIndex;			// Stack Index
         int         InstrIndex;			// Instruction index
         int         FuncIndex;			// Function index
@@ -91,52 +91,52 @@ struct Value
     };
 
     // 对于OP_TYPE_REL_STACK_INDEX，该字段保存的是偏移值的地址(偏移值是一个变量)
-	// 例如 var1[var2], 则该字段保存的就是var2的地址
+    // 例如 var1[var2], 则该字段保存的就是var2的地址
     // 对于OP_TYPE_FUNC_INDEX，该字段保存了调用者(caller)的栈帧索引(FP)
-    int OffsetIndex;               // Index of the offset
+    int OffsetIndex;                            // Index of the offset
 };
 
 // ----Function Prototypes -------------------------------------------------------------------
 
 // ----Main ------------------------------------------------------------------------------
 
-POLY_API ScriptContext* Poly_Initialize();
-POLY_API void Poly_ShutDown(ScriptContext *sc);
+POLY_API script_env* Poly_Initialize();
+POLY_API void Poly_ShutDown(script_env *sc);
 
 // ----Script Interface ------------------------------------------------------------------
-POLY_API int Poly_LoadScript(ScriptContext *sc, const char *pstrFilename);
-POLY_API void Poly_UnloadScript(ScriptContext *sc);
-POLY_API void Poly_ResetInterp(ScriptContext *sc);
-POLY_API void Poly_RunScript(ScriptContext *sc, int iTimesliceDur);
-POLY_API void Poly_StartScript(ScriptContext *sc);
-POLY_API void Poly_StopScript(ScriptContext *sc);
-POLY_API void Poly_PauseScript(ScriptContext *sc, int iDur);
-POLY_API void Poly_ResumeScript(ScriptContext *sc);
-POLY_API void Poly_PassIntParam(ScriptContext *sc, int iInt);
-POLY_API void Poly_PassFloatParam(ScriptContext *sc, float fFloat);
-POLY_API void Poly_PassStringParam(ScriptContext *sc, char *pstrString);
-POLY_API int Poly_CallScriptFunc(ScriptContext *sc, char *pstrName);
-POLY_API void Poly_CallScriptFuncSync(ScriptContext *sc, char *pstrName);
-POLY_API int Poly_GetReturnValueAsInt(ScriptContext *sc);
-POLY_API float Poly_GetReturnValueAsFloat(ScriptContext *sc);
-POLY_API char* Poly_GetReturnValueAsString(ScriptContext *sc);
+POLY_API int Poly_LoadScript(script_env *sc, const char *pstrFilename);
+POLY_API void Poly_UnloadScript(script_env *sc);
+POLY_API void Poly_ResetInterp(script_env *sc);
+POLY_API void Poly_RunScript(script_env *sc, int iTimesliceDur);
+POLY_API void Poly_StartScript(script_env *sc);
+POLY_API void Poly_StopScript(script_env *sc);
+POLY_API void Poly_PauseScript(script_env *sc, int iDur);
+POLY_API void Poly_ResumeScript(script_env *sc);
+POLY_API void Poly_PassIntParam(script_env *sc, int iInt);
+POLY_API void Poly_PassFloatParam(script_env *sc, float fFloat);
+POLY_API void Poly_PassStringParam(script_env *sc, char *pstrString);
+POLY_API int Poly_CallScriptFunc(script_env *sc, char *pstrName);
+POLY_API void Poly_CallScriptFuncSync(script_env *sc, char *pstrName);
+POLY_API int Poly_GetReturnValueAsInt(script_env *sc);
+POLY_API float Poly_GetReturnValueAsFloat(script_env *sc);
+POLY_API char* Poly_GetReturnValueAsString(script_env *sc);
 
 // ----Host API Interface ----------------------------------------------------------------
 
-POLY_API int Poly_RegisterHostFunc(ScriptContext *sc, char *pstrName, POLY_HOST_FUNCTION fnFunc);
-POLY_API int Poly_GetParamAsInt(ScriptContext *sc, int iParamIndex);
-POLY_API float Poly_GetParamAsFloat(ScriptContext *sc, int iParamIndex);
-POLY_API char* Poly_GetParamAsString(ScriptContext *sc, int iParamIndex);
-POLY_API Value Poly_GetParam(ScriptContext *sc, int iParamIndex);
+POLY_API int Poly_RegisterHostFunc(script_env *sc, char *pstrName, POLY_HOST_FUNCTION fnFunc);
+POLY_API int Poly_GetParamAsInt(script_env *sc, int iParamIndex);
+POLY_API float Poly_GetParamAsFloat(script_env *sc, int iParamIndex);
+POLY_API char* Poly_GetParamAsString(script_env *sc, int iParamIndex);
+POLY_API Value Poly_GetParam(script_env *sc, int iParamIndex);
 
-POLY_API void Poly_ReturnFromHost(ScriptContext *sc);
-POLY_API void Poly_ReturnIntFromHost(ScriptContext *sc, int iInt);
-POLY_API void Poly_ReturnFloatFromHost(ScriptContext *sc, float iFloat);
-POLY_API void Poly_ReturnStringFromHost(ScriptContext *sc, char *pstrString);
+POLY_API void Poly_ReturnFromHost(script_env *sc);
+POLY_API void Poly_ReturnIntFromHost(script_env *sc, int iInt);
+POLY_API void Poly_ReturnFloatFromHost(script_env *sc, float iFloat);
+POLY_API void Poly_ReturnStringFromHost(script_env *sc, char *pstrString);
 
-POLY_API int Poly_GetParamCount(ScriptContext *sc);       // 获取传递给函数的参数个数
-POLY_API int Poly_IsScriptStop(ScriptContext *sc);        // 脚本是否已经停止
-POLY_API int Poly_GetExitCode(ScriptContext *sc);         // 脚本退出代码
+POLY_API int Poly_GetParamCount(script_env *sc);       // 获取传递给函数的参数个数
+POLY_API int Poly_IsScriptStop(script_env *sc);        // 脚本是否已经停止
+POLY_API int Poly_GetExitCode(script_env *sc);         // 脚本退出代码
 POLY_API time_t Poly_GetSourceTimestamp(const char* filename);
 
 #ifdef __cplusplus

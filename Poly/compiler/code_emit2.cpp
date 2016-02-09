@@ -7,10 +7,10 @@
 #include <map>
 
 
-void InitInstrStream(ScriptContext *pSC);
+void InitInstrStream(script_env *pSC);
 int GetHostFuncIndex(const char* fnName);
-void EmitFunc(ScriptContext *pSC, FuncNode *pFunc, int iIndex);
-void EmitScopeSymbols(ScriptContext *pSC, int iScope, int iType, int iVMFuncTableIndex);
+void EmitFunc(script_env *pSC, FuncNode *pFunc, int iIndex);
+void EmitScopeSymbols(script_env *pSC, int iScope, int iType, int iVMFuncTableIndex);
 
 
 // 标号，用于记录前向引用
@@ -29,7 +29,7 @@ std::map<int, LabelSymbol> g_LabelTable;
 int g_iCurrInstr = 0;
 
 
-void EmitScopeSymbols(ScriptContext *pSC, int iScope, int iType, int iIndex)
+void EmitScopeSymbols(script_env *pSC, int iScope, int iType, int iIndex)
 {
 	// Local symbol node pointer
 
@@ -74,7 +74,7 @@ void EmitScopeSymbols(ScriptContext *pSC, int iScope, int iType, int iIndex)
 }
 
 
-void EmitFunc(ScriptContext *pSC, FuncNode *pFunc, int iVMFuncTableIndex)
+void EmitFunc(script_env *pSC, FuncNode *pFunc, int iVMFuncTableIndex)
 {
 	// Clear Label Table
 	g_LabelTable.clear();
@@ -290,7 +290,7 @@ void EmitFunc(ScriptContext *pSC, FuncNode *pFunc, int iVMFuncTableIndex)
 }
 
 
-void EmitCode(ScriptContext *pSC)
+void EmitCode(script_env *pSC)
 {
 	// 设置堆栈大小
 
@@ -406,7 +406,7 @@ static int GetHostFuncIndex(const char* fnName)
 }
 
 // 为虚拟机的指令缓冲区分配内存
-void InitInstrStream(ScriptContext *pSC)
+void InitInstrStream(script_env *pSC)
 {
 	// 统计所有函数的指令总数
 

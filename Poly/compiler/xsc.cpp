@@ -231,7 +231,7 @@ void XSC_CompileScript(const char* pstrFilename, const char* pstrExecFilename)
 	}
 }
 
-void XSC_CompileScript(ScriptContext *sc, const char* pstrFilename)
+void XSC_CompileScript(script_env *sc, const char* pstrFilename)
 {
 	strcpy(g_pstrSourceFilename, pstrFilename);
 	Init();

@@ -134,12 +134,12 @@ struct STRING_TABLE
 // ----Host API Call Table ---------------------------------------------------------------
 struct HOST_CALL_TABLE                // A host API call table
 {
-    char **Calls;                            // Pointer to the call array
-    int Size;                                    // The number of calls in the array
+    char **Calls;                     // Pointer to the call array
+    int Size;                         // The number of calls in the array
 };
 
 // ----Host API --------------------------------------------------------------------------
-struct HOST_API_FUNC                     // Host API function
+struct HOST_API_FUNC                        // Host API function
 {
 	char Name[MAX_FUNC_NAME_SIZE];       // The function name
 	POLY_HOST_FUNCTION FuncPtr;           // Pointer to the function definition
@@ -148,33 +148,33 @@ struct HOST_API_FUNC                     // Host API function
 
 // ----Script Virtual Machine State ---------------------------------------------------------------------------
 
-struct ScriptContext
+struct script_env
 {
     // Header fields
     int GlobalDataSize;                        // The size of the script's global data
     int IsMainFuncPresent;                     // Is Main() present?
-    int MainFuncIndex;                            // Main()'s function index
+    int MainFuncIndex;                         // Main()'s function index
 
-    int IsRunning;                                // Is the script running?
-    int IsPaused;                                // Is the script currently paused?
-    int PauseEndTime;                            // If so, when should it resume?
-	int ThreadActiveTime;						// 脚本运行的总时间			
+    int IsRunning;                             // Is the script running?
+    int IsPaused;                              // Is the script currently paused?
+    int PauseEndTime;                          // If so, when should it resume?
+    int ThreadActiveTime;		       // 脚本运行的总时间			
 
     // Threading
     int TimesliceDur;                          // The thread's timeslice duration
 
-	// 脚本特定的宿主API
-	HOST_API_FUNC* HostAPIs;
+    // 脚本特定的宿主API
+    HOST_API_FUNC* HostAPIs;
 
     // Registers
-    Value _RetVal;                                // The _RetVal register (R0)
-	int CurrInstr;			// 当前指令
+    Value _RetVal;                      // The _RetVal register (R0)
+    int CurrInstr;			// 当前指令
 
-	// 堆栈
-	Value *stack;           // The stack elements
-	int iStackSize;          // The number of elements in the stack
-	int iTopIndex;          // 栈顶指针
-	int iFrameIndex;         // 总是指向当前栈帧
+    // 堆栈
+    Value *stack;            // The stack elements
+    int iStackSize;          // The number of elements in the stack
+    int iTopIndex;           // 栈顶指针
+    int iFrameIndex;         // 总是指向当前栈帧
 
     // 脚本退出代码
     int ExitCode;
@@ -182,9 +182,9 @@ struct ScriptContext
     // Script data
     INSTR_STREAM InstrStream;                    // The instruction stream
     FUNC_TABLE FuncTable;                        // The function table
-    HOST_CALL_TABLE HostCallTable;            // The host API call table
+    HOST_CALL_TABLE HostCallTable;               // The host API call table
 
-	STRING_TABLE StringTable;				// 字符串常量表
+    STRING_TABLE StringTable;			 // 字符串常量表
 
     // 动态内存分配
     MetaObject *pLastObject;        // 指向最近一个已分配的对象

@@ -111,10 +111,10 @@ extern int g_iTempVar0, g_iTempVar1;
 
 // ---- Function Prototypes -------------------------------------------------------------------
 
-struct ScriptContext;
+struct script_env;
 
 void XSC_CompileScript(const char* pstrFilename, const char* pstrExecFilename);
-void XSC_CompileScript(ScriptContext *sc, const char* pstrFilename);
+void XSC_CompileScript(script_env *sc, const char* pstrFilename);
 void Exit();
 
 #endif
