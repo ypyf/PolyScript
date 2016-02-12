@@ -1994,7 +1994,7 @@ void Poly_PassFloatParam(script_env *sc, float fFloat)
 *  Passes a string parameter from the host to a script function.
 */
 
-void Poly_PassStringParam(script_env *sc, char *pstrString)
+void Poly_PassStringParam(script_env *sc, const char *pstrString)
 {
     // Create a Value structure to encapsulate the parameter
     Value Param;
@@ -2013,7 +2013,7 @@ void Poly_PassStringParam(script_env *sc, char *pstrString)
 *  Returns the index into the function table corresponding to the specified name.
 */
 
-int GetFuncIndexByName(script_env *sc, char *pstrName)
+int GetFuncIndexByName(script_env *sc, const char *pstrName)
 {
     // Loop through each function and look for a matching name
     for (int i = 0; i < sc->FuncTable.Size; ++i)
@@ -2034,7 +2034,7 @@ int GetFuncIndexByName(script_env *sc, char *pstrName)
 *  Calls a script function from the host application.
 */
 
-int Poly_CallScriptFunc(script_env *sc, char *pstrName)
+int Poly_CallScriptFunc(script_env *sc, const char *pstrName)
 {
     // Get the function's index based on it's name
     int iFuncIndex = GetFuncIndexByName(sc, pstrName);
@@ -2061,7 +2061,7 @@ int Poly_CallScriptFunc(script_env *sc, char *pstrName)
 *  用于在宿主API函数中同步地调用脚本函数。单独使用没有效果。
 */
 
-void Poly_CallScriptFuncSync(script_env *sc, char *pstrName)
+void Poly_CallScriptFuncSync(script_env *sc, const char *pstrName)
 {
     // Get the function's index based on its name
     int iFuncIndex = GetFuncIndexByName(sc, pstrName);
@@ -2081,7 +2081,7 @@ void Poly_CallScriptFuncSync(script_env *sc, char *pstrName)
 *  Registers a function with the host API.
 */
 
-int Poly_RegisterHostFunc(script_env *sc, char *pstrName, POLY_HOST_FUNCTION fnFunc)
+int Poly_RegisterHostFunc(script_env *sc, const char *pstrName, POLY_HOST_FUNCTION fnFunc)
 {
     HOST_API_FUNC** pCFuncTable;
 

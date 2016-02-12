@@ -77,7 +77,7 @@ struct MetaObject;
 struct Value
 {
     int Type;				        // The type
-    union					// The value
+    union							// The value
     {
         MetaObject* ObjectPtr;			// Object Reference
         int         Fixnum;			// Integer literal
@@ -114,16 +114,16 @@ POLY_API void Poly_PauseScript(script_env *sc, int iDur);
 POLY_API void Poly_ResumeScript(script_env *sc);
 POLY_API void Poly_PassIntParam(script_env *sc, int iInt);
 POLY_API void Poly_PassFloatParam(script_env *sc, float fFloat);
-POLY_API void Poly_PassStringParam(script_env *sc, char *pstrString);
-POLY_API int Poly_CallScriptFunc(script_env *sc, char *pstrName);
-POLY_API void Poly_CallScriptFuncSync(script_env *sc, char *pstrName);
+POLY_API void Poly_PassStringParam(script_env *sc, const char *pstrString);
+POLY_API int Poly_CallScriptFunc(script_env *sc, const char *pstrName);
+POLY_API void Poly_CallScriptFuncSync(script_env *sc, const char *pstrName);
 POLY_API int Poly_GetReturnValueAsInt(script_env *sc);
 POLY_API float Poly_GetReturnValueAsFloat(script_env *sc);
 POLY_API char* Poly_GetReturnValueAsString(script_env *sc);
 
 // ----Host API Interface ----------------------------------------------------------------
 
-POLY_API int Poly_RegisterHostFunc(script_env *sc, char *pstrName, POLY_HOST_FUNCTION fnFunc);
+POLY_API int Poly_RegisterHostFunc(script_env *sc, const char *pstrName, POLY_HOST_FUNCTION fnFunc);
 POLY_API int Poly_GetParamAsInt(script_env *sc, int iParamIndex);
 POLY_API float Poly_GetParamAsFloat(script_env *sc, int iParamIndex);
 POLY_API char* Poly_GetParamAsString(script_env *sc, int iParamIndex);
