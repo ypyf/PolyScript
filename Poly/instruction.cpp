@@ -11,7 +11,7 @@ void CopyValue(Value *pDest, Value* Source)
     if (pDest->Type == OP_TYPE_STRING)
         free(pDest->String);
 
-    // Copy the object (Ç³¿½±´)
+    // Copy the object (shallow copy)
 
     *pDest = *Source;
 

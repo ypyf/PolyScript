@@ -7,30 +7,30 @@
 
 /******************************************************************************************
 *
-*   InitStack ()
+*   InitStack()
 *
 *   Initializes a stack.
 */
 
 void InitStack(Stack * pStack)
 {
-	// Initialize the stack's internal list
+    // Initialize the stack's internal list
 
-	InitLinkedList(&pStack->ElmntList);
+    InitLinkedList(&pStack->ElmntList);
 }
 
 /******************************************************************************************
 *
-*   FreeStack ()
+*   FreeStack()
 *
 *   Frees a stack.
 */
 
 void FreeStack(Stack * pStack)
 {
-	// Free the stack's internal list
+    // Free the stack's internal list
 
-	FreeLinkedList(&pStack->ElmntList);
+    FreeLinkedList(&pStack->ElmntList);
 }
 
 /******************************************************************************************
@@ -42,10 +42,7 @@ void FreeStack(Stack * pStack)
 
 int IsStackEmpty(Stack * pStack)
 {
-	if (pStack->ElmntList.iNodeCount > 0)
-		return FALSE;
-	else
-		return TRUE;
+    return pStack->ElmntList.iNodeCount <= 0;
 }
 
 /******************************************************************************************
@@ -57,9 +54,9 @@ int IsStackEmpty(Stack * pStack)
 
 void Push(Stack * pStack, void * pData)
 {
-	// Add a node to the end of the stack's internal list
+    // Add a node to the end of the stack's internal list
 
-	AddNode(&pStack->ElmntList, pData);
+    AddNode(&pStack->ElmntList, pData);
 }
 
 /******************************************************************************************
@@ -71,9 +68,9 @@ void Push(Stack * pStack, void * pData)
 
 void Pop(Stack * pStack)
 {
-	// Free the tail node of the list and it's data
+    // Free the tail node of the list and it's data
 
-	RemoveNode(&pStack->ElmntList, pStack->ElmntList.pTail);
+    RemoveNode(&pStack->ElmntList, pStack->ElmntList.pTail);
 }
 
 /******************************************************************************************
@@ -85,7 +82,7 @@ void Pop(Stack * pStack)
 
 void * Peek(Stack * pStack)
 {
-	// Return the data at the tail node of the list
+    // Return the data at the tail node of the list
 
-	return pStack->ElmntList.pTail->pData;
+    return pStack->ElmntList.pTail->pData;
 }

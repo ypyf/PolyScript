@@ -16,38 +16,38 @@ int g_iCurrJumpTargetIndex = 0;                     // The current target index
 *   Returns an I-code instruction structure based on its implicit index.
 */
 
-ICodeNode * GetICodeNodeByImpIndex(int iFuncIndex, int iInstrIndex)
+ICodeNode* GetICodeNodeByImpIndex(int iFuncIndex, int iInstrIndex)
 {
-	// Get the function
+    // Get the function
 
-	FuncNode * pFunc = GetFuncByIndex(iFuncIndex);
+    FuncNode * pFunc = GetFuncByIndex(iFuncIndex);
 
-	// If the stream is empty, return a NULL pointer
+    // If the stream is empty, return a NULL pointer
 
-	if (!pFunc->ICodeStream.iNodeCount)
-		return NULL;
+    if (!pFunc->ICodeStream.iNodeCount)
+        return NULL;
 
-	// Create a pointer to traverse the list
+    // Create a pointer to traverse the list
 
-	LinkedListNode * pCurrNode = pFunc->ICodeStream.pHead;
+    LinkedListNode * pCurrNode = pFunc->ICodeStream.pHead;
 
-	// Traverse the list until the matching index is found
+    // Traverse the list until the matching index is found
 
-	for (int iCurrNode = 0; iCurrNode < pFunc->ICodeStream.iNodeCount; ++iCurrNode)
-	{
-		// If the implicit index matches, return the instruction
+    for (int iCurrNode = 0; iCurrNode < pFunc->ICodeStream.iNodeCount; ++iCurrNode)
+    {
+        // If the implicit index matches, return the instruction
 
-		if (iInstrIndex == iCurrNode)
-			return (ICodeNode *)pCurrNode->pData;
+        if (iInstrIndex == iCurrNode)
+            return (ICodeNode *)pCurrNode->pData;
 
-		// Otherwise move to the next node
+        // Otherwise move to the next node
 
-		pCurrNode = pCurrNode->pNext;
-	}
+        pCurrNode = pCurrNode->pNext;
+    }
 
-	// The instruction was not found, so return a NULL pointer
+    // The instruction was not found, so return a NULL pointer
 
-	return NULL;
+    return NULL;
 }
 
 /******************************************************************************************
@@ -59,25 +59,25 @@ ICodeNode * GetICodeNodeByImpIndex(int iFuncIndex, int iInstrIndex)
 
 void AddICodeAnnotation(int iFuncIndex, char* pstrSourceLine)
 {
-	// Get the function to which the source line should be added
+    // Get the function to which the source line should be added
 
-	FuncNode * pFunc = GetFuncByIndex(iFuncIndex);
+    FuncNode * pFunc = GetFuncByIndex(iFuncIndex);
 
-	// Create an I-code node structure to hold the line
+    // Create an I-code node structure to hold the line
 
-	ICodeNode * pSourceLineNode = (ICodeNode *)malloc(sizeof(ICodeNode));
+    ICodeNode * pSourceLineNode = (ICodeNode *)malloc(sizeof(ICodeNode));
 
-	// Set the node type to source line
+    // Set the node type to source line
 
-	pSourceLineNode->iType = ICODE_NODE_ANNOTATION_LINE;
+    pSourceLineNode->iType = ICODE_NODE_ANNOTATION_LINE;
 
-	// Set the source line string pointer
+    // Set the source line string pointer
 
-	pSourceLineNode->pstrSourceLine = pstrSourceLine;
+    pSourceLineNode->pstrSourceLine = pstrSourceLine;
 
-	// Add the instruction node to the list and get the index
+    // Add the instruction node to the list and get the index
 
-	AddNode(&pFunc->ICodeStream, pSourceLineNode);
+    AddNode(&pFunc->ICodeStream, pSourceLineNode);
 }
 
 /******************************************************************************************
@@ -89,114 +89,114 @@ void AddICodeAnnotation(int iFuncIndex, char* pstrSourceLine)
 
 int AddICodeInstr(int iFuncIndex, int iOpcode)
 {
-	// Get the function to which the instruction should be added
+    // Get the function to which the instruction should be added
 
-	FuncNode * pFunc = GetFuncByIndex(iFuncIndex);
+    FuncNode * pFunc = GetFuncByIndex(iFuncIndex);
 
-	// Create an I-code node structure to hold the instruction
+    // Create an I-code node structure to hold the instruction
 
-	ICodeNode * pInstrNode = (ICodeNode *)malloc(sizeof(ICodeNode));
+    ICodeNode * pInstrNode = (ICodeNode *)malloc(sizeof(ICodeNode));
 
-	// Set the node type to instruction
+    // Set the node type to instruction
 
-	pInstrNode->iType = ICODE_NODE_INSTR;
+    pInstrNode->iType = ICODE_NODE_INSTR;
 
-	// Set the opcode
+    // Set the opcode
 
-	pInstrNode->Instr.iOpcode = iOpcode;
+    pInstrNode->Instr.iOpcode = iOpcode;
 
-	// Clear the operand list
+    // Clear the operand list
 
-	pInstrNode->Instr.OpList.iNodeCount = 0;
+    pInstrNode->Instr.OpList.iNodeCount = 0;
 
-	// Add the instruction node to the list and get the index
+    // Add the instruction node to the list and get the index
 
-	int iIndex = AddNode(&pFunc->ICodeStream, pInstrNode);
+    int iIndex = AddNode(&pFunc->ICodeStream, pInstrNode);
 
-	// Return the index
+    // Return the index
 
-	return iIndex;
+    return iIndex;
 }
 
 int AddICodeInstr(int iFuncIndex, int iOpcode, Label label)
 {
-	// Get the function to which the instruction should be added
+    // Get the function to which the instruction should be added
 
-	FuncNode * pFunc = GetFuncByIndex(iFuncIndex);
+    FuncNode* pFunc = GetFuncByIndex(iFuncIndex);
 
-	// Create an I-code node structure to hold the instruction
+    // Create an I-code node structure to hold the instruction
 
-	ICodeNode * pInstrNode = (ICodeNode *)malloc(sizeof(ICodeNode));
+    ICodeNode* pInstrNode = (ICodeNode *)malloc(sizeof(ICodeNode));
 
-	// Set the node type to instruction
+    // Set the node type to instruction
 
-	pInstrNode->iType = ICODE_NODE_INSTR;
+    pInstrNode->iType = ICODE_NODE_INSTR;
 
-	// Set the opcode
+    // Set the opcode
 
-	pInstrNode->Instr.iOpcode = iOpcode;
+    pInstrNode->Instr.iOpcode = iOpcode;
 
-	// Clear the operand list
+    // Clear the operand list
 
-	pInstrNode->Instr.OpList.iNodeCount = 0;
+    pInstrNode->Instr.OpList.iNodeCount = 0;
 
-	// Add the instruction node to the list and get the index
+    // Add the instruction node to the list and get the index
 
-	int iIndex = AddNode(&pFunc->ICodeStream, pInstrNode);
+    int iIndex = AddNode(&pFunc->ICodeStream, pInstrNode);
 
-	// Create an operand structure to hold the new value
+    // Create an operand structure to hold the new value
 
-	Op Value;
+    Op Value;
 
-	// Set the operand type to register and store the code (even though we'll ignore it)
+    // Set the operand type to register and store the code (even though we'll ignore it)
 
-	Value.iType = ICODE_OP_TYPE_JUMP_TARGET;
-	Value.label = label;
+    Value.iType = ICODE_OP_TYPE_JUMP_TARGET;
+    Value.label = label;
 
-	// Add the operand to the instruction
+    // Add the operand to the instruction
 
-	AddICodeOp(iFuncIndex, iIndex, Value);
+    AddICodeOp(iFuncIndex, iIndex, Value);
 
-	// Return the index
+    // Return the index
 
-	return iIndex;
+    return iIndex;
 }
 
 /******************************************************************************************
 *
-*   GetICodeOpByIndex ()
+*   GetICodeOpByIndex()
 *
 *   Returns an I-code instruction's operand at the specified index.
 */
 
 Op * GetICodeOpByIndex(ICodeNode * pInstr, int iOpIndex)
 {
-	// If the list is empty, return a NULL pointer
+    // If the list is empty, return a NULL pointer
 
-	if (!pInstr->Instr.OpList.iNodeCount)
-		return NULL;
+    if (!pInstr->Instr.OpList.iNodeCount)
+        return NULL;
 
-	// Create a pointer to traverse the list
+    // Create a pointer to traverse the list
 
-	LinkedListNode * pCurrNode = pInstr->Instr.OpList.pHead;
+    LinkedListNode * pCurrNode = pInstr->Instr.OpList.pHead;
 
-	// Traverse the list until the matching index is found
+    // Traverse the list until the matching index is found
 
-	for (int iCurrNode = 0; iCurrNode < pInstr->Instr.OpList.iNodeCount; ++iCurrNode)
-	{
-		// If the index matches, return the operand
+    for (int iCurrNode = 0; iCurrNode < pInstr->Instr.OpList.iNodeCount; ++iCurrNode)
+    {
+        // If the index matches, return the operand
 
-		if (iOpIndex == iCurrNode)
-			return (Op *)pCurrNode->pData;
+        if (iOpIndex == iCurrNode)
+            return (Op *)pCurrNode->pData;
 
-		// Otherwise move to the next node
+        // Otherwise move to the next node
 
-		pCurrNode = pCurrNode->pNext;
-	}
+        pCurrNode = pCurrNode->pNext;
+    }
 
-	// The operand was not found, so return a NULL pointer
+    // The operand was not found, so return a NULL pointer
 
-	return NULL;
+    return NULL;
 }
 
 /******************************************************************************************
@@ -208,18 +208,18 @@ Op * GetICodeOpByIndex(ICodeNode * pInstr, int iOpIndex)
 
 void AddICodeOp(int iFuncIndex, int iInstrIndex, Op Value)
 {
-	// Get the I-code node
+    // Get the I-code node
 
-	ICodeNode * pInstr = GetICodeNodeByImpIndex(iFuncIndex, iInstrIndex);
+    ICodeNode* pInstr = GetICodeNodeByImpIndex(iFuncIndex, iInstrIndex);
 
-	// Make a physical copy of the operand structure
+    // Make a physical copy of the operand structure
 
-	Op * pValue = (Op *)malloc(sizeof(Op));
-	memcpy(pValue, &Value, sizeof(Op));
+    Op* pValue = (Op *)malloc(sizeof(Op));
+    memcpy(pValue, &Value, sizeof(Op));
 
-	// Add the instruction
+    // Add the instruction
 
-	AddNode(&pInstr->Instr.OpList, pValue);
+    AddNode(&pInstr->Instr.OpList, pValue);
 }
 
 /******************************************************************************************
@@ -231,41 +231,41 @@ void AddICodeOp(int iFuncIndex, int iInstrIndex, Op Value)
 
 void AddIntICodeOp(int iFuncIndex, int iInstrIndex, int iValue)
 {
-	// Create an operand structure to hold the new value
+    // Create an operand structure to hold the new value
 
-	Op Value;
+    Op Value;
 
-	// Set the operand type to integer and store the value
+    // Set the operand type to integer and store the value
 
-	Value.iType = OP_TYPE_INT;
-	Value.iIntLiteral = iValue;
+    Value.iType = OP_TYPE_INT;
+    Value.iIntLiteral = iValue;
 
-	// Add the operand to the instruction
+    // Add the operand to the instruction
 
-	AddICodeOp(iFuncIndex, iInstrIndex, Value);
+    AddICodeOp(iFuncIndex, iInstrIndex, Value);
 }
 
 /******************************************************************************************
 *
-*   AddFloatICodeOp ()
+*   AddFloatICodeOp()
 *
 *   Adds a float literal operand to the specified I-code instruction.
 */
 
 void AddFloatICodeOp(int iFuncIndex, int iInstrIndex, float fValue)
 {
-	// Create an operand structure to hold the new value
+    // Create an operand structure to hold the new value
 
-	Op Value;
+    Op Value;
 
-	// Set the operand type to float and store the value
+    // Set the operand type to float and store the value
 
-	Value.iType = OP_TYPE_FLOAT;
-	Value.fFloatLiteral = fValue;
+    Value.iType = OP_TYPE_FLOAT;
+    Value.fFloatLiteral = fValue;
 
-	// Add the operand to the instruction
+    // Add the operand to the instruction
 
-	AddICodeOp(iFuncIndex, iInstrIndex, Value);
+    AddICodeOp(iFuncIndex, iInstrIndex, Value);
 }
 
 /******************************************************************************************
@@ -277,18 +277,18 @@ void AddFloatICodeOp(int iFuncIndex, int iInstrIndex, float fValue)
 
 void AddStringICodeOp(int iFuncIndex, int iInstrIndex, int iStringIndex)
 {
-	// Create an operand structure to hold the new value
+    // Create an operand structure to hold the new value
 
-	Op Value;
+    Op Value;
 
-	// Set the operand type to string index and store the index
+    // Set the operand type to string index and store the index
 
-	Value.iType = OP_TYPE_STRING_INDEX;
-	Value.iStringIndex = iStringIndex;
+    Value.iType = OP_TYPE_STRING_INDEX;
+    Value.iStringIndex = iStringIndex;
 
-	// Add the operand to the instruction
+    // Add the operand to the instruction
 
-	AddICodeOp(iFuncIndex, iInstrIndex, Value);
+    AddICodeOp(iFuncIndex, iInstrIndex, Value);
 }
 
 /******************************************************************************************
@@ -300,18 +300,18 @@ void AddStringICodeOp(int iFuncIndex, int iInstrIndex, int iStringIndex)
 
 void AddVarICodeOp(int iFuncIndex, int iInstrIndex, int iSymbolIndex)
 {
-	// Create an operand structure to hold the new value
+    // Create an operand structure to hold the new value
 
-	Op Value;
+    Op Value;
 
-	// Set the operand type to variable and store the symbol index
+    // Set the operand type to variable and store the symbol index
 
-	Value.iType = ICODE_OP_TYPE_VAR_NAME;
-	Value.iSymbolIndex = iSymbolIndex;
+    Value.iType = ICODE_OP_TYPE_VAR_NAME;
+    Value.iSymbolIndex = iSymbolIndex;
 
-	// Add the operand to the instruction
+    // Add the operand to the instruction
 
-	AddICodeOp(iFuncIndex, iInstrIndex, Value);
+    AddICodeOp(iFuncIndex, iInstrIndex, Value);
 }
 
 /******************************************************************************************
@@ -324,24 +324,24 @@ void AddVarICodeOp(int iFuncIndex, int iInstrIndex, int iSymbolIndex)
 
 void AddArrayIndexAbsICodeOp(int iFuncIndex, int iInstrIndex, int iArraySymbolIndex, int iOffset)
 {
-	// Create an operand structure to hold the new value
+    // Create an operand structure to hold the new value
 
-	Op Value;
+    Op Value;
 
-	// Set the operand type to array index absolute and store the indices
+    // Set the operand type to array index absolute and store the indices
 
-	Value.iType = OP_TYPE_ABS_STACK_INDEX;
-	Value.iSymbolIndex = iArraySymbolIndex;
-	Value.iOffset = iOffset;
+    Value.iType = OP_TYPE_ABS_STACK_INDEX;
+    Value.iSymbolIndex = iArraySymbolIndex;
+    Value.iOffset = iOffset;
 
-	// Add the operand to the instruction
+    // Add the operand to the instruction
 
-	AddICodeOp(iFuncIndex, iInstrIndex, Value);
+    AddICodeOp(iFuncIndex, iInstrIndex, Value);
 }
 
 /******************************************************************************************
 *
-*   AddArrayIndexVarICodeOp ()
+*   AddArrayIndexVarICodeOp()
 *
 *   Adds an array indexed with a variable operand to the specified I-code
 *   instruction.
@@ -349,66 +349,66 @@ void AddArrayIndexAbsICodeOp(int iFuncIndex, int iInstrIndex, int iArraySymbolIn
 
 void AddArrayIndexVarICodeOp(int iFuncIndex, int iInstrIndex, int iArraySymbolIndex, int iOffsetSymbolIndex)
 {
-	// Create an operand structure to hold the new value
+    // Create an operand structure to hold the new value
 
-	Op Value;
+    Op Value;
 
-	// Set the operand type to array index variable and store the indices
+    // Set the operand type to array index variable and store the indices
 
-	Value.iType = OP_TYPE_REL_STACK_INDEX;
-	Value.iSymbolIndex = iArraySymbolIndex;
-	Value.iOffsetSymbolIndex = iOffsetSymbolIndex;
+    Value.iType = OP_TYPE_REL_STACK_INDEX;
+    Value.iSymbolIndex = iArraySymbolIndex;
+    Value.iOffsetSymbolIndex = iOffsetSymbolIndex;
 
-	// Add the operand to the instruction
+    // Add the operand to the instruction
 
-	AddICodeOp(iFuncIndex, iInstrIndex, Value);
+    AddICodeOp(iFuncIndex, iInstrIndex, Value);
 }
 
 /******************************************************************************************
 *
-*   AddFuncICodeOp ()
+*   AddFuncICodeOp()
 *
 *   Adds a function operand to the specified I-code instruction.
 */
 
 void AddFuncICodeOp(int iFuncIndex, int iInstrIndex, int iOpFuncIndex)
 {
-	// Create an operand structure to hold the new value
+    // Create an operand structure to hold the new value
 
-	Op Value;
+    Op Value;
 
-	// Set the operand type to function index and store the index
+    // Set the operand type to function index and store the index
 
-	Value.iType = OP_TYPE_FUNC_INDEX;
-	Value.iFuncIndex = iOpFuncIndex;
+    Value.iType = OP_TYPE_FUNC_INDEX;
+    Value.iFuncIndex = iOpFuncIndex;
 
-	// Add the operand to the instruction
+    // Add the operand to the instruction
 
-	AddICodeOp(iFuncIndex, iInstrIndex, Value);
+    AddICodeOp(iFuncIndex, iInstrIndex, Value);
 }
 
 
 /******************************************************************************************
 *
-*   AddRegICodeOp ()
+*   AddRegICodeOp()
 *
 *   Adds a register operand to the specified I-code instruction.
 */
 
 void AddRegICodeOp(int iFuncIndex, int iInstrIndex, int iRegCode)
 {
-	// Create an operand structure to hold the new value
+    // Create an operand structure to hold the new value
 
-	Op Value;
+    Op Value;
 
-	// Set the operand type to register and store the code (even though we'll ignore it)
+    // Set the operand type to register and store the code (even though we'll ignore it)
 
-	Value.iType = OP_TYPE_REG;
-	Value.iRegCode = iRegCode;
+    Value.iType = OP_TYPE_REG;
+    Value.iRegCode = iRegCode;
 
-	// Add the operand to the instruction
+    // Add the operand to the instruction
 
-	AddICodeOp(iFuncIndex, iInstrIndex, Value);
+    AddICodeOp(iFuncIndex, iInstrIndex, Value);
 }
 
 /******************************************************************************************
@@ -420,18 +420,18 @@ void AddRegICodeOp(int iFuncIndex, int iInstrIndex, int iRegCode)
 
 void AddJumpTargetICodeOp(int iFuncIndex, int iInstrIndex, Label iTargetIndex)
 {
-	// Create an operand structure to hold the new value
+    // Create an operand structure to hold the new value
 
-	Op Value;
+    Op Value;
 
-	// Set the operand type to register and store the code (even though we'll ignore it)
+    // Set the operand type to register and store the code (even though we'll ignore it)
 
-	Value.iType = ICODE_OP_TYPE_JUMP_TARGET;
-	Value.label = iTargetIndex;
+    Value.iType = ICODE_OP_TYPE_JUMP_TARGET;
+    Value.label = iTargetIndex;
 
-	// Add the operand to the instruction
+    // Add the operand to the instruction
 
-	AddICodeOp(iFuncIndex, iInstrIndex, Value);
+    AddICodeOp(iFuncIndex, iInstrIndex, Value);
 }
 
 /******************************************************************************************
@@ -443,10 +443,8 @@ void AddJumpTargetICodeOp(int iFuncIndex, int iInstrIndex, Label iTargetIndex)
 
 Label DefineLabel()
 {
-	// Return and increment the current target index
-	Label new_label;
-	new_label = g_iCurrJumpTargetIndex++;
-	return new_label;
+    // Return and increment the current target index
+    return g_iCurrJumpTargetIndex++;
 }
 
 /******************************************************************************************
@@ -458,23 +456,23 @@ Label DefineLabel()
 
 void MarkLabel(int iFuncIndex, Label iTargetIndex)
 {
-	// Get the function to which the source line should be added
+    // Get the function to which the source line should be added
 
-	FuncNode * pFunc = GetFuncByIndex(iFuncIndex);
+    FuncNode * pFunc = GetFuncByIndex(iFuncIndex);
 
-	// Create an I-code node structure to hold the line
+    // Create an I-code node structure to hold the line
 
-	ICodeNode * pSourceLineNode = (ICodeNode *)malloc(sizeof(ICodeNode));
+    ICodeNode * pSourceLineNode = (ICodeNode *)malloc(sizeof(ICodeNode));
 
-	// Set the node type to jump target
+    // Set the node type to jump target
 
-	pSourceLineNode->iType = ICODE_NODE_JUMP_TARGET;
+    pSourceLineNode->iType = ICODE_NODE_JUMP_TARGET;
 
-	// Set the jump target
+    // Set the jump target
 
-	pSourceLineNode->iJumpTargetIndex = iTargetIndex;
+    pSourceLineNode->iJumpTargetIndex = iTargetIndex;
 
-	// Add the instruction node to the list and get the index
+    // Add the instruction node to the list and get the index
 
-	AddNode(&pFunc->ICodeStream, pSourceLineNode);
+    AddNode(&pFunc->ICodeStream, pSourceLineNode);
 }

@@ -240,7 +240,7 @@ void XSC_CompileScript(script_env *sc, const char* pstrFilename)
 
 	// 输出预处理后的脚本
 	//LinkedListNode *pNode = g_SourceCode.pHead;
-	//while (pNode != NULL)
+	//while (pNode)
 	//{
 	//	printf("%s", (char*)pNode->pData);
 

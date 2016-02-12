@@ -87,7 +87,7 @@ int AddFunc(char* pstrName, int iIsHostAPI)
 {
 	// 脚本中的函数声明可以覆盖主机函数
 	FuncNode* pFunc = GetFuncByName(pstrName);
-	if (pFunc != NULL)
+	if (pFunc)
 	{
 		// 之前假定了一个未声明的函数是外部函数，现在定义为脚本函数
 		if (!iIsHostAPI)

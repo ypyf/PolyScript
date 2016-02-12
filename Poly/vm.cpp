@@ -615,7 +615,7 @@ void Poly_UnloadScript(script_env *sc)
         free(sc->FuncTable.Funcs);
 
     // ---- Free registered host API
-    while (sc->HostAPIs != NULL)
+    while (sc->HostAPIs)
     {
         HOST_API_FUNC* pFunc = sc->HostAPIs;
         sc->HostAPIs = sc->HostAPIs->Next;
@@ -1203,7 +1203,7 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
 
                 int iMatchFound = FALSE;
                 HOST_API_FUNC* pCFunction = g_HostAPIs;
-                while (pCFunction != NULL)
+                while (pCFunction)
                 {
                     // Get a pointer to the name of the current host API function
 
@@ -1921,7 +1921,7 @@ void CallFunc(script_env *sc, int iIndex, int type)
 
     FUNC *DestFunc = GetFunc(sc, iIndex);
 
-    if (DestFunc == NULL)
+    if (!DestFunc)
         return;
 
     // Save the current stack frame index
@@ -2085,7 +2085,7 @@ int Poly_RegisterHostFunc(script_env *sc, const char *pstrName, POLY_HOST_FUNCTI
 {
     HOST_API_FUNC** pCFuncTable;
 
-    if (pstrName == NULL)
+    if (!pstrName)
         return FALSE;
 
     // 全局API
@@ -2094,7 +2094,7 @@ int Poly_RegisterHostFunc(script_env *sc, const char *pstrName, POLY_HOST_FUNCTI
     else
         pCFuncTable = &sc->HostAPIs;
 
-    while (*pCFuncTable != NULL)
+    while (*pCFuncTable)
     {
         // 如果函数名已经注册，则更新它绑定的函数指针
         if (strcmp((*pCFuncTable)->Name, pstrName) == 0)
@@ -2231,7 +2231,7 @@ void Poly_ReturnFloatFromHost(script_env *sc, float fFloat)
 
 void Poly_ReturnStringFromHost(script_env *sc, char *pstrString)
 {
-    if (pstrString == NULL)
+    if (!pstrString)
     {
         fprintf(stderr, "VM Error: Null Pointer");
         exit(0);
