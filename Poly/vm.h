@@ -173,8 +173,8 @@ struct script_env
     // 堆栈
     Value *stack;            // The stack elements
     int iStackSize;          // The number of elements in the stack
-    int iTopIndex;           // 栈顶指针
-    int iFrameIndex;         // 总是指向当前栈帧
+    int iTopIndex;           // 栈顶指针(SP)
+    int iFrameIndex;         // 总是指向当前栈帧(BP)
 
     // 脚本退出代码
     int ExitCode;

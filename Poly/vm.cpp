@@ -1909,7 +1909,7 @@ inline int GetCurrTime()
 *  Calls a function based on its index.
 *
 *  type: OP_TYPE_STACK_BASE_MARKER 被调函数将返回到宿主
-*		 OP_TYPE_FUNC_INDEX 普通函数
+*        OP_TYPE_FUNC_INDEX 普通函数
 */
 
 void CallFunc(script_env *sc, int iIndex, int type)
@@ -2119,6 +2119,7 @@ int Poly_RegisterHostFunc(script_env *sc, const char *pstrName, POLY_HOST_FUNCTI
 Value Poly_GetParam(script_env *sc, int iParamIndex)
 {
     int iTopIndex = sc->iTopIndex;
+    // TODO 检查索引边界
     Value arg = sc->stack[iTopIndex - (iParamIndex + 1)];
     return arg;
 }
