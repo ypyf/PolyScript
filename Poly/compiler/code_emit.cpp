@@ -34,9 +34,9 @@ char ppstrMnemonics[][12] =
 // 标号，用于记录前向引用
 typedef struct _LabelSymbol
 {
-    int iOffset;		// 标号所在的操作数偏移
+    int iOffset;        // 标号所在的操作数偏移
     int iForwardRef;	// 是否前向引用
-    int iDefined;		// 是否已经定义
+    int iDefined;       // 是否已经定义
 } LabelSymbol;
 
 // ---- Functions -----------------------------------------------------------------------------

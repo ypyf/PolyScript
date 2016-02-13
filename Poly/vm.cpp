@@ -41,11 +41,13 @@ static int stricmp(const char *s1, const char *s2)
 *
 *    Resolves a stack index by translating negative indices relative to the top of the
 *    stack, to positive ones relative to the bottom.
-*    将一个负(相对于栈顶)的堆栈索引转为正的（即相对于栈底）
+*    VM中的全局变量使用正向索引访问，函数的参数和本地变量使用负向索引访问
+*    这个宏将一个负(相对于栈顶)的堆栈索引转为正的（即相对于栈底）
 */
 
 inline int ResolveStackIndex(int iFrameIndex, int iIndex)
 {
+    // 当前（Active Frame）栈帧索引总是指向栈顶（不考虑临时变量）
     return (iIndex < 0 ? iIndex += iFrameIndex : iIndex);
 }
 
@@ -120,7 +122,6 @@ script_env* Poly_Initialize()
     script_env* sc = (script_env*)calloc(sizeof(script_env), 1);
 
     sc->ThreadActiveTime = 0;
-
     sc->IsRunning = FALSE;
     sc->IsMainFuncPresent = FALSE;
     sc->IsPaused = FALSE;
@@ -1607,12 +1608,11 @@ inline int GetOpType(script_env *sc, int iOpIndex)
     return sc->InstrStream.Instrs[iCurrInstr].pOpList[iOpIndex].Type;
 }
 
+// 绝对地址 = 基址 + 偏移
 inline int ResolveOpRelStackIndex(script_env *sc, PolyObject* OpValue)
 {
     assert(OpValue->Type == OP_TYPE_REL_STACK_INDEX);
-
-    int iAbsIndex;
-
+    
     // Resolve the index and use it to return the corresponding stack element
     // First get the base index
     int iBaseIndex = OpValue->StackIndex;
@@ -1621,17 +1621,17 @@ inline int ResolveOpRelStackIndex(script_env *sc, PolyObject* OpValue)
     int iOffsetIndex = OpValue->OffsetIndex;
 
     // Get the variable's value
-    PolyObject* sv = GetStackValue(sc, iOffsetIndex);
+    PolyObject* offset = GetStackValue(sc, iOffsetIndex);
 
-    assert(sv->Type == OP_TYPE_INT);
+    assert(offset->Type == OP_TYPE_INT);
 
-    // 绝对地址 = 基址 + 偏移
+    int iAbsIndex;
     // 全局变量基址是正数，从0开始增大
     if (iBaseIndex >= 0)
-        iAbsIndex = iBaseIndex + sv->Fixnum;
+        iAbsIndex = iBaseIndex + offset->Fixnum;
     else
         // 局部变量基址是负数，从-1开始减小
-        iAbsIndex = iBaseIndex - sv->Fixnum;
+        iAbsIndex = iBaseIndex - offset->Fixnum;
 
     return iAbsIndex;
 }
@@ -2288,9 +2288,12 @@ int Poly_LoadScript(script_env *sc, const char *pstrFilename)
     //	return POLY_LOAD_ERROR_FILE_IO;
     //}
 
-    // 编译
     //XSC_CompileScript(pstrFilename, pstrExecFilename);
-    XSC_CompileScript(sc, pstrFilename);
+
+    // 编译
+    CompilerOption option;
+    option.save_debug_info = TRUE;
+    XSC_CompileScript(sc, pstrFilename, &option);
 
     // 载入PE文件
     //LoadPE(sc, pstrExecFilename);

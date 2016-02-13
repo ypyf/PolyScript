@@ -12,36 +12,36 @@
 
 FuncNode * GetFuncByIndex(int iIndex)
 {
-	// If the table is empty, return a NULL pointer
+    // If the table is empty, return a NULL pointer
 
-	if (!g_FuncTable.iNodeCount)
-		return NULL;
+    if (!g_FuncTable.iNodeCount)
+        return NULL;
 
-	// Create a pointer to traverse the list
+    // Create a pointer to traverse the list
 
-	LinkedListNode * pCurrNode = g_FuncTable.pHead;
+    LinkedListNode * pCurrNode = g_FuncTable.pHead;
 
-	// Traverse the list until the matching structure is found
+    // Traverse the list until the matching structure is found
 
-	for (int iCurrNode = 1; iCurrNode <= g_FuncTable.iNodeCount; ++iCurrNode)
-	{
-		// Create a pointer to the current function structure
+    for (int iCurrNode = 1; iCurrNode <= g_FuncTable.iNodeCount; ++iCurrNode)
+    {
+        // Create a pointer to the current function structure
 
-		FuncNode * pCurrFunc = (FuncNode *)pCurrNode->pData;
+        FuncNode * pCurrFunc = (FuncNode *)pCurrNode->pData;
 
-		// If the indices match, return the current pointer
+        // If the indices match, return the current pointer
 
-		if (iIndex == pCurrFunc->iIndex)
-			return pCurrFunc;
+        if (iIndex == pCurrFunc->iIndex)
+            return pCurrFunc;
 
-		// Otherwise move to the next node
+        // Otherwise move to the next node
 
-		pCurrNode = pCurrNode->pNext;
-	}
+        pCurrNode = pCurrNode->pNext;
+    }
 
-	// The function was not found, so return a NULL pointer
+    // The function was not found, so return a NULL pointer
 
-	return NULL;
+    return NULL;
 }
 
 /******************************************************************************************
@@ -53,27 +53,27 @@ FuncNode * GetFuncByIndex(int iIndex)
 
 FuncNode* GetFuncByName(char* pstrName)
 {
-	// Local function node pointer
+    // Local function node pointer
 
-	FuncNode * pCurrFunc;
+    FuncNode * pCurrFunc;
 
-	// Loop through each function in the table to find the match
+    // Loop through each function in the table to find the match
 
-	for (int iCurrFuncIndex = 1; iCurrFuncIndex <= g_FuncTable.iNodeCount; ++iCurrFuncIndex)
-	{
-		// Get the current function structure
+    for (int iCurrFuncIndex = 1; iCurrFuncIndex <= g_FuncTable.iNodeCount; ++iCurrFuncIndex)
+    {
+        // Get the current function structure
 
-		pCurrFunc = GetFuncByIndex(iCurrFuncIndex);
+        pCurrFunc = GetFuncByIndex(iCurrFuncIndex);
 
-		// Return the function if the name matches
+        // Return the function if the name matches
 
-		if (pCurrFunc && strcmp(pCurrFunc->pstrName, pstrName) == 0)
-			return pCurrFunc;
-	}
+        if (pCurrFunc && strcmp(pCurrFunc->pstrName, pstrName) == 0)
+            return pCurrFunc;
+    }
 
-	// The function was not found, so return a NULL pointer
+    // The function was not found, so return a NULL pointer
 
-	return NULL;
+    return NULL;
 }
 
 /******************************************************************************************
@@ -85,61 +85,61 @@ FuncNode* GetFuncByName(char* pstrName)
 
 int AddFunc(char* pstrName, int iIsHostAPI)
 {
-	// 脚本中的函数声明可以覆盖主机函数
-	FuncNode* pFunc = GetFuncByName(pstrName);
-	if (pFunc)
-	{
-		// 之前假定了一个未声明的函数是外部函数，现在定义为脚本函数
-		if (!iIsHostAPI)
-		{
-			pFunc->iIsHostAPI = FALSE;
-			return pFunc->iIndex;
-		}
+    // 脚本中的函数声明可以覆盖主机函数
+    FuncNode* pFunc = GetFuncByName(pstrName);
+    if (pFunc)
+    {
+        // 之前假定了一个未声明的函数是外部函数，现在定义为脚本函数
+        if (!iIsHostAPI)
+        {
+            pFunc->iIsHostAPI = FALSE;
+            return pFunc->iIndex;
+        }
 
-		// 主机函数不得覆盖同名的脚本函数
-		return -1;
-	}
+        // 主机函数不得覆盖同名的脚本函数
+        return -1;
+    }
 
-	// Create a new function node
+    // Create a new function node
 
-	FuncNode * pNewFunc = (FuncNode *)malloc(sizeof(FuncNode));
+    FuncNode * pNewFunc = (FuncNode *)malloc(sizeof(FuncNode));
 
-	// Set the function's name
+    // Set the function's name
 
-	strcpy(pNewFunc->pstrName, pstrName);
+    strcpy(pNewFunc->pstrName, pstrName);
 
-	// Add the function to the list and get its index, but add one since the zero index is
-	// reserved for the global scope
+    // Add the function to the list and get its index, but add one since the zero index is
+    // reserved for the global scope
 
-	int iIndex = AddNode(&g_FuncTable, pNewFunc) + 1;
+    int iIndex = AddNode(&g_FuncTable, pNewFunc) + 1;
 
-	// Set the function node's index
+    // Set the function node's index
 
-	pNewFunc->iIndex = iIndex;
+    pNewFunc->iIndex = iIndex;
 
-	// Set the host API flag
+    // Set the host API flag
 
-	pNewFunc->iIsHostAPI = iIsHostAPI;
+    pNewFunc->iIsHostAPI = iIsHostAPI;
 
-	// Set the parameter count to zero
+    // Set the parameter count to zero
 
-	pNewFunc->iParamCount = 0;
+    pNewFunc->iParamCount = 0;
 
-	// Clear the function's I-code block
+    // Clear the function's I-code block
 
-	pNewFunc->ICodeStream.iNodeCount = 0;
+    pNewFunc->ICodeStream.iNodeCount = 0;
 
-	// If the function was Main(), set its flag and index in the header
+    // If the function was Main(), set its flag and index in the header
 
-	if (strcmp(pstrName, MAIN_FUNC_NAME) == 0)
-	{
-		g_ScriptHeader.iIsMainFuncPresent = TRUE;
-		g_ScriptHeader.iMainFuncIndex = iIndex;
-	}
+    if (strcmp(pstrName, MAIN_FUNC_NAME) == 0)
+    {
+        g_ScriptHeader.iIsMainFuncPresent = TRUE;
+        g_ScriptHeader.iMainFuncIndex = iIndex;
+    }
 
-	// Return the new function's index
+    // Return the new function's index
 
-	return iIndex;
+    return iIndex;
 }
 
 /******************************************************************************************
@@ -151,11 +151,11 @@ int AddFunc(char* pstrName, int iIsHostAPI)
 
 void SetFuncParamCount(int iIndex, int iParamCount)
 {
-	// Get the function
+    // Get the function
 
-	FuncNode * pFunc = GetFuncByIndex(iIndex);
+    FuncNode * pFunc = GetFuncByIndex(iIndex);
 
-	// Set the parameter count
+    // Set the parameter count
 
-	pFunc->iParamCount = iParamCount;
+    pFunc->iParamCount = iParamCount;
 }

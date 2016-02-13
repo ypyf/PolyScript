@@ -13,13 +13,13 @@
 #include "../vm.h"
 #include "../pasm.h"
 
-void Init();
-void ShutDown();
+void InitCompiler();
+void ShutdownCompiler();
 
 void LoadSourceFile();
 void CompileSourceFile();
 
-void Exit();
+void ExitCompiler();
 
 // ---- Source Code -----------------------------------------------------------------------
 
@@ -48,11 +48,11 @@ LinkedList g_SymbolTable;                       // The symbol table
 
 // 全局范围的结构体
 
-LinkedList g_TypeTable;                       // The type table
+LinkedList g_TypeTable;                         // The type table
 
 // ---- String Table ----------------------------------------------------------------------
 
-LinkedList g_StringTable;						// The string table
+LinkedList g_StringTable;                       // The string table
 
 // ---- PASM Invocation -------------------------------------------------------------------
 
@@ -62,67 +62,67 @@ int g_iGenerateXSE;                             // Generate an .PE executable?
 // ---- Expression Evaluation -------------------------------------------------------------
 
 int g_iTempVar0,                     // Temporary variable symbol indices
-	g_iTempVar1;
+    g_iTempVar1;
 
 
 /******************************************************************************************
 *
-*	Init()
+*   Init()
 *
-*	Initializes the compiler.
+*   Initializes the compiler.
 */
 
-void Init()
+static void InitCompiler()
 {
-	// ---- Initialize the script header
+    // ---- Initialize the script header
 
-	g_ScriptHeader.iIsMainFuncPresent = FALSE;
-	g_ScriptHeader.iStackSize = 0;
-	g_ScriptHeader.iPriorityType = PRIORITY_NONE;
+    g_ScriptHeader.iIsMainFuncPresent = FALSE;
+    g_ScriptHeader.iStackSize = 0;
+    g_ScriptHeader.iPriorityType = PRIORITY_NONE;
 
-	// ---- Initialize the main settings
+    // ---- Initialize the main settings
 
-	// Mark the assembly file for deletion
+    // Mark the assembly file for deletion
 
-	g_iPreserveOutputFile = FALSE;
+    g_iPreserveOutputFile = FALSE;
 
-	// Generate an .PE executable
+    // Generate an .PE executable
 
-	g_iGenerateXSE = TRUE;
+    g_iGenerateXSE = TRUE;
 
-	// Initialize the source code list
+    // Initialize the source code list
 
-	InitLinkedList(&g_SourceCode);
+    InitLinkedList(&g_SourceCode);
 
-	// Initialize the tables
+    // Initialize the tables
 
-	InitLinkedList(&g_FuncTable);
-	InitLinkedList(&g_HostFuncTable);
-	InitLinkedList(&g_SymbolTable);
-	InitLinkedList(&g_TypeTable);
-	InitLinkedList(&g_StringTable);
+    InitLinkedList(&g_FuncTable);
+    InitLinkedList(&g_HostFuncTable);
+    InitLinkedList(&g_SymbolTable);
+    InitLinkedList(&g_TypeTable);
+    InitLinkedList(&g_StringTable);
 }
 
 /******************************************************************************************
 *
-*	ShutDown()
+*   ShutdownCompiler()
 *
-*	Shuts down the compiler.
+*   Shuts down the compiler.
 */
 
-void ShutDown()
+static void ShutdownCompiler()
 {
-	// Free the source code
+    // Free the source code
 
-	FreeLinkedList(&g_SourceCode);
+    FreeLinkedList(&g_SourceCode);
 
-	// Free the tables
+    // Free the tables
 
-	FreeLinkedList(&g_FuncTable);
-	FreeLinkedList(&g_HostFuncTable);
-	FreeLinkedList(&g_SymbolTable);
-	FreeLinkedList(&g_TypeTable);
-	FreeLinkedList(&g_StringTable);
+    FreeLinkedList(&g_FuncTable);
+    FreeLinkedList(&g_HostFuncTable);
+    FreeLinkedList(&g_SymbolTable);
+    FreeLinkedList(&g_TypeTable);
+    FreeLinkedList(&g_StringTable);
 }
 
 /******************************************************************************************
@@ -132,41 +132,41 @@ void ShutDown()
 *   Loads the source file into memory.
 */
 
-void LoadSourceFile()
+static void LoadSourceFile()
 {
-	// ---- Open the input file
+    // ---- Open the input file
 
-	FILE * pSourceFile;
+    FILE * pSourceFile;
 
-	if (! (pSourceFile = fopen (g_pstrSourceFilename, "r")))
-		ExitOnError("Could not open source file for input");
+    if (! (pSourceFile = fopen(g_pstrSourceFilename, "r")))
+        ExitOnError("Could not open source file for input");
 
-	// ---- Load the source code
+    // ---- Load the source code
 
-	// Loop through each line of code in the file
+    // Loop through each line of code in the file
 
-	while (!feof (pSourceFile))
-	{
-		// Allocate space for the next line
+    while (!feof(pSourceFile))
+    {
+        // Allocate space for the next line
 
-		char* pstrCurrLine = (char *) malloc (MAX_SOURCE_LINE_SIZE + 1);
+        char* pstrCurrLine = (char *)malloc(MAX_SOURCE_LINE_SIZE + 1);
 
-		// Clear the string buffer in case the next line is empty or invalid
+        // Clear the string buffer in case the next line is empty or invalid
 
-		pstrCurrLine[0] = '\0';
+        pstrCurrLine[0] = '\0';
 
-		// Read the line from the file
+        // Read the line from the file
 
-		fgets (pstrCurrLine, MAX_SOURCE_LINE_SIZE, pSourceFile);
+        fgets(pstrCurrLine, MAX_SOURCE_LINE_SIZE, pSourceFile);
 
-		// Add it to the source code linked list
+        // Add it to the source code linked list
 
-		AddNode(&g_SourceCode, pstrCurrLine);
-	}
+        AddNode(&g_SourceCode, pstrCurrLine);
+    }
 
-	// ---- Close the file
+    // ---- Close the file
 
-	fclose(pSourceFile);
+    fclose(pSourceFile);
 }
 
 /******************************************************************************************
@@ -176,78 +176,89 @@ void LoadSourceFile()
 *   Compiles the high-level source file to its CRL assembly equivelent.
 */
 
-void CompileSourceFile()
+static void CompileSourceFile()
 {
-	// Add two temporary variables for evaluating expressions
+    // Add two temporary variables for evaluating expressions
 
-	g_iTempVar0 = AddSymbol(TEMP_VAR_0, 1, SCOPE_GLOBAL, SYMBOL_TYPE_VAR);
-	g_iTempVar1 = AddSymbol(TEMP_VAR_1, 1, SCOPE_GLOBAL, SYMBOL_TYPE_VAR);
+    g_iTempVar0 = AddSymbol(TEMP_VAR_0, 1, SCOPE_GLOBAL, SYMBOL_TYPE_VAR);
+    g_iTempVar1 = AddSymbol(TEMP_VAR_1, 1, SCOPE_GLOBAL, SYMBOL_TYPE_VAR);
 
-	// Parse the source file to create an I-code representation
-	ParseSourceCode();
+    // Parse the source file to create an I-code representation
+    ParseSourceCode();
 }
 
 
 /******************************************************************************************
 *
-*   Exit()
+*   ExitCompiler()
 *
 *   Exits the program.
 */
 
-void Exit()
+void ExitCompiler()
 {
-	// Give allocated resources a chance to be freed
-	ShutDown();
-	// Exit the program
-	exit(0);
+    // Give allocated resources a chance to be freed
+    ShutdownCompiler();
+    // Exit the program
+    exit(0);
 }
 
 void XSC_CompileScript(const char* pstrFilename, const char* pstrExecFilename)
 {
-	strcpy(g_pstrSourceFilename, pstrFilename);
-	strupr(g_pstrSourceFilename);
+    strcpy(g_pstrSourceFilename, pstrFilename);
+    strupr(g_pstrSourceFilename);
 
-	if (strstr(g_pstrSourceFilename, SOURCE_FILE_EXT))
-	{
-		// 构造 .PASM 文件名
-		int ExtOffset = strrchr(g_pstrSourceFilename, '.') - g_pstrSourceFilename;
-		strncpy(g_pstrOutputFilename, g_pstrSourceFilename, ExtOffset);
-		g_pstrOutputFilename[ExtOffset] = '\0';
-		strcat(g_pstrOutputFilename, OUTPUT_FILE_EXT);
+    if (strstr(g_pstrSourceFilename, SOURCE_FILE_EXT))
+    {
+        // 构造 .PASM 文件名
+        int ExtOffset = strrchr(g_pstrSourceFilename, '.') - g_pstrSourceFilename;
+        strncpy(g_pstrOutputFilename, g_pstrSourceFilename, ExtOffset);
+        g_pstrOutputFilename[ExtOffset] = '\0';
+        strcat(g_pstrOutputFilename, OUTPUT_FILE_EXT);
 
-		Init();
-		LoadSourceFile();
-		PreprocessSourceFile();
-		CompileSourceFile();
-		EmitCode();
-		ShutDown();
+        InitCompiler();
+        LoadSourceFile();
+        PreprocessSourceFile();
+        CompileSourceFile();
+        EmitCode();
+        ShutdownCompiler();
 
-		PASM_Assembly(g_pstrOutputFilename, pstrExecFilename);
-	}
-	else
-	{
-		fprintf(stderr, "unexpected script file name: %s.\n", g_pstrSourceFilename);
-	}
+        PASM_Assembly(g_pstrOutputFilename, pstrExecFilename);
+    }
+    else
+    {
+        fprintf(stderr, "unexpected script file name: %s.\n", g_pstrSourceFilename);
+    }
 }
 
-void XSC_CompileScript(script_env *sc, const char* pstrFilename)
+static void OutputDebugInfo(script_env *env)
 {
-	strcpy(g_pstrSourceFilename, pstrFilename);
-	Init();
-	LoadSourceFile();
-	PreprocessSourceFile();
+    //FILE * debug_info;
+    //if (!(debug_info = fopen("debug_info.txt", "wb")))
+    //    ExitOnError("Could not open output file for output");
 
-	// 输出预处理后的脚本
-	//LinkedListNode *pNode = g_SourceCode.pHead;
-	//while (pNode)
-	//{
-	//	printf("%s", (char*)pNode->pData);
+    //env->
+}
 
-	//	pNode = pNode->pNext;
-	//}
+void XSC_CompileScript(script_env *sc, const char* polyFile, CompilerOption *options)
+{
+    strcpy(g_pstrSourceFilename, polyFile);
+    InitCompiler();
+    LoadSourceFile();
+    PreprocessSourceFile();
 
-	CompileSourceFile();
-	EmitCode(sc);
-	ShutDown();
+    // 输出预处理后的脚本
+    //LinkedListNode *pNode = g_SourceCode.pHead;
+    //while (pNode)
+    //{
+    //	printf("%s", (char*)pNode->pData);
+
+    //	pNode = pNode->pNext;
+    //}
+
+    CompileSourceFile();
+    EmitCode(sc);
+    if (options->save_debug_info)
+        OutputDebugInfo(sc);
+    ShutdownCompiler();
 }

@@ -3,15 +3,14 @@
 #include "code_emit.h"
 #include "../vm.h"
 #include "linked_list.h"
+
 #include <vector>
 #include <map>
-
 
 void InitInstrStream(script_env *pSC);
 int GetHostFuncIndex(const char* fnName);
 void EmitFunc(script_env *pSC, FuncNode *pFunc, int iIndex);
 //void EmitScopeSymbols(script_env *pSC, int iScope, int iType, int iFuncIndex);
-
 
 // 标号，用于记录前向引用
 typedef struct _LabelSymbol
@@ -27,7 +26,6 @@ std::map<int, LabelSymbol> g_LabelTable;
 
 // 记录发射了多少条指令
 int g_iCurrInstr = 0;
-
 
 static void EmitScopeSymbols(script_env *pSC, int iScope, int iType, int iFuncIndex)
 {
@@ -51,12 +49,13 @@ static void EmitScopeSymbols(script_env *pSC, int iScope, int iType, int iFuncIn
             else
             {
                 FUNC *pFn = &pSC->FuncTable.Funcs[iFuncIndex];
-
                 switch (iType)
                 {
                 case SYMBOL_TYPE_PARAM:
-                    pCurrSymbol->iStackIndex = -(pFn->LocalDataSize + 2 +(pFn->ParamCount + 1));
+                    // TODO 数组参数
                     pFn->ParamCount++;
+                    // 参数个数+返回地址（上一个函数对象）+本地变量大小+栈顶的函数对象
+                    pCurrSymbol->iStackIndex = -(pFn->ParamCount + 1 + pFn->LocalDataSize + 1);
                     break;
 
                 case SYMBOL_TYPE_VAR:
@@ -86,7 +85,7 @@ void EmitFunc(script_env *pSC, FuncNode *pFunc, int iFuncIndex)
     // 初始化VM的函数节点
     FUNC *func = &pSC->FuncTable.Funcs[iFuncIndex];
     func->EntryPoint = g_iCurrInstr;
-    func->StackFrameSize = func->LocalDataSize + func->ParamCount + 1;
+    func->StackFrameSize = func->ParamCount + 1 + func->LocalDataSize;
     strcpy(func->Name, pFunc->pstrName);
 
     // Loop through each I-code node to emit the code
@@ -289,7 +288,6 @@ void EmitFunc(script_env *pSC, FuncNode *pFunc, int iFuncIndex)
 void EmitCode(script_env *pSC)
 {
     // 设置堆栈大小
-
     pSC->iStackSize = 1024;
 
     // ---- Emit global variable declarations

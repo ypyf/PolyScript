@@ -69,13 +69,13 @@
 
 struct ScriptHeader                    // Script header data
 {
-	int iStackSize;                             // Requested stack size
+    int iStackSize;                    // Requested stack size
 
-	int iIsMainFuncPresent;                     // Is Main() present?
-	int iMainFuncIndex;							// Main()'s function index
+    int iIsMainFuncPresent;            // Is Main() present?
+    int iMainFuncIndex;		       // Main()'s function index
 
-	int iPriorityType;                          // The thread priority type
-	int iUserPriority;                          // The user-defined priority (if any)
+    int iPriorityType;                 // The thread priority type
+    int iUserPriority;                 // The user-defined priority (if any)
 };
 
 
@@ -113,8 +113,13 @@ extern int g_iTempVar0, g_iTempVar1;
 
 struct script_env;
 
+struct CompilerOption
+{
+    int save_debug_info;
+};
+
 void XSC_CompileScript(const char* pstrFilename, const char* pstrExecFilename);
-void XSC_CompileScript(script_env *sc, const char* pstrFilename);
-void Exit();
+void XSC_CompileScript(script_env *sc, const char* polyFile, CompilerOption *options);
+void ExitCompiler();
 
 #endif

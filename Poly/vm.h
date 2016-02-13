@@ -99,7 +99,7 @@ struct FUNC                                 // A function
     int ParamCount;                         // The parameter count
     int LocalDataSize;                      // Total size of all local data
     int StackFrameSize;                     // Total size of the stack frame
-    char Name[MAX_FUNC_NAME_SIZE+1];	    // The function's name
+    char Name[MAX_FUNC_NAME_SIZE];	    // The function's name
 };
 
 // ----Instructions ----------------------------------------------------------------------
@@ -144,6 +144,7 @@ struct HOST_API_FUNC                         // Host API function
     POLY_HOST_FUNCTION FuncPtr;          // Pointer to the function definition
     HOST_API_FUNC* Next;                 // The next record
 };
+
 
 // ----Script Virtual Machine State ---------------------------------------------------------------------------
 

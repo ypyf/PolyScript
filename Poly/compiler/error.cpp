@@ -19,7 +19,7 @@ void ExitOnError(char* pstrErrorMssg)
 
     // Exit the program
 
-    Exit();
+    ExitCompiler();
 }
 
 /******************************************************************************************
@@ -77,5 +77,5 @@ void ExitOnCodeError(char* pstrErrorMssg)
 
     // Exit the program
 
-    Exit();
+    ExitCompiler();
 }
