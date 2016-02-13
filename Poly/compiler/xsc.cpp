@@ -233,11 +233,10 @@ void XSC_CompileScript(const char* pstrFilename, const char* pstrExecFilename)
 
 static void OutputDebugInfo(script_env *env)
 {
-    //FILE * debug_info;
-    //if (!(debug_info = fopen("debug_info.txt", "wb")))
-    //    ExitOnError("Could not open output file for output");
-
-    //env->
+    FILE* debug_info;
+    if (!(debug_info = fopen("debug_info.txt", "wb")))
+        ExitOnError("Could not open output file for output");
+    fclose(debug_info);
 }
 
 void XSC_CompileScript(script_env *sc, const char* polyFile, CompilerOption *options)
@@ -258,7 +257,7 @@ void XSC_CompileScript(script_env *sc, const char* polyFile, CompilerOption *opt
 
     CompileSourceFile();
     EmitCode(sc);
-    if (options->save_debug_info)
-        OutputDebugInfo(sc);
+    //if (options->save_debug_info)
+    //    OutputDebugInfo(sc);
     ShutdownCompiler();
 }

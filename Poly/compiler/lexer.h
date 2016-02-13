@@ -42,56 +42,56 @@
 // ---- Token Types -----------------------------------------------------------------------
 enum TokenType
 {
-	TOKEN_TYPE_END_OF_STREAM        ,		// End of the token stream
-	TOKEN_TYPE_INVALID              ,		// Invalid token
-	TOKEN_TYPE_NEWLINE              ,		// \n
+    TOKEN_TYPE_END_OF_STREAM        ,		// End of the token stream
+    TOKEN_TYPE_INVALID              ,		// Invalid token
+    TOKEN_TYPE_NEWLINE              ,		// \n
 
-	TOKEN_TYPE_INT                  ,		// Integer Literal
-	TOKEN_TYPE_FLOAT                ,		// Float Literal
-	TOKEN_TYPE_STRING				,		// String Literal
-	TOKEN_TYPE_IDENT                ,		// Identifier
+    TOKEN_TYPE_INT                  ,		// Integer Literal
+    TOKEN_TYPE_FLOAT                ,		// Float Literal
+    TOKEN_TYPE_STRING		    ,		// String Literal
+    TOKEN_TYPE_IDENT                ,		// Identifier
 
-	TOKEN_TYPE_RSRVD_TRUE           ,		// true
-	TOKEN_TYPE_RSRVD_FALSE          ,		// false
+    TOKEN_TYPE_RSRVD_TRUE           ,		// true
+    TOKEN_TYPE_RSRVD_FALSE          ,		// false
 
-	// ÀàÐÍ¹Ø¼ü×Ö
-	TOKEN_TYPE_RSRVD_VAR            ,		// var/var []
-	TOKEN_TYPE_RSRVD_VOID           ,
-	TOKEN_TYPE_RSRVD_BOOL           ,
-	TOKEN_TYPE_RSRVD_INT            ,
-	TOKEN_TYPE_RSRVD_FLOAT          ,
-	//TOKEN_TYPE_RSRVD_DOUBLE       ,
-	TOKEN_TYPE_RSRVD_STRING         ,
-	TOKEN_TYPE_RSRVD_OBJECT         ,
-	TOKEN_TYPE_RSRVD_CLASS          ,
-	TOKEN_TYPE_RSRVD_STRUCT         ,
-	TOKEN_TYPE_RSRVD_STATIC			,
-	TOKEN_TYPE_RSRVD_NEW            ,
+    // ÀàÐÍ¹Ø¼ü×Ö
+    TOKEN_TYPE_RSRVD_VAR            ,		// var/var []
+    TOKEN_TYPE_RSRVD_VOID           ,
+    TOKEN_TYPE_RSRVD_BOOL           ,
+    TOKEN_TYPE_RSRVD_INT            ,
+    TOKEN_TYPE_RSRVD_FLOAT          ,
+    //TOKEN_TYPE_RSRVD_DOUBLE       ,
+    TOKEN_TYPE_RSRVD_STRING         ,
+    TOKEN_TYPE_RSRVD_OBJECT         ,
+    TOKEN_TYPE_RSRVD_CLASS          ,
+    TOKEN_TYPE_RSRVD_STRUCT         ,
+    TOKEN_TYPE_RSRVD_STATIC	    ,
+    TOKEN_TYPE_RSRVD_NEW            ,
 
-	TOKEN_TYPE_RSRVD_IF             ,		// if
-	TOKEN_TYPE_RSRVD_ELSE           ,		// else
-	TOKEN_TYPE_RSRVD_BREAK          ,		// break
-	TOKEN_TYPE_RSRVD_CONTINUE       ,		// continue
-	TOKEN_TYPE_RSRVD_FOR            ,		// for
-	TOKEN_TYPE_RSRVD_WHILE          ,		// while
-	TOKEN_TYPE_RSRVD_FUNC           ,		// func
-	TOKEN_TYPE_RSRVD_RETURN         ,		// return
-	TOKEN_TYPE_RSRVD_PRINT			,		// print
-	TOKEN_TYPE_RSRVD_BEEP			,	
-	TOKEN_TYPE_RSRVD_PARAM			,		// param
+    TOKEN_TYPE_RSRVD_IF             ,		// if
+    TOKEN_TYPE_RSRVD_ELSE           ,		// else
+    TOKEN_TYPE_RSRVD_BREAK          ,		// break
+    TOKEN_TYPE_RSRVD_CONTINUE       ,		// continue
+    TOKEN_TYPE_RSRVD_FOR            ,		// for
+    TOKEN_TYPE_RSRVD_WHILE          ,		// while
+    TOKEN_TYPE_RSRVD_FUNC           ,		// func
+    TOKEN_TYPE_RSRVD_RETURN         ,		// return
+    TOKEN_TYPE_RSRVD_PRINT	    ,		// print
+    TOKEN_TYPE_RSRVD_BEEP	    ,	
+    TOKEN_TYPE_RSRVD_PARAM	    ,		// param
 
-	TOKEN_TYPE_OP                   ,		// Operator
+    TOKEN_TYPE_OP                   ,		// Operator
 
-	//TOKEN_TYPE_DOT				,		// .
-	TOKEN_TYPE_COMMA				,		// ,
-	TOKEN_TYPE_OPEN_PAREN			,		// (
-	TOKEN_TYPE_CLOSE_PAREN			,		//)
-	TOKEN_TYPE_OPEN_BRACE			,		// [
-	TOKEN_TYPE_CLOSE_BRACE			,		//]
-	TOKEN_TYPE_OPEN_BLOCK		,		// {
-	TOKEN_TYPE_CLOSE_BLOCK	,		// }
-	TOKEN_TYPE_SEMICOLON			,		// ;
-	TOKEN_TYPE_COLON				,		// :
+    //TOKEN_TYPE_DOT                ,		// .
+    TOKEN_TYPE_COMMA		    ,		// ,
+    TOKEN_TYPE_OPEN_PAREN	    ,		// (
+    TOKEN_TYPE_CLOSE_PAREN	    ,		//)
+    TOKEN_TYPE_OPEN_BRACE	    ,		// [
+    TOKEN_TYPE_CLOSE_BRACE	    ,		//]
+    TOKEN_TYPE_OPEN_BLOCK	    ,		// {
+    TOKEN_TYPE_CLOSE_BLOCK	    ,		// }
+    TOKEN_TYPE_SEMICOLON	    ,		// ;
+    TOKEN_TYPE_COLON		    ,		// :
 };
 
 
@@ -102,49 +102,49 @@ enum TokenType
 // µ¥×Ö·ûÔËËã·û
 enum OpType
 {
-	OP_TYPE_ADD                     ,		// +
-	OP_TYPE_SUB                     ,		// -
-	OP_TYPE_MUL                     ,		// *
-	OP_TYPE_DIV                     ,		// /
-	OP_TYPE_MOD                     ,		// %
-	OP_TYPE_BITWISE_AND             ,		// &
-	OP_TYPE_BITWISE_OR              ,		// |
-	OP_TYPE_BITWISE_NOT             ,		// ~
-	OP_TYPE_BITWISE_XOR             ,		// ^
-	OP_TYPE_LOGICAL_NOT             ,		// !
-	OP_TYPE_ASSIGN                  ,		// =
-	OP_TYPE_LESS                    ,		// <
-	OP_TYPE_GREATER                 ,		// >
-	OP_TYPE_MEMBER_ACCESS			,		// .
+    OP_TYPE_ADD                     ,		// +
+    OP_TYPE_SUB                     ,		// -
+    OP_TYPE_MUL                     ,		// *
+    OP_TYPE_DIV                     ,		// /
+    OP_TYPE_MOD                     ,		// %
+    OP_TYPE_BITWISE_AND             ,		// &
+    OP_TYPE_BITWISE_OR              ,		// |
+    OP_TYPE_BITWISE_NOT             ,		// ~
+    OP_TYPE_BITWISE_XOR             ,		// ^
+    OP_TYPE_LOGICAL_NOT             ,		// !
+    OP_TYPE_ASSIGN                  ,		// =
+    OP_TYPE_LESS                    ,		// <
+    OP_TYPE_GREATER                 ,		// >
+    OP_TYPE_MEMBER_ACCESS	    ,		// .
 
-	//OP_TYPE_SEP					,		// :
+    //OP_TYPE_SEP		    ,		// :
 
-	// Ë«×Ö·ûÔËËã·û
-	OP_TYPE_ASSIGN_ADD              ,		// +=
-	OP_TYPE_INC                     ,		// ++
-	OP_TYPE_ASSIGN_SUB              ,		// -=
-	OP_TYPE_DEC                     ,		// --
-	OP_TYPE_ASSIGN_MUL              ,		// *=
-	OP_TYPE_ASSIGN_DIV              ,		// /=
-	OP_TYPE_ASSIGN_MOD              ,		// %=
-	OP_TYPE_ASSIGN_AND              ,		// &=
-	OP_TYPE_LOGICAL_AND             ,		// &&
-	OP_TYPE_ASSIGN_OR               ,		// |=
-	OP_TYPE_LOGICAL_OR              ,		// ||
-	OP_TYPE_ASSIGN_XOR              ,		// ^=
-	OP_TYPE_NOT_EQUAL               ,		// !=
-	OP_TYPE_EQUAL                   ,		// ==
-	OP_TYPE_LESS_EQUAL              ,		// <=
-	OP_TYPE_BITWISE_SHIFT_LEFT      ,		// <<
-	OP_TYPE_GREATER_EQUAL           ,		// >=
-	OP_TYPE_BITWISE_SHIFT_RIGHT     ,		// >>
+    // Ë«×Ö·ûÔËËã·û
+    OP_TYPE_ASSIGN_ADD              ,		// +=
+    OP_TYPE_INC                     ,		// ++
+    OP_TYPE_ASSIGN_SUB              ,		// -=
+    OP_TYPE_DEC                     ,		// --
+    OP_TYPE_ASSIGN_MUL              ,		// *=
+    OP_TYPE_ASSIGN_DIV              ,		// /=
+    OP_TYPE_ASSIGN_MOD              ,		// %=
+    OP_TYPE_ASSIGN_AND              ,		// &=
+    OP_TYPE_LOGICAL_AND             ,		// &&
+    OP_TYPE_ASSIGN_OR               ,		// |=
+    OP_TYPE_LOGICAL_OR              ,		// ||
+    OP_TYPE_ASSIGN_XOR              ,		// ^=
+    OP_TYPE_NOT_EQUAL               ,		// !=
+    OP_TYPE_EQUAL                   ,		// ==
+    OP_TYPE_LESS_EQUAL              ,		// <=
+    OP_TYPE_BITWISE_SHIFT_LEFT      ,		// <<
+    OP_TYPE_GREATER_EQUAL           ,		// >=
+    OP_TYPE_BITWISE_SHIFT_RIGHT     ,		// >>
 
-	//OP_TYPE_DECL_VAR				,		// :=
-	//OP_TYPE_SCOPE					,		// ::
+    //OP_TYPE_DECL_VAR		    ,		// :=
+    //OP_TYPE_SCOPE		    ,		// ::
 
-	// Èý×Ö·ûÔËËã·û
-	OP_TYPE_ASSIGN_SHIFT_LEFT       ,		// <<=
-	OP_TYPE_ASSIGN_SHIFT_RIGHT      ,		// >>=
+    // Èý×Ö·ûÔËËã·û
+    OP_TYPE_ASSIGN_SHIFT_LEFT       ,		// <<=
+    OP_TYPE_ASSIGN_SHIFT_RIGHT      ,		// >>=
 };
 
 // ---- Data Structures -----------------------------------------------------------------------
@@ -153,21 +153,21 @@ typedef int Token;                                  // Token type
 
 struct LexerState                          // The lexer's state
 {
-	int iCurrLineIndex;                             // Current line index
-	LinkedListNode * pCurrLine;                     // Current line node pointer
-	Token CurrToken;                                // Current token
-	char pstrCurrLexeme[MAX_LEXEME_SIZE];        // Current lexeme
-	int iCurrLexemeStart;                           // Current lexeme's starting index
-	int iCurrLexemeEnd;                             // Current lexeme's ending index
-	int iCurrOp;                                    // Current operator
+    int iCurrLineIndex;                             // Current line index
+    LinkedListNode * pCurrLine;                     // Current line node pointer
+    Token CurrToken;                                // Current token
+    char pstrCurrLexeme[MAX_LEXEME_SIZE];        // Current lexeme
+    int iCurrLexemeStart;                           // Current lexeme's starting index
+    int iCurrLexemeEnd;                             // Current lexeme's ending index
+    int iCurrOp;                                    // Current operator
 };
 
 struct OpState                             // Operator state
 {
-	char cChar;                                     // State character
-	int iSubStateIndex;                             // Index into sub state array where sub
-	int iSubStateCount;                             // Number of substates
-	int iIndex;                                     // Operator index
+    char cChar;                                     // State character
+    int iSubStateIndex;                             // Index into sub state array where sub
+    int iSubStateCount;                             // Number of substates
+    int iIndex;                                     // Operator index
 };
 
 // ---- Function Prototypes -------------------------------------------------------------------

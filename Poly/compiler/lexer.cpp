@@ -542,20 +542,11 @@ Token GetNextToken()
             {
                 iCurrLexState = LEX_STATE_FLOAT;
             }
-
-            // If whitespace or a delimiter is read, the lexeme is done
-
-            else if (IsCharWhitespace(cCurrChar) || IsCharDelim(cCurrChar))
+            else
             {
                 iAddCurrChar = FALSE;
                 iLexemeDone = TRUE;
             }
-
-            // Anything else is invalid
-
-            else
-                iCurrLexState = LEX_STATE_UNKNOWN;
-
             break;
 
             // Floating-point
@@ -568,19 +559,11 @@ Token GetNextToken()
             {
                 iCurrLexState = LEX_STATE_FLOAT;
             }
-
-            // If whitespace or a delimiter is read, the lexeme is done
-
-            else if (IsCharWhitespace(cCurrChar) || IsCharDelim(cCurrChar))
+            else
             {
                 iLexemeDone = TRUE;
                 iAddCurrChar = FALSE;
             }
-
-            // Anything else is invalid
-
-            else
-                iCurrLexState = LEX_STATE_UNKNOWN;
 
             break;
 

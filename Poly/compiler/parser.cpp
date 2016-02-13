@@ -2044,7 +2044,7 @@ void ParseAssign()
     else
     {
         // Make sure the variable isn't an array
-
+        // ±ÜÃâ³öÏÖ MyArray[] = 123;
         if (pSymbol->iSize > 1)
             ExitOnCodeError("Arrays must be indexed");
     }
