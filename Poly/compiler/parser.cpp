@@ -504,6 +504,7 @@ void ParseStatement()
             break;
         }
 
+    /*
     case TOKEN_TYPE_OP:
         // 纯粹产生副作用的语句
         if (GetCurrOp() == OP_TYPE_INC || GetCurrOp() == OP_TYPE_DEC)
@@ -516,10 +517,14 @@ void ParseStatement()
             AddICodeInstr(g_iCurrScope, INSTR_REMOVE);
         }
         break;
+        */
 
     default:
-        // TODO 警告
         // 可能是无副作用的表达式语句或者不合法的语句
+        AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine());
+        ParseExpr();
+        ReadToken(TOKEN_TYPE_SEMICOLON);
+        AddICodeInstr(g_iCurrScope, INSTR_REMOVE);
         break;
     }
 }

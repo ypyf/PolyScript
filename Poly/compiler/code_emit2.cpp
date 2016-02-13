@@ -10,7 +10,7 @@
 void InitInstrStream(script_env *pSC);
 int GetHostFuncIndex(const char* fnName);
 void EmitFunc(script_env *pSC, FuncNode *pFunc, int iIndex);
-void EmitScopeSymbols(script_env *pSC, int iScope, int iType, int iVMFuncTableIndex);
+void EmitScopeSymbols(script_env *pSC, int iScope, int iType, int iFuncIndex);
 
 
 // 标号，用于记录前向引用
@@ -29,19 +29,15 @@ std::map<int, LabelSymbol> g_LabelTable;
 int g_iCurrInstr = 0;
 
 
-void EmitScopeSymbols(script_env *pSC, int iScope, int iType, int iIndex)
+static void EmitScopeSymbols(script_env *pSC, int iScope, int iType, int iFuncIndex)
 {
-    // Local symbol node pointer
-
-    SymbolNode * pCurrSymbol;
-
     // Loop through each symbol in the table to find the match
 
     for (int iCurrSymbolIndex = 0; iCurrSymbolIndex < g_SymbolTable.iNodeCount; ++iCurrSymbolIndex)
     {
         // Get the current symbol structure
 
-        pCurrSymbol = GetSymbolByIndex(iCurrSymbolIndex);
+        SymbolNode* pCurrSymbol = GetSymbolByIndex(iCurrSymbolIndex);
 
         // If the scopes and parameter flags match, emit the declaration
 
@@ -54,7 +50,7 @@ void EmitScopeSymbols(script_env *pSC, int iScope, int iType, int iIndex)
             }
             else
             {
-                FUNC *pFn = &pSC->FuncTable.Funcs[iIndex];
+                FUNC *pFn = &pSC->FuncTable.Funcs[iFuncIndex];
 
                 switch (iType)
                 {
@@ -74,21 +70,21 @@ void EmitScopeSymbols(script_env *pSC, int iScope, int iType, int iIndex)
 }
 
 
-void EmitFunc(script_env *pSC, FuncNode *pFunc, int iVMFuncTableIndex)
+void EmitFunc(script_env *pSC, FuncNode *pFunc, int iFuncIndex)
 {
-    // Clear Label Table
+    // reset Label Table
     g_LabelTable.clear();
 
     // Emit parameter declarations
 
-    EmitScopeSymbols(pSC, pFunc->iIndex, SYMBOL_TYPE_PARAM, iVMFuncTableIndex);
+    EmitScopeSymbols(pSC, pFunc->iIndex, SYMBOL_TYPE_PARAM, iFuncIndex);
 
     // Emit local variable declarations
 
-    EmitScopeSymbols(pSC, pFunc->iIndex, SYMBOL_TYPE_VAR, iVMFuncTableIndex);
+    EmitScopeSymbols(pSC, pFunc->iIndex, SYMBOL_TYPE_VAR, iFuncIndex);
 
     // 初始化VM的函数节点
-    FUNC *func = &pSC->FuncTable.Funcs[iVMFuncTableIndex];
+    FUNC *func = &pSC->FuncTable.Funcs[iFuncIndex];
     func->EntryPoint = g_iCurrInstr;
     func->StackFrameSize = func->LocalDataSize + func->ParamCount + 1;
     strcpy(func->Name, pFunc->pstrName);
