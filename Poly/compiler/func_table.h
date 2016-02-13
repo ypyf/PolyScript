@@ -5,11 +5,11 @@
 
 struct FuncNode
 {
-	int iIndex;									 // Index
-	char pstrName[MAX_IDENT_SIZE];               // Name
-	int iIsHostAPI;                              // Is this a host API function?
-	int iParamCount;                             // The number of accepted parameters
-	LinkedList ICodeStream;                      // Local I-code stream
+    int iIndex;                                  // Index of Script/Host Function Table
+    char pstrName[MAX_IDENT_SIZE];               // Name
+    int iIsHostAPI;                              // Is this a host API function?
+    int iParamCount;                             // The number of accepted parameters
+    LinkedList ICodeStream;                      // Local I-code stream
 };
 
 

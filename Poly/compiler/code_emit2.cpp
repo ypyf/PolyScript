@@ -10,7 +10,7 @@
 void InitInstrStream(script_env *pSC);
 int GetHostFuncIndex(const char* fnName);
 void EmitFunc(script_env *pSC, FuncNode *pFunc, int iIndex);
-void EmitScopeSymbols(script_env *pSC, int iScope, int iType, int iFuncIndex);
+//void EmitScopeSymbols(script_env *pSC, int iScope, int iType, int iFuncIndex);
 
 
 // 标号，用于记录前向引用
