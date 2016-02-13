@@ -5,8 +5,8 @@
 
 // -------- Garbage Collection Interface ----------------------
 
-Value GC_AllocObject(int iSize, MetaObject **ppPrevious);
-void GC_Mark(Value val);
+PolyObject GC_AllocObject(int iSize, MetaObject **ppPrevious);
+void GC_Mark(PolyObject val);
 int GC_Sweep(MetaObject **ppObjects);
 void GC_FreeAllObjects(MetaObject *pObjects);
 

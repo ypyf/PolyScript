@@ -31,19 +31,18 @@
 #define OP_TYPE_NULL                        -1          // Uninitialized/Null data
 #define OP_TYPE_INT                         0           // Integer literal value
 #define OP_TYPE_FLOAT                       1           // Floating-point literal value
-#define OP_TYPE_STRING						2
+#define OP_TYPE_STRING                      2           // String literal value
 #define OP_TYPE_ABS_STACK_INDEX             3           // Absolute stack index
-#define OP_TYPE_REL_STACK_INDEX             4           // Relative stack index
+#define OP_TYPE_REL_STACK_INDEX             4           // Relative stack index(仅供编译器生成代码)
 #define OP_TYPE_INSTR_INDEX                 5           // Instruction index
 #define OP_TYPE_FUNC_INDEX                  6           // Function index
-#define OP_TYPE_HOST_CALL_INDEX				7           // Host API call index
+#define OP_TYPE_HOST_CALL_INDEX		    7           // Host API call index
 #define OP_TYPE_REG                         8           // Register
-#define OP_TYPE_STACK_BASE_MARKER           9           // 从C函数调用脚本中的函数，返回时这个标志被检测到
+#define OP_TYPE_STACK_BASE_MARKER           9           // 从Native Code调用脚本中的函数，返回时这个标志被检测到
 #define OP_TYPE_OBJECT                      10          // Object type
 #define OP_TYPE_STRING_INDEX                32
-#define ICODE_OP_TYPE_VAR_NAME			    33			// 变量，仅供编译器生成代码
-//#define OP_TYPE_REL_STACK_INDEX				33			// 数组索引变量，仅供编译器生成代码
-#define ICODE_OP_TYPE_JUMP_TARGET			34			// 标号，，仅供编译器生成代码
+#define ICODE_OP_TYPE_VAR_NAME              33		// 变量，仅供编译器生成代码
+#define ICODE_OP_TYPE_JUMP_TARGET           34		// 标号，，仅供编译器生成代码
 
 // 位于对象实际数据前部的元数据记录信息
 struct MetaObject
@@ -52,8 +51,8 @@ struct MetaObject
     unsigned char marked;
     //Reference* Type;
     //char* Name;     
-    Value *Mem;      // 对象数据
-    size_t Size;     // 数据大小
+    PolyObject *Mem;        // 对象数据
+    size_t Size;            // 数据大小
     struct MetaObject *NextObject; // 指向下一个元对象
 };
 
@@ -86,7 +85,7 @@ struct MetaObject
 // ----Runtime Stack ---------------------------------------------------------------------
 struct RUNTIME_STACK         // A runtime stack
 {
-    Value *Elmnts;           // The stack elements
+    PolyObject *Elmnts;           // The stack elements
     int Size;                // The number of elements in the stack
 
     int TopIndex;            // 栈顶指针
@@ -94,41 +93,41 @@ struct RUNTIME_STACK         // A runtime stack
 };
 
 // ----Functions -------------------------------------------------------------------------
-struct FUNC                            // A function
+struct FUNC                                 // A function
 {
     int EntryPoint;                         // The entry point
     int ParamCount;                         // The parameter count
     int LocalDataSize;                      // Total size of all local data
     int StackFrameSize;                     // Total size of the stack frame
-    char Name[MAX_FUNC_NAME_SIZE+1];		// The function's name
+    char Name[MAX_FUNC_NAME_SIZE+1];	    // The function's name
 };
 
 // ----Instructions ----------------------------------------------------------------------
 struct INSTR                           // An instruction
 {
-    int Opcode;                                // The opcode
-    int OpCount;                               // The number of operands
-    Value *pOpList;                            // The operand list
+    int Opcode;                        // The opcode
+    int OpCount;                       // The number of operands
+    PolyObject *pOpList;               // The operand list
 };
 
 struct INSTR_STREAM                     // An instruction stream
 {
-    INSTR *Instrs;                            // The instructions themselves
-    int Size;                                  // The number of instructions in the stream
+    INSTR *Instrs;                      // The instructions themselves
+    int Size;                           // The number of instructions in the stream
 };
 
 // ----Function Table --------------------------------------------------------------------
 struct FUNC_TABLE                       // A function table
 {
-    FUNC *Funcs;                              // Pointer to the function array
-    int Size;                                  // The number of functions in the array
+    FUNC *Funcs;                        // Pointer to the function array
+    int Size;                           // The number of functions in the array
 };
 
 // 常量字符串表
 struct STRING_TABLE
 {
-	char **StringPool;
-	int Size;
+    char **StringPool;
+    int Size;
 };
 
 // ----Host API Call Table ---------------------------------------------------------------
@@ -139,11 +138,11 @@ struct HOST_CALL_TABLE                // A host API call table
 };
 
 // ----Host API --------------------------------------------------------------------------
-struct HOST_API_FUNC                        // Host API function
+struct HOST_API_FUNC                         // Host API function
 {
-	char Name[MAX_FUNC_NAME_SIZE];       // The function name
-	POLY_HOST_FUNCTION FuncPtr;           // Pointer to the function definition
-	HOST_API_FUNC* Next;                 // The next record
+    char Name[MAX_FUNC_NAME_SIZE];       // The function name
+    POLY_HOST_FUNCTION FuncPtr;          // Pointer to the function definition
+    HOST_API_FUNC* Next;                 // The next record
 };
 
 // ----Script Virtual Machine State ---------------------------------------------------------------------------
@@ -167,11 +166,11 @@ struct script_env
     HOST_API_FUNC* HostAPIs;
 
     // Registers
-    Value _RetVal;                      // The _RetVal register (R0)
-    int CurrInstr;			// 当前指令
+    PolyObject _RetVal;                 // The _RetVal register (R0)
+    int CurrInstr;			// 当前指令(IP)
 
     // 堆栈
-    Value *stack;            // The stack elements
+    PolyObject *stack;       // The stack elements
     int iStackSize;          // The number of elements in the stack
     int iTopIndex;           // 栈顶指针(SP)
     int iFrameIndex;         // 总是指向当前栈帧(BP)

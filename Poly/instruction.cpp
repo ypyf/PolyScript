@@ -4,7 +4,7 @@
 #include <windows.h>
 #endif
 
-void CopyValue(Value *pDest, Value* Source)
+void CopyValue(PolyObject *pDest, PolyObject* Source)
 {
     // If the destination already contains a string, make sure to free it first
 
@@ -24,7 +24,7 @@ void CopyValue(Value *pDest, Value* Source)
     }
 }
 
-void exec_push(script_env *sc, Value *Val)
+void exec_push(script_env *sc, PolyObject *Val)
 {
     // Put the value into the current top index
     int top = sc->iTopIndex;
@@ -32,9 +32,9 @@ void exec_push(script_env *sc, Value *Val)
     sc->iTopIndex++;
 }
 
-Value exec_pop(script_env *sc)
+PolyObject exec_pop(script_env *sc)
 {
-    Value Val;
+    PolyObject Val;
     CopyValue(&Val, &sc->stack[--sc->iTopIndex]);
     return Val;
 }
@@ -47,13 +47,13 @@ void exec_dup(script_env *sc)
     return;
 }
 
-void exec_remove(script_env *sc)
-{
-    --sc->iTopIndex;
-    return;
-}
+//void exec_remove(script_env *sc)
+//{
+//    --sc->iTopIndex;
+//    return;
+//}
 
-void exec_add(const Value& op0, const Value& op1, Value& op2)
+void exec_add(const PolyObject& op0, const PolyObject& op1, PolyObject& op2)
 {
     switch (op0.Type)
     {
@@ -75,7 +75,7 @@ void exec_add(const Value& op0, const Value& op1, Value& op2)
     }
 }
 
-void exec_sub(const Value& op0, const Value& op1, Value& op2)
+void exec_sub(const PolyObject& op0, const PolyObject& op1, PolyObject& op2)
 {
     if (op0.Type == OP_TYPE_INT)
     {
@@ -89,7 +89,7 @@ void exec_sub(const Value& op0, const Value& op1, Value& op2)
     }
 }
 
-void exec_mul(const Value& op0, const Value& op1, Value& op2)
+void exec_mul(const PolyObject& op0, const PolyObject& op1, PolyObject& op2)
 {
     if (op0.Type == OP_TYPE_INT)
     {
@@ -103,7 +103,7 @@ void exec_mul(const Value& op0, const Value& op1, Value& op2)
     }
 }
 
-void exec_div(const Value& op0, const Value& op1, Value& op2)
+void exec_div(const PolyObject& op0, const PolyObject& op1, PolyObject& op2)
 {
     if (op0.Type == OP_TYPE_FLOAT)
     {
@@ -128,7 +128,7 @@ void exec_div(const Value& op0, const Value& op1, Value& op2)
     }
 }
 
-void exec_mod(const Value& op0, const Value& op1, Value& op2)
+void exec_mod(const PolyObject& op0, const PolyObject& op1, PolyObject& op2)
 {
     if (op0.Type == OP_TYPE_INT)
     {
@@ -137,7 +137,7 @@ void exec_mod(const Value& op0, const Value& op1, Value& op2)
     }
 }
 
-void exec_exp(const Value& op0, const Value& op1, Value& op2)
+void exec_exp(const PolyObject& op0, const PolyObject& op1, PolyObject& op2)
 {
     if (op0.Type == OP_TYPE_INT)
     {
@@ -151,7 +151,7 @@ void exec_exp(const Value& op0, const Value& op1, Value& op2)
     }
 }
 
-void exec_and(const Value& op0, const Value& op1, Value& op2)
+void exec_and(const PolyObject& op0, const PolyObject& op1, PolyObject& op2)
 {
     if (op0.Type == OP_TYPE_INT)
     {
@@ -160,7 +160,7 @@ void exec_and(const Value& op0, const Value& op1, Value& op2)
     }
 }
 
-void exec_or(const Value& op0, const Value& op1, Value& op2)
+void exec_or(const PolyObject& op0, const PolyObject& op1, PolyObject& op2)
 {
     if (op0.Type == OP_TYPE_INT)
     {
@@ -169,7 +169,7 @@ void exec_or(const Value& op0, const Value& op1, Value& op2)
     }
 }
 
-void exec_xor(const Value& op0, const Value& op1, Value& op2)
+void exec_xor(const PolyObject& op0, const PolyObject& op1, PolyObject& op2)
 {
     if (op0.Type == OP_TYPE_INT)
     {
@@ -178,7 +178,7 @@ void exec_xor(const Value& op0, const Value& op1, Value& op2)
     }
 }
 
-void exec_shl(const Value& op0, const Value& op1, Value& op2)
+void exec_shl(const PolyObject& op0, const PolyObject& op1, PolyObject& op2)
 {
     if (op0.Type == OP_TYPE_INT)
     {
@@ -187,7 +187,7 @@ void exec_shl(const Value& op0, const Value& op1, Value& op2)
     }
 }
 
-void exec_shr(const Value& op0, const Value& op1, Value& op2)
+void exec_shr(const PolyObject& op0, const PolyObject& op1, PolyObject& op2)
 {
     if (op0.Type == OP_TYPE_INT)
     {
@@ -196,7 +196,7 @@ void exec_shr(const Value& op0, const Value& op1, Value& op2)
     }
 }
 
-void exec_neg(Value& op0)
+void exec_neg(PolyObject& op0)
 {
     if (op0.Type == OP_TYPE_INT)
         op0.Fixnum = -op0.Fixnum;
@@ -204,13 +204,13 @@ void exec_neg(Value& op0)
         op0.Realnum = -op0.Realnum;
 }
 
-void exec_not(Value& op0)
+void exec_not(PolyObject& op0)
 {
     if (op0.Type == OP_TYPE_INT)
         op0.Fixnum = ~op0.Fixnum;
 }
 
-void exec_inc(Value& op0)
+void exec_inc(PolyObject& op0)
 {
     if (op0.Type == OP_TYPE_INT)
         ++op0.Fixnum;
@@ -218,7 +218,7 @@ void exec_inc(Value& op0)
         ++op0.Realnum;
 }
 
-void exec_dec(Value& op0)
+void exec_dec(PolyObject& op0)
 {
     if (op0.Type == OP_TYPE_INT)
         --op0.Fixnum;
@@ -226,7 +226,7 @@ void exec_dec(Value& op0)
         --op0.Realnum;
 }
 
-void exec_sqrt(Value& op0)
+void exec_sqrt(PolyObject& op0)
 {
     if (op0.Type == OP_TYPE_INT)
         op0.Realnum = sqrtf((float)op0.Fixnum);
@@ -240,7 +240,7 @@ void exec_trap(script_env *sc, int interrupt)
     {
     case 0:	/* #1 print */
     {
-        Value op0 = exec_pop(sc);
+        PolyObject op0 = exec_pop(sc);
         switch (op0.Type)
         {
         case OP_TYPE_NULL:
@@ -266,8 +266,8 @@ void exec_trap(script_env *sc, int interrupt)
     }
     case 1:	/* #1 Beep */
     {
-        Value op1 = exec_pop(sc);
-        Value op0 = exec_pop(sc);
+        PolyObject op1 = exec_pop(sc);
+        PolyObject op0 = exec_pop(sc);
         Beep(op0.Fixnum, op1.Fixnum);
         break;
     }

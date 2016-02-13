@@ -7,8 +7,8 @@
 // 用于嵌套的循环结构的代码生成
 struct Loop                                 
 {
-    Label start;                          // The starting jump target
-    Label end;                            // The ending jump target
+    Label start;    // The starting jump target
+    Label end;  // The ending jump target
 };
 
 
@@ -49,7 +49,7 @@ void ParseFuncCall();
 // ---- Functions -------------------------------------------------------------------------
 
 int g_iCurrScope;                               // The current scope
-static int g_iGotReturnStmt = FALSE;			// 函数中是否有返回语句
+static int g_iGotReturnStmt = FALSE;	        // 函数中是否有返回语句
 
 // ---- Loops -----------------------------------------------------------------------------
 
@@ -338,16 +338,12 @@ void ParseSourceCode()
 
     // Parse each line of code
 
-    while (TRUE) {
+    while (GetNextToken() != TOKEN_TYPE_END_OF_STREAM) {
         // If we're at the end of the token stream, break the parsing loop
-
-        if (GetNextToken() == TOKEN_TYPE_END_OF_STREAM)
-            break;
-        else
-            RewindTokenStream();
+        
+        RewindTokenStream();
 
         // Parse the next statement and ignore an end of file marker
-
         ParseStatement();
     }
 
@@ -367,24 +363,20 @@ void ParseStatement()
 {
     // If the next token is a semicolon, the statement is empty so return
 
-    if (GetLookAheadChar() == ';')
+    if (LookAheadChar() == ';')
     {
         ReadToken(TOKEN_TYPE_SEMICOLON);
         return;
     }
 
-    // Determine the initial token of the statement
+    // Branch to a parse function based on the next token
 
-    Token InitToken = GetNextToken();
-
-    // Branch to a parse function based on the token
-
-    switch (InitToken)
+    switch (GetNextToken())
     {
         // Unexpected end of file
 
     case TOKEN_TYPE_END_OF_STREAM:
-        ExitOnCodeError("Unexpected end of file");
+        ExitOnCodeError("Unexpected end of code");
         break;
 
     case TOKEN_TYPE_RSRVD_VAR:
@@ -453,7 +445,7 @@ void ParseStatement()
         ParseReturn();
         break;
 
-        // Assignment or Function Call
+        // Assignment and Function Calling
 
     case TOKEN_TYPE_IDENT:
         {
@@ -465,7 +457,7 @@ void ParseStatement()
 
                 ParseAssign();
             }
-            else if (GetLookAheadChar() == '(')
+            else if (LookAheadChar() == '(')
             {
                 // It's a function
 
@@ -545,7 +537,7 @@ void ParseStruct(StructSymbol *pOuter)
 
     ReadToken(TOKEN_TYPE_OPEN_BLOCK);
 
-    while (GetLookAheadChar() != '}')
+    while (LookAheadChar() != '}')
     {
         ReadToken(TOKEN_TYPE_RSRVD_VAR);
 
@@ -566,7 +558,7 @@ void ParseStruct(StructSymbol *pOuter)
 
         // Is the look-ahead character an open brace?
 
-        if (GetLookAheadChar() == '[')
+        if (LookAheadChar() == '[')
         {
             // Verify the open brace
 
@@ -654,7 +646,7 @@ void ParseVar()
 
     // Is the look-ahead character an open brace?
 
-    if (GetLookAheadChar() == '[')
+    if (LookAheadChar() == '[')
     {
         // Verify the open brace
 
@@ -724,7 +716,7 @@ void ParseBlock()
 
     // Read each statement until the end of the block
 
-    while (GetLookAheadChar() != '}')
+    while (LookAheadChar() != '}')
         ParseStatement();
 
     // Read the closing curly brace
@@ -793,7 +785,7 @@ void ParseFunc()
 
     // Use the look-ahead character to determine if the function takes parameters
 
-    if (GetLookAheadChar() != ')')
+    if (LookAheadChar() != ')')
     {
         // If the function being defined is Main (), flag an error since Main ()
         // cannot accept paraemters
@@ -829,7 +821,7 @@ void ParseFunc()
 
             // Check again for the closing parenthesis to see if the parameter list is done
 
-            if (GetLookAheadChar() == ')')
+            if (LookAheadChar() == ')')
                 break;
 
             // Otherwise read a comma and move to the next parameter
@@ -1397,7 +1389,7 @@ void ParseUnary()
 
             SymbolNode * pSymbol = GetSymbolByIdent(GetCurrLexeme(), g_iCurrScope);
             int iIsArray = FALSE;
-            if (GetLookAheadChar() == '[')
+            if (LookAheadChar() == '[')
             {
                 // Ensure the variable is an array
 
@@ -1410,7 +1402,7 @@ void ParseUnary()
 
                 // Make sure an expression is present
 
-                if (GetLookAheadChar() == ']')
+                if (LookAheadChar() == ']')
                     ExitOnCodeError("Invalid expression");
 
                 // Parse the index as an expression
@@ -1599,7 +1591,7 @@ void ParseFactor()
             {
                 // Does an array index follow the identifier?
 
-                if (GetLookAheadChar() == '[')
+                if (LookAheadChar() == '[')
                 {
                     // Ensure the variable is an array
 
@@ -1612,7 +1604,7 @@ void ParseFactor()
 
                     // Make sure an expression is present
 
-                    if (GetLookAheadChar() == ']')
+                    if (LookAheadChar() == ']')
                         ExitOnCodeError("Invalid expression");
 
                     // Parse the index as an expression recursively
@@ -1655,7 +1647,7 @@ void ParseFactor()
                 // The identifier wasn't a variable or array, so find out if it's a
                 // function
 
-                if (GetLookAheadChar() == '(')
+                if (LookAheadChar() == '(')
                 {
                     // It is, so parse the call
 
@@ -1956,7 +1948,7 @@ void ParseReturn()
     // If a semicolon doesn't appear to follow, parse the expression and place it in
     // _RetVal
 
-    if (GetLookAheadChar() != ';')
+    if (LookAheadChar() != ';')
     {
         // Parse the expression to calculate the return value and leave the result on the stack.
 
@@ -2012,7 +2004,7 @@ void ParseAssign()
 
     int iIsArray = FALSE;
 
-    if (GetLookAheadChar() == '[')
+    if (LookAheadChar() == '[')
     {
         // Ensure the variable is an array
 
@@ -2025,7 +2017,7 @@ void ParseAssign()
 
         // Make sure an expression is present
 
-        if (GetLookAheadChar() == ']')
+        if (LookAheadChar() == ']')
             ExitOnCodeError("Invalid expression");
 
         // Parse the index as an expression
@@ -2202,7 +2194,7 @@ void ParseFuncCall()
     while (TRUE) {
         // Find out if there's another parameter to push
 
-        if (GetLookAheadChar() != ')')
+        if (LookAheadChar() != ')')
         {
             // There is, so parse it as an expression
 
@@ -2217,7 +2209,7 @@ void ParseFuncCall()
 
             // Unless this is the final parameter, attempt to read a comma
 
-            if (GetLookAheadChar() != ')')
+            if (LookAheadChar() != ')')
                 ReadToken(TOKEN_TYPE_COMMA);
         }
         else

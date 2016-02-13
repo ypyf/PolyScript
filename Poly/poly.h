@@ -74,10 +74,10 @@ typedef void (*POLY_HOST_FUNCTION)(script_env*);  // Host API function pointer a
 
 struct MetaObject;
 
-struct Value
+struct PolyObject
 {
     int Type;				        // The type
-    union							// The value
+    union					// The value
     {
         MetaObject* ObjectPtr;			// Object Reference
         int         Fixnum;			// Integer literal
@@ -127,7 +127,7 @@ POLY_API int Poly_RegisterHostFunc(script_env *sc, const char *pstrName, POLY_HO
 POLY_API int Poly_GetParamAsInt(script_env *sc, int iParamIndex);
 POLY_API float Poly_GetParamAsFloat(script_env *sc, int iParamIndex);
 POLY_API char* Poly_GetParamAsString(script_env *sc, int iParamIndex);
-POLY_API Value Poly_GetParam(script_env *sc, int iParamIndex);
+POLY_API PolyObject Poly_GetParam(script_env *sc, int iParamIndex);
 
 POLY_API void Poly_ReturnFromHost(script_env *sc);
 POLY_API void Poly_ReturnIntFromHost(script_env *sc, int iInt);

@@ -3,30 +3,30 @@
 
 #include "vm.h"
 
-void CopyValue(Value *pDest, Value* Source);
-void exec_push(script_env *sc, Value *Val);
-Value exec_pop(script_env *sc);
+void CopyValue(PolyObject *pDest, PolyObject* Source);
+void exec_push(script_env *sc, PolyObject *Val);
+PolyObject exec_pop(script_env *sc);
 void exec_dup(script_env *sc);
 void exec_remove(script_env *sc);
 
-void exec_add(const Value& op0, const Value& op1, Value& op2);
-void exec_sub(const Value& op0, const Value& op1, Value& op2);
-void exec_mul(const Value& op0, const Value& op1, Value& op2);
-void exec_div(const Value& op0, const Value& op1, Value& op2);
-void exec_mod(const Value& op0, const Value& op1, Value& op2);
-void exec_exp(const Value& op0, const Value& op1, Value& op2);
+void exec_add(const PolyObject& op0, const PolyObject& op1, PolyObject& op2);
+void exec_sub(const PolyObject& op0, const PolyObject& op1, PolyObject& op2);
+void exec_mul(const PolyObject& op0, const PolyObject& op1, PolyObject& op2);
+void exec_div(const PolyObject& op0, const PolyObject& op1, PolyObject& op2);
+void exec_mod(const PolyObject& op0, const PolyObject& op1, PolyObject& op2);
+void exec_exp(const PolyObject& op0, const PolyObject& op1, PolyObject& op2);
 
-void exec_and(const Value& op0, const Value& op1, Value& op2);
-void exec_or(const Value& op0, const Value& op1, Value& op2);
-void exec_xor(const Value& op0, const Value& op1, Value& op2);
-void exec_shl(const Value& op0, const Value& op1, Value& op2);
-void exec_shr(const Value& op0, const Value& op1, Value& op2);
+void exec_and(const PolyObject& op0, const PolyObject& op1, PolyObject& op2);
+void exec_or(const PolyObject& op0, const PolyObject& op1, PolyObject& op2);
+void exec_xor(const PolyObject& op0, const PolyObject& op1, PolyObject& op2);
+void exec_shl(const PolyObject& op0, const PolyObject& op1, PolyObject& op2);
+void exec_shr(const PolyObject& op0, const PolyObject& op1, PolyObject& op2);
 
-void exec_neg(Value& op0);
-void exec_not(Value& op0);
-void exec_inc(Value& op0);
-void exec_dec(Value& op0);
-void exec_sqrt(Value& op0);
+void exec_neg(PolyObject& op0);
+void exec_not(PolyObject& op0);
+void exec_inc(PolyObject& op0);
+void exec_dec(PolyObject& op0);
+void exec_sqrt(PolyObject& op0);
 
 //void exec_new(const );
 void exec_trap(script_env *sc, int interrupt);

@@ -16,7 +16,7 @@ void EmitScopeSymbols(script_env *pSC, int iScope, int iType, int iVMFuncTableIn
 // 标号，用于记录前向引用
 typedef struct _LabelSymbol
 {
-    std::vector<Value*> OpList;		// 引用了标号的操作数
+    std::vector<PolyObject*> OpList;		// 引用了标号的操作数
     int iForwardRef;				// 是否前向引用
     int iDefined;					// 是否已经定义
     int iOffset;					// 定义标号的指令索引
@@ -119,7 +119,7 @@ void EmitFunc(script_env *pSC, FuncNode *pFunc, int iVMFuncTableIndex)
 
                 pSC->InstrStream.Instrs[g_iCurrInstr].OpCount = iOpCount;
 
-                pSC->InstrStream.Instrs[g_iCurrInstr].pOpList = (Value*)malloc(iOpCount*sizeof(Value));
+                pSC->InstrStream.Instrs[g_iCurrInstr].pOpList = (PolyObject*)malloc(iOpCount*sizeof(PolyObject));
 
                 // Emit each operand
 
@@ -129,7 +129,7 @@ void EmitFunc(script_env *pSC, FuncNode *pFunc, int iVMFuncTableIndex)
 
                     Op *pOp = GetICodeOpByIndex(pCurrNode, iCurrOpIndex);
 
-                    Value *oprand = &(pSC->InstrStream.Instrs[g_iCurrInstr].pOpList[iCurrOpIndex]);
+                    PolyObject *oprand = &(pSC->InstrStream.Instrs[g_iCurrInstr].pOpList[iCurrOpIndex]);
 
                     // Emit the operand based on its type
 

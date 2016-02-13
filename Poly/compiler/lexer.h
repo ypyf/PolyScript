@@ -192,7 +192,7 @@ Token GetCurrToken();
 char* GetCurrLexeme();
 void CopyCurrLexeme(char* pstrBuffer);
 int GetCurrOp();
-char GetLookAheadChar();
+char LookAheadChar();
 Token GetLookAheadToken();
 
 char* GetCurrSourceLine();

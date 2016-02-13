@@ -2,15 +2,15 @@
 
 // 分配一个有n个字段的新对象
 // ppPrevious指向上一次分配的对象的地址
-Value GC_AllocObject(int iSize, MetaObject **ppPrevious)
+PolyObject GC_AllocObject(int iSize, MetaObject **ppPrevious)
 {
-    Value r;
+    PolyObject r;
     size_t byteCount;
     
     assert(iSize > 0);
 
     // Allocate memory
-    byteCount = sizeof(MetaObject) + iSize*sizeof(Value);
+    byteCount = sizeof(MetaObject) + iSize*sizeof(PolyObject);
     r.ObjectPtr = (MetaObject *)malloc(byteCount);
     memset(r.ObjectPtr, 0, byteCount);
 
@@ -19,7 +19,7 @@ Value GC_AllocObject(int iSize, MetaObject **ppPrevious)
     r.ObjectPtr->RefCount = 1;
     r.ObjectPtr->NextObject = *ppPrevious;
     r.ObjectPtr->Size = iSize;
-    r.ObjectPtr->Mem = (Value *)(((char *)r.ObjectPtr) + sizeof(MetaObject));
+    r.ObjectPtr->Mem = (PolyObject *)(((char *)r.ObjectPtr) + sizeof(MetaObject));
 
     // 指向新分配的对象
     *ppPrevious = r.ObjectPtr;
@@ -28,7 +28,7 @@ Value GC_AllocObject(int iSize, MetaObject **ppPrevious)
 }
 
 // 标记对象
-void GC_Mark(Value val) 
+void GC_Mark(PolyObject val) 
 {
     if (val.Type == OP_TYPE_OBJECT) 
     {

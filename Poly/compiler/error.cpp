@@ -13,13 +13,13 @@
 
 void ExitOnError(char* pstrErrorMssg)
 {
-	// Print the message
+    // Print the message
 
-	printf("Fatal Error: %s.\n", pstrErrorMssg);
+    printf("Fatal Error: %s.\n", pstrErrorMssg);
 
-	// Exit the program
+    // Exit the program
 
-	Exit();
+    Exit();
 }
 
 /******************************************************************************************
@@ -31,51 +31,51 @@ void ExitOnError(char* pstrErrorMssg)
 
 void ExitOnCodeError(char* pstrErrorMssg)
 {
-	// Print the message
+    // Print the message
 
-	printf("Error: %s.\n\n", pstrErrorMssg);
-	printf("Line %d\n", GetCurrSourceLineIndex() + 1);
+    printf("Error: %s.\n\n", pstrErrorMssg);
+    printf("Line %d\n", GetCurrSourceLineIndex() + 1);
 
-	// Reduce all of the source line's spaces to tabs so it takes less space and so the
-	// karet lines up with the current token properly
+    // Reduce all of the source line's spaces to tabs so it takes less space and so the
+    // karet lines up with the current token properly
 
-	char pstrSourceLine[MAX_SOURCE_LINE_SIZE];
+    char pstrSourceLine[MAX_SOURCE_LINE_SIZE];
 
-	// If the current line is a valid string, copy it into the local source line buffer
+    // If the current line is a valid string, copy it into the local source line buffer
 
-	char* pstrCurrSourceLine = GetCurrSourceLine();
-	if (pstrCurrSourceLine)
-		strcpy(pstrSourceLine, pstrCurrSourceLine);
-	else
-		pstrSourceLine[0] = '\0';
+    char* pstrCurrSourceLine = GetCurrSourceLine();
+    if (pstrCurrSourceLine)
+        strcpy(pstrSourceLine, pstrCurrSourceLine);
+    else
+        pstrSourceLine[0] = '\0';
 
-	// If the last character of the line is a line break, clip it
+    // If the last character of the line is a line break, clip it
 
-	int iLastCharIndex = strlen(pstrSourceLine) - 1;
-	if (pstrSourceLine[iLastCharIndex] == '\n')
-		pstrSourceLine[iLastCharIndex] = '\0';
+    int iLastCharIndex = strlen(pstrSourceLine) - 1;
+    if (pstrSourceLine[iLastCharIndex] == '\n')
+        pstrSourceLine[iLastCharIndex] = '\0';
 
-	// Loop through each character and replace tabs with spaces
+    // Loop through each character and replace tabs with spaces
 
-	for (unsigned int iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrSourceLine); ++iCurrCharIndex)
-		if (pstrSourceLine[iCurrCharIndex] == '\t')
-			pstrSourceLine[iCurrCharIndex] = ' ';
+    for (unsigned int iCurrCharIndex = 0; iCurrCharIndex < strlen(pstrSourceLine); ++iCurrCharIndex)
+        if (pstrSourceLine[iCurrCharIndex] == '\t')
+            pstrSourceLine[iCurrCharIndex] = ' ';
 
-	// Print the offending source line
+    // Print the offending source line
 
-	printf("%s\n", pstrSourceLine);
+    printf("%s\n", pstrSourceLine);
 
-	// Print a karet at the start of the (presumably) offending lexeme
+    // Print a karet at the start of the (presumably) offending lexeme
 
-	for (int iCurrSpace = 0; iCurrSpace < GetLexemeStartIndex(); ++iCurrSpace)
-		printf(" ");
-	printf("^\n");
+    for (int iCurrSpace = 0; iCurrSpace < GetLexemeStartIndex(); ++iCurrSpace)
+        printf(" ");
+    printf("^\n");
 
-	// Print message indicating that the script could not be assembled
+    // Print message indicating that the script could not be assembled
 
-	printf("Could not compile %s.", g_pstrSourceFilename);
+    printf("Could not compile %s.", g_pstrSourceFilename);
 
-	// Exit the program
+    // Exit the program
 
-	Exit();
+    Exit();
 }
