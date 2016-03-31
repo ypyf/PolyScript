@@ -706,17 +706,8 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
         if (sc->IsPaused)
         {
             // Has the pause duration elapsed yet?
-
-            if (iCurrTime >= sc->PauseEndTime)
-            {
-                // Yes, so unpause the script
-                sc->IsPaused = FALSE;
-            }
-            else
-            {
-                // No, so skip this iteration of the execution cycle
-                continue;
-            }
+            if (iCurrTime < sc->PauseEndTime) continue;
+            sc->IsPaused = FALSE;
         }
 
         // 如果没有任何指令需要执行，则停止运行
