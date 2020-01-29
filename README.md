@@ -1,14 +1,13 @@
-PolyScript
-====
+# PolyScript
 
 A game script language.
 
-##Examples
+## Examples
 
-###Example 1
-    
+### Hello world
+
     /* hello.poly */
-    
+
     func main()
     {
         var i = 10;
@@ -19,11 +18,11 @@ A game script language.
             --i;
         }
     }
-    
-###Example 2
-    
+
+### Fibonacci number
+
     /* fibonacci.poly */
-    
+
     func fib(n)
     {
         if (n == 1)
@@ -33,4 +32,4 @@ A game script language.
             return 1;
 
         return fib(n-1) + fib(n-2);
-    }   
+    }
