@@ -9,8 +9,8 @@ namespace TileEngine
 {
     unsafe class ScriptLoader
     {
-        #region Poly.dll ½Ó¿ÚÉùÃ÷
-        unsafe public struct ScriptContext {};
+        #region Poly.dll æ¥å£å£°æ˜
+        unsafe public struct ScriptContext { };
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void POLY_HOST_FUNCTION(ScriptContext* sc);
@@ -100,23 +100,23 @@ namespace TileEngine
         extern static void Poly_ReturnStringFromHost(ScriptContext* sc, string pstrString);
 
         [DllImport("poly_d32.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        extern static int Poly_GetParamCount(ScriptContext* sc);       // »ñÈ¡´«µİ¸øº¯ÊıµÄ²ÎÊı¸öÊı
+        extern static int Poly_GetParamCount(ScriptContext* sc);       // è·å–ä¼ é€’ç»™å‡½æ•°çš„å‚æ•°ä¸ªæ•°
 
         [DllImport("poly_d32.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        extern static int Poly_IsScriptStop(ScriptContext* sc);        // ½Å±¾ÊÇ·ñÒÑ¾­Í£Ö¹
+        extern static int Poly_IsScriptStop(ScriptContext* sc);        // è„šæœ¬æ˜¯å¦å·²ç»åœæ­¢
 
         [DllImport("poly_d32.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        extern static int Poly_GetExitCode(ScriptContext* sc);         // ½Å±¾ÍË³ö´úÂë
+        extern static int Poly_GetExitCode(ScriptContext* sc);         // è„šæœ¬é€€å‡ºä»£ç 
 
         #endregion
 
         static readonly ScriptContext* POLY_GLOBAL_FUNC = null;
 
-        private ScriptContext *m_pScript;
+        private ScriptContext* m_pScript;
 
         public ScriptLoader()
         {
-	        m_pScript = Poly_CreateInterp();
+            m_pScript = Poly_CreateInterp();
         }
 
         ~ScriptLoader()
@@ -126,7 +126,7 @@ namespace TileEngine
 
         public void loadScript(string pstrFilename)
         {
-            // ¹¹Ôì¿ÉÖ´ĞĞÎÄ¼şÃû
+            // æ„é€ å¯æ‰§è¡Œæ–‡ä»¶å
             string ExecFileName = Path.ChangeExtension(pstrFilename, ".pe");
             Poly_CompileScript(pstrFilename, ExecFileName);
 
@@ -135,7 +135,7 @@ namespace TileEngine
 
             // TODO  Check for an error
 
-            // ¿ªÊ¼ÓÉÏß³ÌË÷ÒıÖ¸¶¨µÄ½Å±¾
+            // å¼€å§‹ç”±çº¿ç¨‹ç´¢å¼•æŒ‡å®šçš„è„šæœ¬
             Poly_StartScript(m_pScript);
         }
 
@@ -144,24 +144,24 @@ namespace TileEngine
             int i = Poly_RegisterHostFunc(POLY_GLOBAL_FUNC, pstrName, fnFunc);
             if (i != 1)
             {
-                Console.WriteLine("×¢²áº¯Êı {0} Ê§°Ü", pstrName);
+                Console.WriteLine("æ³¨å†Œå‡½æ•° {0} å¤±è´¥", pstrName);
             }
         }
 
         public void callScriptFunc(string pstrName)
         {
-	        Poly_CallScriptFunc(m_pScript, pstrName);
+            Poly_CallScriptFunc(m_pScript, pstrName);
         }
 
         public void runScript()
         {
-	        Poly_RunScript(m_pScript, 100);
+            Poly_RunScript(m_pScript, 100);
         }
 
         public string getStringParameter(int iIndex)
         {
-           var x = Poly_GetParamAsString(m_pScript, iIndex);
-           return Marshal.PtrToStringAnsi(x);
+            var x = Poly_GetParamAsString(m_pScript, iIndex);
+            return Marshal.PtrToStringAnsi(x);
         }
 
         public void returnFromHost()

@@ -26,7 +26,7 @@ void ExitCompiler();
 char g_pstrSourceFilename[MAX_FILENAME_SIZE];
 char g_pstrOutputFilename[MAX_FILENAME_SIZE];
 
-LinkedList g_SourceCode;                        // Source code linked list
+LinkedList g_SourceCode; // Source code linked list
 
 // ---- Script header data ----------------------------------------------------------------------------
 
@@ -34,36 +34,35 @@ ScriptHeader g_ScriptHeader;
 
 // ---- I-Code Stream ---------------------------------------------------------------------
 
-LinkedList g_ICodeStream;                       // I-code stream
+LinkedList g_ICodeStream; // I-code stream
 
 // ---- Function Table --------------------------------------------------------------------
 
-LinkedList g_FuncTable;                         // The function table
+LinkedList g_FuncTable; // The function table
 
 LinkedList g_HostFuncTable;
 
 // ---- Symbol Table ----------------------------------------------------------------------
 
-LinkedList g_SymbolTable;                       // The symbol table
+LinkedList g_SymbolTable; // The symbol table
 
-// »´æ÷∑∂ŒßµƒΩ·ππÃÂ
+// ÂÖ®Â±ÄËåÉÂõ¥ÁöÑÁªìÊûÑ‰Ωì
 
-LinkedList g_TypeTable;                         // The type table
+LinkedList g_TypeTable; // The type table
 
 // ---- String Table ----------------------------------------------------------------------
 
-LinkedList g_StringTable;                       // The string table
+LinkedList g_StringTable; // The string table
 
 // ---- PASM Invocation -------------------------------------------------------------------
 
-int g_iPreserveOutputFile;                      // Preserve the assembly file?
-int g_iGenerateXSE;                             // Generate an .PE executable?
+int g_iPreserveOutputFile; // Preserve the assembly file?
+int g_iGenerateXSE;        // Generate an .PE executable?
 
 // ---- Expression Evaluation -------------------------------------------------------------
 
-int g_iTempVar0,                     // Temporary variable symbol indices
+int g_iTempVar0, // Temporary variable symbol indices
     g_iTempVar1;
-
 
 /******************************************************************************************
 *
@@ -136,9 +135,9 @@ static void LoadSourceFile()
 {
     // ---- Open the input file
 
-    FILE * pSourceFile;
+    FILE *pSourceFile;
 
-    if (! (pSourceFile = fopen(g_pstrSourceFilename, "r")))
+    if (!(pSourceFile = fopen(g_pstrSourceFilename, "r")))
         ExitOnError("Could not open source file for input");
 
     // ---- Load the source code
@@ -149,7 +148,7 @@ static void LoadSourceFile()
     {
         // Allocate space for the next line
 
-        char* pstrCurrLine = (char *)malloc(MAX_SOURCE_LINE_SIZE + 1);
+        char *pstrCurrLine = (char *)malloc(MAX_SOURCE_LINE_SIZE + 1);
 
         // Clear the string buffer in case the next line is empty or invalid
 
@@ -187,7 +186,6 @@ static void CompileSourceFile()
     ParseSourceCode();
 }
 
-
 /******************************************************************************************
 *
 *   ExitCompiler()
@@ -203,14 +201,14 @@ void ExitCompiler()
     exit(0);
 }
 
-void XSC_CompileScript(const char* pstrFilename, const char* pstrExecFilename)
+void XSC_CompileScript(const char *pstrFilename, const char *pstrExecFilename)
 {
     strcpy(g_pstrSourceFilename, pstrFilename);
     strupr(g_pstrSourceFilename);
 
     if (strstr(g_pstrSourceFilename, SOURCE_FILE_EXT))
     {
-        // ππ‘Ï .PASM Œƒº˛√˚
+        // ÊûÑÈÄ† .PASM Êñá‰ª∂Âêç
         int ExtOffset = strrchr(g_pstrSourceFilename, '.') - g_pstrSourceFilename;
         strncpy(g_pstrOutputFilename, g_pstrSourceFilename, ExtOffset);
         g_pstrOutputFilename[ExtOffset] = '\0';
@@ -233,20 +231,20 @@ void XSC_CompileScript(const char* pstrFilename, const char* pstrExecFilename)
 
 static void OutputDebugInfo(script_env *env)
 {
-    FILE* debug_info;
+    FILE *debug_info;
     if (!(debug_info = fopen("debug_info.txt", "wb")))
         ExitOnError("Could not open output file for output");
     fclose(debug_info);
 }
 
-void XSC_CompileScript(script_env *sc, const char* polyFile, CompilerOption *options)
+void XSC_CompileScript(script_env *sc, const char *polyFile, CompilerOption *options)
 {
     strcpy(g_pstrSourceFilename, polyFile);
     InitCompiler();
     LoadSourceFile();
     PreprocessSourceFile();
 
-    //  ‰≥ˆ‘§¥¶¿Ì∫ÛµƒΩ≈±æ
+    // ËæìÂá∫È¢ÑÂ§ÑÁêÜÂêéÁöÑËÑöÊú¨
     //LinkedListNode *pNode = g_SourceCode.pHead;
     //while (pNode)
     //{

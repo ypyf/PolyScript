@@ -3,40 +3,67 @@
 
 // ---- Globals -------------------------------------------------------------------------------
 
-FILE * g_pOutputFile = NULL;                        // Pointer to the output file
+FILE *g_pOutputFile = NULL; // Pointer to the output file
 
 void EmitHeader();
 void EmitDirectives();
-void EmitFunc(FuncNode * pFunc);
+void EmitFunc(FuncNode *pFunc);
 void EmitScopeSymbols(int iScope, int iType);
-
 
 // ---- Instruction Mnemonics -------------------------------------------------------------
 
 // These mnemonics are mapped to each I-code instruction, allowing the emitter to
 // easily translate I-code to CRL assembly
-// Ã¿¸öÖú¼Ç·ûµÄÎ»ÖÃÓëÖ¸Áî³£Á¿±ØÐëÏàµÈ
+// æ¯ä¸ªåŠ©è®°ç¬¦çš„ä½ç½®ä¸ŽæŒ‡ä»¤å¸¸é‡å¿…é¡»ç›¸ç­‰
 char ppstrMnemonics[][12] =
-{
-    "nop", "break",
-    "mov",
-    "add", "sub", "mul", "div", "mod", "exp", "neg", "inc", "dec",
-    "and", "or", "xor", "not", "shl", "shr",
-    "jmp", "je", "jne", "jg", "jl", "jge", "jle",
-    "brtrue", "brfalse",
-    "push", "pop", "dup", "remove",
-    "call", "ret",
-    "pause",
-    "iconst0", "iconst1", "fconst0", "fconst1",
-    "trap",
+    {
+        "nop",
+        "break",
+        "mov",
+        "add",
+        "sub",
+        "mul",
+        "div",
+        "mod",
+        "exp",
+        "neg",
+        "inc",
+        "dec",
+        "and",
+        "or",
+        "xor",
+        "not",
+        "shl",
+        "shr",
+        "jmp",
+        "je",
+        "jne",
+        "jg",
+        "jl",
+        "jge",
+        "jle",
+        "brtrue",
+        "brfalse",
+        "push",
+        "pop",
+        "dup",
+        "remove",
+        "call",
+        "ret",
+        "pause",
+        "iconst0",
+        "iconst1",
+        "fconst0",
+        "fconst1",
+        "trap",
 };
 
-// ±êºÅ£¬ÓÃÓÚ¼ÇÂ¼Ç°ÏòÒýÓÃ
+// æ ‡å·ï¼Œç”¨äºŽè®°å½•å‰å‘å¼•ç”¨
 typedef struct _LabelSymbol
 {
-    int iOffset;        // ±êºÅËùÔÚµÄ²Ù×÷ÊýÆ«ÒÆ
-    int iForwardRef;	// ÊÇ·ñÇ°ÏòÒýÓÃ
-    int iDefined;       // ÊÇ·ñÒÑ¾­¶¨Òå
+    int iOffset;     // æ ‡å·æ‰€åœ¨çš„æ“ä½œæ•°åç§»
+    int iForwardRef; // æ˜¯å¦å‰å‘å¼•ç”¨
+    int iDefined;    // æ˜¯å¦å·²ç»å®šä¹‰
 } LabelSymbol;
 
 // ---- Functions -----------------------------------------------------------------------------
@@ -53,7 +80,7 @@ void EmitHeader()
     // Get the current time
 
     time_t CurrTimeMs;
-    struct tm * pCurrTime;
+    struct tm *pCurrTime;
     CurrTimeMs = time(NULL);
     pCurrTime = localtime(&CurrTimeMs);
 
@@ -112,7 +139,7 @@ void EmitScopeSymbols(int iScope, int iType)
 
     // Local symbol node pointer
 
-    SymbolNode * pCurrSymbol;
+    SymbolNode *pCurrSymbol;
 
     // Loop through each symbol in the table to find the match
 
@@ -166,7 +193,7 @@ void EmitScopeSymbols(int iScope, int iType)
 *   Emits a function, its local declarations, and its code.
 */
 
-void EmitFunc(FuncNode * pFunc)
+void EmitFunc(FuncNode *pFunc)
 {
     // Emit the function declaration name and opening brace
 
@@ -195,7 +222,7 @@ void EmitFunc(FuncNode * pFunc)
         {
             // Get the I-code instruction structure at the current node
 
-            ICodeNode * pCurrNode = GetICodeNodeByImpIndex(pFunc->iIndex, iCurrInstrIndex);
+            ICodeNode *pCurrNode = GetICodeNodeByImpIndex(pFunc->iIndex, iCurrInstrIndex);
 
             // Determine the node type
 
@@ -204,147 +231,147 @@ void EmitFunc(FuncNode * pFunc)
                 // Source code annotation
 
             case ICODE_NODE_ANNOTATION_LINE:
-                {
-                    // Make a local copy of the source line
+            {
+                // Make a local copy of the source line
 
-                    char* pstrSourceLine = pCurrNode->pstrSourceLine;
+                char *pstrSourceLine = pCurrNode->pstrSourceLine;
 
-                    // TODO È¥µôÔ´´úÂëÐÐÇ°ÃæµÄËõ½ø
+                // TODO åŽ»æŽ‰æºä»£ç è¡Œå‰é¢çš„ç¼©è¿›
 
-                    // If the last character of the line is a line break, clip it
+                // If the last character of the line is a line break, clip it
 
-                    int iLastCharIndex = strlen(pstrSourceLine) - 1;
-                    if (pstrSourceLine[iLastCharIndex] == '\n')
-                        pstrSourceLine[iLastCharIndex] = '\0';
+                int iLastCharIndex = strlen(pstrSourceLine) - 1;
+                if (pstrSourceLine[iLastCharIndex] == '\n')
+                    pstrSourceLine[iLastCharIndex] = '\0';
 
-                    // Emit the comment, but only prepend it with a line break if it's not the
-                    // first one
+                // Emit the comment, but only prepend it with a line break if it's not the
+                // first one
 
-                    if (!iIsFirstSourceLine)
-                        fprintf(g_pOutputFile, "\n");
+                if (!iIsFirstSourceLine)
+                    fprintf(g_pOutputFile, "\n");
 
-                    fprintf(g_pOutputFile, "\t; %s\n\n", pstrSourceLine);
+                fprintf(g_pOutputFile, "\t; %s\n\n", pstrSourceLine);
 
-                    break;
-                }
+                break;
+            }
 
                 // An I-code instruction
 
             case ICODE_NODE_INSTR:
+            {
+                // Emit the opcode
+
+                fprintf(g_pOutputFile, "\t%s", ppstrMnemonics[pCurrNode->Instr.iOpcode]);
+
+                // Determine the number of operands
+
+                int iOpCount = pCurrNode->Instr.OpList.iNodeCount;
+
+                // If there are operands to emit, follow the instruction with some space
+
+                if (iOpCount)
                 {
-                    // Emit the opcode
+                    // All instructions get at least one tab
 
-                    fprintf(g_pOutputFile, "\t%s", ppstrMnemonics[pCurrNode->Instr.iOpcode]);
+                    fprintf(g_pOutputFile, "\t");
 
-                    // Determine the number of operands
+                    // If it's less than a tab stop's width in characters, however, they get a
+                    // second
 
-                    int iOpCount = pCurrNode->Instr.OpList.iNodeCount;
-
-                    // If there are operands to emit, follow the instruction with some space
-
-                    if (iOpCount)
-                    {
-                        // All instructions get at least one tab
-
+                    if (strlen(ppstrMnemonics[pCurrNode->Instr.iOpcode]) < TAB_STOP_WIDTH)
                         fprintf(g_pOutputFile, "\t");
-
-                        // If it's less than a tab stop's width in characters, however, they get a
-                        // second
-
-                        if (strlen(ppstrMnemonics[pCurrNode->Instr.iOpcode]) < TAB_STOP_WIDTH)
-                            fprintf(g_pOutputFile, "\t");
-                    }
-
-                    // Emit each operand
-
-                    for (int iCurrOpIndex = 0; iCurrOpIndex < iOpCount; ++iCurrOpIndex)
-                    {
-                        // Get a pointer to the operand structure
-
-                        Op * pOp = GetICodeOpByIndex(pCurrNode, iCurrOpIndex);
-
-                        // Emit the operand based on its type
-
-                        switch (pOp->iType)
-                        {
-                            // Integer literal
-
-                        case OP_TYPE_INT:
-                            fprintf(g_pOutputFile, "%d", pOp->iIntLiteral);
-                            break;
-
-                            // Float literal
-
-                        case OP_TYPE_FLOAT:
-                            fprintf(g_pOutputFile, "%f", pOp->fFloatLiteral);
-                            break;
-
-                            // String literal
-
-                        case OP_TYPE_STRING_INDEX:
-                            fprintf(g_pOutputFile, "\"%s\"", GetStringByIndex(&g_StringTable, pOp->iStringIndex));
-                            break;
-
-                            // Variable
-
-                        case ICODE_OP_TYPE_VAR_NAME:
-                            fprintf(g_pOutputFile, "%s", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent);
-                            break;
-
-                            // Array index absolute
-
-                        case OP_TYPE_ABS_STACK_INDEX:
-                            fprintf(g_pOutputFile, "%s[%d]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
-                                pOp->iOffset);
-                            break;
-
-                            // Array index variable
-
-                        case OP_TYPE_REL_STACK_INDEX:
-                            fprintf(g_pOutputFile, "%s[%s]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
-                                GetSymbolByIndex(pOp->iOffsetSymbolIndex)->pstrIdent);
-                            break;
-
-                            // Function
-
-                        case OP_TYPE_FUNC_INDEX:
-                            fprintf(g_pOutputFile, "%s", GetFuncByIndex(pOp->iSymbolIndex)->pstrName);
-                            break;
-
-                            // Register (just _RetVal for now)
-
-                        case OP_TYPE_REG:
-                            fprintf(g_pOutputFile, "_RetVal");
-                            break;
-
-                            // Jump target index
-
-                        case ICODE_OP_TYPE_JUMP_TARGET:
-                            fprintf(g_pOutputFile, "_L%d", pOp->label);
-                            break;
-                        }
-
-                        // If the operand isn't the last one, append it with a comma and space
-
-                        if (iCurrOpIndex != iOpCount - 1)
-                            fprintf(g_pOutputFile, ", ");
-                    }
-
-                    // Finish the line
-
-                    fprintf(g_pOutputFile, "\n");
-
-                    break;
                 }
+
+                // Emit each operand
+
+                for (int iCurrOpIndex = 0; iCurrOpIndex < iOpCount; ++iCurrOpIndex)
+                {
+                    // Get a pointer to the operand structure
+
+                    Op *pOp = GetICodeOpByIndex(pCurrNode, iCurrOpIndex);
+
+                    // Emit the operand based on its type
+
+                    switch (pOp->iType)
+                    {
+                        // Integer literal
+
+                    case OP_TYPE_INT:
+                        fprintf(g_pOutputFile, "%d", pOp->iIntLiteral);
+                        break;
+
+                        // Float literal
+
+                    case OP_TYPE_FLOAT:
+                        fprintf(g_pOutputFile, "%f", pOp->fFloatLiteral);
+                        break;
+
+                        // String literal
+
+                    case OP_TYPE_STRING_INDEX:
+                        fprintf(g_pOutputFile, "\"%s\"", GetStringByIndex(&g_StringTable, pOp->iStringIndex));
+                        break;
+
+                        // Variable
+
+                    case ICODE_OP_TYPE_VAR_NAME:
+                        fprintf(g_pOutputFile, "%s", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent);
+                        break;
+
+                        // Array index absolute
+
+                    case OP_TYPE_ABS_STACK_INDEX:
+                        fprintf(g_pOutputFile, "%s[%d]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
+                                pOp->iOffset);
+                        break;
+
+                        // Array index variable
+
+                    case OP_TYPE_REL_STACK_INDEX:
+                        fprintf(g_pOutputFile, "%s[%s]", GetSymbolByIndex(pOp->iSymbolIndex)->pstrIdent,
+                                GetSymbolByIndex(pOp->iOffsetSymbolIndex)->pstrIdent);
+                        break;
+
+                        // Function
+
+                    case OP_TYPE_FUNC_INDEX:
+                        fprintf(g_pOutputFile, "%s", GetFuncByIndex(pOp->iSymbolIndex)->pstrName);
+                        break;
+
+                        // Register (just _RetVal for now)
+
+                    case OP_TYPE_REG:
+                        fprintf(g_pOutputFile, "_RetVal");
+                        break;
+
+                        // Jump target index
+
+                    case ICODE_OP_TYPE_JUMP_TARGET:
+                        fprintf(g_pOutputFile, "_L%d", pOp->label);
+                        break;
+                    }
+
+                    // If the operand isn't the last one, append it with a comma and space
+
+                    if (iCurrOpIndex != iOpCount - 1)
+                        fprintf(g_pOutputFile, ", ");
+                }
+
+                // Finish the line
+
+                fprintf(g_pOutputFile, "\n");
+
+                break;
+            }
 
                 // A jump target
 
             case ICODE_NODE_JUMP_TARGET:
-                {
-                    // Emit a label in the format _LX, where X is the jump target
+            {
+                // Emit a label in the format _LX, where X is the jump target
 
-                    fprintf(g_pOutputFile, "_L%d:\n", pCurrNode->iJumpTargetIndex);
-                }
+                fprintf(g_pOutputFile, "_L%d:\n", pCurrNode->iJumpTargetIndex);
+            }
             }
 
             // Update the first line flag
@@ -404,15 +431,15 @@ void EmitCode()
 
     // Local node for traversing lists
 
-    LinkedListNode * pNode = g_FuncTable.pHead;
+    LinkedListNode *pNode = g_FuncTable.pHead;
 
     // Local function node pointer
 
-    FuncNode * pCurrFunc;
+    FuncNode *pCurrFunc;
 
     // Pointer to hold the Main() function, if it's found
 
-    FuncNode * pMainFunc = NULL;
+    FuncNode *pMainFunc = NULL;
 
     // Loop through each function and emit its declaration and code, if functions exist
 
@@ -424,11 +451,11 @@ void EmitCode()
 
             pCurrFunc = (FuncNode *)pNode->pData;
 
-            if (! pCurrFunc->iIsHostAPI)
+            if (!pCurrFunc->iIsHostAPI)
             {
                 // Is the current function Main ()?
 
-                if (stricmp (pCurrFunc->pstrName, MAIN_FUNC_NAME) == 0)
+                if (stricmp(pCurrFunc->pstrName, MAIN_FUNC_NAME) == 0)
                 {
                     // Yes, so save the pointer for later (and don't emit it yet)
 

@@ -1,4 +1,4 @@
-﻿#define _POLY_SOURCE
+#define _POLY_SOURCE
 
 #include "bytecode.h"
 #include "poly.h"
@@ -10,7 +10,7 @@
 #include <time.h>
 
 // ----The Global Host API ----------------------------------------------------------------------
-HOST_API_FUNC* g_HostAPIs;    // The host API
+HOST_API_FUNC *g_HostAPIs; // The host API
 
 static int LoadPE(script_env *sc, const char *pstrFilename);
 
@@ -22,7 +22,8 @@ static int LoadPE(script_env *sc, const char *pstrFilename);
 static int stricmp(const char *s1, const char *s2)
 {
     unsigned char c1, c2;
-    do {
+    do
+    {
         c1 = tolower(*s1);
         c2 = tolower(*s2);
         if (c1 < c2)
@@ -33,7 +34,7 @@ static int stricmp(const char *s1, const char *s2)
     } while (c1 != 0);
     return 0;
 }
-#endif	/* __APPLE__ */
+#endif /* __APPLE__ */
 
 /******************************************************************************************
 *
@@ -51,7 +52,6 @@ inline int ResolveStackIndex(int iFrameIndex, int iIndex)
     return (iIndex < 0 ? iIndex += iFrameIndex : iIndex);
 }
 
-
 // ----Function Prototypes -------------------------------------------------------------------
 
 void DisplayStatus(script_env *sc);
@@ -66,20 +66,20 @@ float CoerceValueToFloat(PolyObject *Val);
 char *CoerceValueToString(PolyObject *Val);
 
 int GetOpType(script_env *sc, int OpIndex);
-int ResolveOpRelStackIndex(script_env *sc, PolyObject* OpValue);
-PolyObject* ResolveOpValue(script_env *sc, int iOpIndex);
+int ResolveOpRelStackIndex(script_env *sc, PolyObject *OpValue);
+PolyObject *ResolveOpValue(script_env *sc, int iOpIndex);
 int ResolveOpType(script_env *sc, int iOpIndex);
 int ResolveOpAsInt(script_env *sc, int iOpIndex);
 float ResolveOpAsFloat(script_env *sc, int iOpIndex);
-char* ResolveOpAsString(script_env *sc, int iOpIndex);
+char *ResolveOpAsString(script_env *sc, int iOpIndex);
 int ResolveOpAsInstrIndex(script_env *sc, int iOpIndex);
 int ResolveOpAsFuncIndex(script_env *sc, int iOpIndex);
-char* ResolveOpAsHostAPICall(int iOpIndex);
+char *ResolveOpAsHostAPICall(int iOpIndex);
 //Value* ResolveOpValue(VMState* sc, int iOpIndex);
 
 // ----Runtime Stack Interface -----------------------------------------------------------
 
-PolyObject* GetStackValue(script_env *sc, int iIndex);
+PolyObject *GetStackValue(script_env *sc, int iIndex);
 void SetStackValue(script_env *sc, int iIndex, PolyObject Val);
 void PushFrame(script_env *sc, int iSize);
 void PopFrame(script_env *sc, int iSize);
@@ -90,7 +90,7 @@ FUNC *GetFunc(script_env *sc, int iIndex);
 
 // ----Host API Call Table Interface -----------------------------------------------------
 
-char* GetHostFunc(script_env *sc, int iIndex);
+char *GetHostFunc(script_env *sc, int iIndex);
 
 // ----Time Abstraction ------------------------------------------------------------------
 
@@ -117,9 +117,9 @@ static void DisplayStatus(script_env *sc)
 *    Initializes the runtime environment.
 */
 
-script_env* Poly_Initialize()
+script_env *Poly_Initialize()
 {
-    script_env* sc = (script_env*)calloc(sizeof(script_env), 1);
+    script_env *sc = (script_env *)calloc(sizeof(script_env), 1);
 
     sc->ThreadActiveTime = 0;
     sc->IsRunning = FALSE;
@@ -146,10 +146,10 @@ script_env* Poly_Initialize()
 *    获取源文件修改时间戳
 */
 
-time_t Poly_GetSourceTimestamp(const char* filename)
+time_t Poly_GetSourceTimestamp(const char *filename)
 {
     // 打开文件
-    FILE* pScriptFile = fopen(filename, "rb");
+    FILE *pScriptFile = fopen(filename, "rb");
     if (!pScriptFile)
         return 0;
 
@@ -224,7 +224,7 @@ static int LoadPE(script_env *sc, const char *pstrFilename)
     // Allocate the runtime stack
 
     int iStackSize = sc->iStackSize;
-    if (!(sc->stack = (PolyObject *)malloc(iStackSize*sizeof(PolyObject))))
+    if (!(sc->stack = (PolyObject *)malloc(iStackSize * sizeof(PolyObject))))
         return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read the global data size (4 bytes)
@@ -256,7 +256,7 @@ static int LoadPE(script_env *sc, const char *pstrFilename)
 
     // Allocate the stream
 
-    if (!(sc->InstrStream.Instrs = (INSTR *)malloc(sc->InstrStream.Size*sizeof(INSTR))))
+    if (!(sc->InstrStream.Instrs = (INSTR *)malloc(sc->InstrStream.Size * sizeof(INSTR))))
         return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read the instruction data
@@ -278,7 +278,7 @@ static int LoadPE(script_env *sc, const char *pstrFilename)
         // Allocate space for the operand list in a temporary pointer
 
         PolyObject *pOpList;
-        if (!(pOpList = (PolyObject *)malloc(iOpCount*sizeof(PolyObject))))
+        if (!(pOpList = (PolyObject *)malloc(iOpCount * sizeof(PolyObject))))
             return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
         // Read in the operand list (N bytes)
@@ -375,7 +375,7 @@ static int LoadPE(script_env *sc, const char *pstrFilename)
         // Allocate a string table of this size
 
         char **ppstrStringTable;
-        if (!(ppstrStringTable = (char **)malloc(iStringTableSize*sizeof(char *))))
+        if (!(ppstrStringTable = (char **)malloc(iStringTableSize * sizeof(char *))))
             return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
         // Read in each string
@@ -459,7 +459,7 @@ static int LoadPE(script_env *sc, const char *pstrFilename)
 
     // Allocate the table
 
-    if (!(sc->FuncTable.Funcs = (FUNC *)malloc(iFuncTableSize*sizeof(FUNC))))
+    if (!(sc->FuncTable.Funcs = (FUNC *)malloc(iFuncTableSize * sizeof(FUNC))))
         return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read each function
@@ -510,7 +510,7 @@ static int LoadPE(script_env *sc, const char *pstrFilename)
 
     // Allocate the table
 
-    if (!(sc->HostCallTable.Calls = (char **)malloc(sc->HostCallTable.Size*sizeof(char *))))
+    if (!(sc->HostCallTable.Calls = (char **)malloc(sc->HostCallTable.Size * sizeof(char *))))
         return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
     // Read each host API call
@@ -618,7 +618,7 @@ void Poly_UnloadScript(script_env *sc)
     // ---- Free registered host API
     while (sc->HostAPIs)
     {
-        HOST_API_FUNC* pFunc = sc->HostAPIs;
+        HOST_API_FUNC *pFunc = sc->HostAPIs;
         sc->HostAPIs = sc->HostAPIs->Next;
         free(pFunc);
     }
@@ -706,7 +706,8 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
         if (sc->IsPaused)
         {
             // Has the pause duration elapsed yet?
-            if (iCurrTime < sc->PauseEndTime) continue;
+            if (iCurrTime < sc->PauseEndTime)
+                continue;
             sc->IsPaused = FALSE;
         }
 
@@ -799,17 +800,17 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
             break;
         }
 
-        // Move
+            // Move
 
         case INSTR_MOV:
         {
             // Get a local copy of the destination operand (operand index 0)
 
-            PolyObject* Dest = ResolveOpValue(sc, 0);
+            PolyObject *Dest = ResolveOpValue(sc, 0);
 
             // Get a local copy of the source operand (operand index 1)
 
-            PolyObject* Source = ResolveOpValue(sc, 1);
+            PolyObject *Source = ResolveOpValue(sc, 1);
 
             // Depending on the instruction, perform a binary operation
 
@@ -835,7 +836,7 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
             break;
         }
 
-        // ----Unary Operations
+            // ----Unary Operations
 
         case INSTR_NEG:
         case INSTR_NOT:
@@ -844,7 +845,7 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
         case INSTR_SQRT:
         {
             // 获取栈顶元素
-            PolyObject& op0 = sc->stack[sc->iTopIndex - 1];
+            PolyObject &op0 = sc->stack[sc->iTopIndex - 1];
 
             switch (iOpcode)
             {
@@ -872,7 +873,7 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
             break;
         }
 
-        // ----Conditional Branching
+            // ----Conditional Branching
 
         case INSTR_JMP:
             sc->CurrInstr = ResolveOpAsInstrIndex(sc, 0);
@@ -885,8 +886,8 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
         case INSTR_JGE:
         case INSTR_JLE:
         {
-            PolyObject* Op1 = &exec_pop(sc);  // 条件2
-            PolyObject* Op0 = &exec_pop(sc);  // 条件1
+            PolyObject *Op1 = &exec_pop(sc); // 条件2
+            PolyObject *Op0 = &exec_pop(sc); // 条件1
 
             // Get the index of the target instruction (opcode index 2)
 
@@ -1018,7 +1019,7 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
 
         case INSTR_BRTRUE:
         {
-            PolyObject* Op0 = &exec_pop(sc);  // 条件
+            PolyObject *Op0 = &exec_pop(sc); // 条件
 
             // Get the index of the target instruction (opcode index 2)
 
@@ -1054,7 +1055,7 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
         }
         case INSTR_BRFALSE:
         {
-            PolyObject* Op0 = &exec_pop(sc);  // 条件
+            PolyObject *Op0 = &exec_pop(sc); // 条件
 
             // Get the index of the target instruction (opcode index 2)
 
@@ -1088,13 +1089,12 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
             break;
         }
 
-
-        // ----The Stack Interface
+            // ----The Stack Interface
 
         case INSTR_PUSH:
         {
             // Get a local copy of the source operand (operand index 0)
-            PolyObject* Source = ResolveOpValue(sc, 0);
+            PolyObject *Source = ResolveOpValue(sc, 0);
 
             // Push the value onto the stack
             exec_push(sc, Source);
@@ -1160,10 +1160,10 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
         // ----The Function Call Interface
         case INSTR_CALL:
         {
-            PolyObject* oprand = ResolveOpValue(sc, 0);
+            PolyObject *oprand = ResolveOpValue(sc, 0);
 
             assert(oprand->Type == OP_TYPE_FUNC_INDEX ||
-                oprand->Type == OP_TYPE_HOST_CALL_INDEX);
+                   oprand->Type == OP_TYPE_HOST_CALL_INDEX);
 
             switch (oprand->Type)
             {
@@ -1194,7 +1194,7 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
                 // Search through the host API until the matching function is found
 
                 int iMatchFound = FALSE;
-                HOST_API_FUNC* pCFunction = g_HostAPIs;
+                HOST_API_FUNC *pCFunction = g_HostAPIs;
                 while (pCFunction)
                 {
                     // Get a pointer to the name of the current host API function
@@ -1238,7 +1238,7 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
             PolyObject FuncIndex = exec_pop(sc);
 
             assert(FuncIndex.Type == OP_TYPE_FUNC_INDEX ||
-                FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER);
+                   FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER);
 
             // Check for the presence of a stack base marker
             if (FuncIndex.Type == OP_TYPE_STACK_BASE_MARKER)
@@ -1257,7 +1257,7 @@ static void ExecuteInstructions(script_env *sc, int iTimesliceDur)
             // Read the return address structure from the stack, which is stored one
             // index below the local data
             int iIndexOfRA = sc->iTopIndex - (CurrFunc->LocalDataSize + 1);
-            PolyObject* ReturnAddr = GetStackValue(sc, iIndexOfRA);
+            PolyObject *ReturnAddr = GetStackValue(sc, iIndexOfRA);
             //printf("OffsetIndex %d\n", FuncIndex.OffsetIndex);
             assert(ReturnAddr->Type == OP_TYPE_INSTR_INDEX);
 
@@ -1435,7 +1435,7 @@ float Poly_GetReturnValueAsFloat(script_env *sc)
 *    Returns the last returned value as a string.
 */
 
-char* Poly_GetReturnValueAsString(script_env *sc)
+char *Poly_GetReturnValueAsString(script_env *sc)
 {
     // Return _RetVal's string field
 
@@ -1469,10 +1469,9 @@ static void RunGC(script_env *pScript)
 
 #if 1
     printf("Collected %d objects, %d remaining.\n", numObjects - pScript->iNumberOfObjects,
-        pScript->iNumberOfObjects);
+           pScript->iNumberOfObjects);
 #endif
 }
-
 
 /******************************************************************************************
 *
@@ -1600,10 +1599,10 @@ inline int GetOpType(script_env *sc, int iOpIndex)
 }
 
 // 绝对地址 = 基址 + 偏移
-inline int ResolveOpRelStackIndex(script_env *sc, PolyObject* OpValue)
+inline int ResolveOpRelStackIndex(script_env *sc, PolyObject *OpValue)
 {
     assert(OpValue->Type == OP_TYPE_REL_STACK_INDEX);
-    
+
     // Resolve the index and use it to return the corresponding stack element
     // First get the base index
     int iBaseIndex = OpValue->StackIndex;
@@ -1612,7 +1611,7 @@ inline int ResolveOpRelStackIndex(script_env *sc, PolyObject* OpValue)
     int iOffsetIndex = OpValue->OffsetIndex;
 
     // Get the variable's value
-    PolyObject* offset = GetStackValue(sc, iOffsetIndex);
+    PolyObject *offset = GetStackValue(sc, iOffsetIndex);
 
     assert(offset->Type == OP_TYPE_INT);
 
@@ -1634,9 +1633,9 @@ inline int ResolveOpRelStackIndex(script_env *sc, PolyObject* OpValue)
 *    Resolves an operand and returns it's associated Value structure.
 */
 
-inline PolyObject* ResolveOpValue(script_env *sc, int iOpIndex)
+inline PolyObject *ResolveOpValue(script_env *sc, int iOpIndex)
 {
-    PolyObject* OpValue = &sc->InstrStream.Instrs[sc->CurrInstr].pOpList[iOpIndex];
+    PolyObject *OpValue = &sc->InstrStream.Instrs[sc->CurrInstr].pOpList[iOpIndex];
 
     switch (OpValue->Type)
     {
@@ -1653,7 +1652,6 @@ inline PolyObject* ResolveOpValue(script_env *sc, int iOpIndex)
 
     return OpValue;
 }
-
 
 /******************************************************************************************
 *
@@ -1679,7 +1677,7 @@ inline int ResolveOpAsInt(script_env *sc, int iOpIndex)
 {
     // Resolve the operand's value
 
-    PolyObject* OpValue = ResolveOpValue(sc, iOpIndex);
+    PolyObject *OpValue = ResolveOpValue(sc, iOpIndex);
 
     // Coerce it to an int and return it
 
@@ -1698,7 +1696,7 @@ inline float ResolveOpAsFloat(script_env *sc, int iOpIndex)
 {
     // Resolve the operand's value
 
-    PolyObject* OpValue = ResolveOpValue(sc, iOpIndex);
+    PolyObject *OpValue = ResolveOpValue(sc, iOpIndex);
 
     // Coerce it to a float and return it
 
@@ -1714,11 +1712,11 @@ inline float ResolveOpAsFloat(script_env *sc, int iOpIndex)
 *  new string if necessary.
 */
 
-inline char*ResolveOpAsString(script_env *sc, int iOpIndex)
+inline char *ResolveOpAsString(script_env *sc, int iOpIndex)
 {
     // Resolve the operand's value
 
-    PolyObject* OpValue = ResolveOpValue(sc, iOpIndex);
+    PolyObject *OpValue = ResolveOpValue(sc, iOpIndex);
 
     // Coerce it to a string and return it
 
@@ -1737,7 +1735,7 @@ inline int ResolveOpAsInstrIndex(script_env *sc, int iOpIndex)
 {
     // Resolve the operand's value
 
-    PolyObject* OpValue = ResolveOpValue(sc, iOpIndex);
+    PolyObject *OpValue = ResolveOpValue(sc, iOpIndex);
 
     // Return it's instruction index
 
@@ -1755,7 +1753,7 @@ inline int ResolveOpAsFuncIndex(script_env *sc, int iOpIndex)
 {
     // Resolve the operand's value
 
-    PolyObject* OpValue = ResolveOpValue(sc, iOpIndex);
+    PolyObject *OpValue = ResolveOpValue(sc, iOpIndex);
 
     // Return the function index
 
@@ -1769,11 +1767,11 @@ inline int ResolveOpAsFuncIndex(script_env *sc, int iOpIndex)
 *    Resolves an operand as a host API call
 */
 
-inline char*ResolveOpAsHostAPICall(script_env *sc, int iOpIndex)
+inline char *ResolveOpAsHostAPICall(script_env *sc, int iOpIndex)
 {
     // Resolve the operand's value
 
-    PolyObject* OpValue = ResolveOpValue(sc, iOpIndex);
+    PolyObject *OpValue = ResolveOpValue(sc, iOpIndex);
 
     // Get the value's host API call index
 
@@ -1791,7 +1789,7 @@ inline char*ResolveOpAsHostAPICall(script_env *sc, int iOpIndex)
 *    Returns the specified stack value.
 */
 
-inline PolyObject* GetStackValue(script_env *sc, int iIndex)
+inline PolyObject *GetStackValue(script_env *sc, int iIndex)
 {
     int iActualIndex = ResolveStackIndex(sc->iFrameIndex, iIndex);
     assert(iActualIndex < sc->iStackSize && iActualIndex >= 0);
@@ -1811,7 +1809,6 @@ inline void SetStackValue(script_env *sc, int iIndex, PolyObject Val)
     assert(iActualIndex < sc->iStackSize && iActualIndex >= 0);
     sc->stack[iActualIndex] = Val;
 }
-
 
 /******************************************************************************************
 *
@@ -1851,7 +1848,7 @@ inline void PopFrame(script_env *sc, int iSize)
 *    Returns the function corresponding to the specified index.
 */
 
-inline FUNC* GetFunc(script_env *sc, int iIndex)
+inline FUNC *GetFunc(script_env *sc, int iIndex)
 {
     assert(iIndex < sc->FuncTable.Size);
     return &sc->FuncTable.Funcs[iIndex];
@@ -1864,7 +1861,7 @@ inline FUNC* GetFunc(script_env *sc, int iIndex)
 *    Returns the host API call corresponding to the specified index.
 */
 
-inline char* GetHostFunc(script_env *sc, int iIndex)
+inline char *GetHostFunc(script_env *sc, int iIndex)
 {
     return sc->HostCallTable.Calls[iIndex];
 }
@@ -2074,7 +2071,7 @@ void Poly_CallScriptFuncSync(script_env *sc, const char *pstrName)
 
 int Poly_RegisterHostFunc(script_env *sc, const char *pstrName, POLY_HOST_FUNCTION fnFunc)
 {
-    HOST_API_FUNC** pCFuncTable;
+    HOST_API_FUNC **pCFuncTable;
 
     if (!pstrName)
         return FALSE;
@@ -2159,7 +2156,7 @@ float Poly_GetParamAsFloat(script_env *sc, int iParamIndex)
 *  Returns the specified string parameter to a host API function.
 */
 
-char* Poly_GetParamAsString(script_env *sc, int iParamIndex)
+char *Poly_GetParamAsString(script_env *sc, int iParamIndex)
 {
     // Get the current top element
     PolyObject Param = Poly_GetParam(sc, iParamIndex);
@@ -2239,24 +2236,20 @@ void Poly_ReturnStringFromHost(script_env *sc, char *pstrString)
     Poly_ReturnFromHost(sc);
 }
 
-
 int Poly_GetParamCount(script_env *sc)
 {
     return (sc->iTopIndex - sc->iFrameIndex);
 }
-
 
 int Poly_IsScriptStop(script_env *sc)
 {
     return !sc->IsRunning;
 }
 
-
 int Poly_GetExitCode(script_env *sc)
 {
     return sc->ExitCode;
 }
-
 
 int Poly_LoadScript(script_env *sc, const char *pstrFilename)
 {
@@ -2291,7 +2284,7 @@ int Poly_LoadScript(script_env *sc, const char *pstrFilename)
 
     // 分配堆栈
     int iStackSize = sc->iStackSize;
-    if (!(sc->stack = (PolyObject *)malloc(iStackSize*sizeof(PolyObject))))
+    if (!(sc->stack = (PolyObject *)malloc(iStackSize * sizeof(PolyObject))))
         return POLY_LOAD_ERROR_OUT_OF_MEMORY;
 
     //DisplayStatus(sc);

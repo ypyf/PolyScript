@@ -4,8 +4,8 @@
 #include "symbol_table.h"
 #include "func_table.h"
 
-// ÓÃÓÚÇ¶Ì×µÄÑ­»·½á¹¹µÄ´úÂëÉú³É
-struct Loop                                 
+// ç”¨äºåµŒå¥—çš„å¾ªç¯ç»“æ„çš„ä»£ç ç”Ÿæˆ
+struct Loop
 {
     Label start;    // The starting jump target
     Label end;  // The ending jump target
@@ -49,7 +49,7 @@ void ParseFuncCall();
 // ---- Functions -------------------------------------------------------------------------
 
 int g_iCurrScope;                               // The current scope
-static int g_iGotReturnStmt = FALSE;	        // º¯ÊıÖĞÊÇ·ñÓĞ·µ»ØÓï¾ä
+static int g_iGotReturnStmt = FALSE;	        // å‡½æ•°ä¸­æ˜¯å¦æœ‰è¿”å›è¯­å¥
 
 // ---- Loops -----------------------------------------------------------------------------
 
@@ -59,7 +59,7 @@ Stack g_LoopStack;                              // Loop handling stack
 
 static bool IsMainFunc()
 {
-    return (g_ScriptHeader.iIsMainFuncPresent && 
+    return (g_ScriptHeader.iIsMainFuncPresent &&
         g_ScriptHeader.iMainFuncIndex == g_iCurrScope);
 }
 
@@ -340,7 +340,7 @@ void ParseSourceCode()
 
     while (GetNextToken() != TOKEN_TYPE_END_OF_STREAM) {
         // If we're at the end of the token stream, break the parsing loop
-        
+
         RewindTokenStream();
 
         // Parse the next statement and ignore an end of file marker
@@ -468,7 +468,7 @@ void ParseStatement()
             }
             //else
             //{
-            //	// ´¦Àí±äÁ¿ÉùÃ÷
+            //	// å¤„ç†å˜é‡å£°æ˜
 
             //	char pstrIdent[MAX_LEXEME_SIZE];
             //	CopyCurrLexeme(pstrIdent);
@@ -477,13 +477,13 @@ void ParseStatement()
 
             //	if (GetNextToken() != TOKEN_TYPE_OP || GetCurrOp() != OP_TYPE_DECL_VAR)
             //	{
-            //		// Î´ÉùÃ÷µÄ±äÁ¿Ê¹ÓÃ
+            //		// æœªå£°æ˜çš„å˜é‡ä½¿ç”¨
             //		ExitOnCodeError("Invalid identifier");
             //	}
             //	else
             //	{
-            //		// Ìí¼Ó±äÁ¿Ãûµ½·ûºÅ±í
-            //		int iSize = 1;	// ±êÁ¿
+            //		// æ·»åŠ å˜é‡ååˆ°ç¬¦å·è¡¨
+            //		int iSize = 1;	// æ ‡é‡
             //		if (AddSymbol(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
             //			ExitOnCodeError("Identifier redefinition");
 
@@ -506,21 +506,21 @@ void ParseStatement()
 
     /*
     case TOKEN_TYPE_OP:
-        // ´¿´â²úÉú¸±×÷ÓÃµÄÓï¾ä
+        // çº¯ç²¹äº§ç”Ÿå‰¯ä½œç”¨çš„è¯­å¥
         if (GetCurrOp() == OP_TYPE_INC || GetCurrOp() == OP_TYPE_DEC)
         {
             RewindTokenStream();
             AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine());
             ParseUnary();
             ReadToken(TOKEN_TYPE_SEMICOLON);
-            // ÒÆ³ö±í´ïÊ½ÇóÖµµÄ½á¹û£¬Õâ¸ö½á¹ûÊÇÃ»ÓĞÓÃµÄ(¿éÖĞ×îºóÒ»¸ö±í´ïÊ½µÄÖµ½«Æä·µ»Ø?)
+            // ç§»å‡ºè¡¨è¾¾å¼æ±‚å€¼çš„ç»“æœï¼Œè¿™ä¸ªç»“æœæ˜¯æ²¡æœ‰ç”¨çš„(å—ä¸­æœ€åä¸€ä¸ªè¡¨è¾¾å¼çš„å€¼å°†å…¶è¿”å›?)
             AddICodeInstr(g_iCurrScope, INSTR_REMOVE);
         }
         break;
         */
 
     default:
-        // ¿ÉÄÜÊÇÎŞ¸±×÷ÓÃµÄ±í´ïÊ½Óï¾ä»òÕß²»ºÏ·¨µÄÓï¾ä
+        // å¯èƒ½æ˜¯æ— å‰¯ä½œç”¨çš„è¡¨è¾¾å¼è¯­å¥æˆ–è€…ä¸åˆæ³•çš„è¯­å¥
         AddICodeAnnotation(g_iCurrScope, GetCurrSourceLine());
         ParseExpr();
         ReadToken(TOKEN_TYPE_SEMICOLON);
@@ -529,12 +529,12 @@ void ParseStatement()
     }
 }
 
-// ¶¨Òå½á¹¹Ìå
+// å®šä¹‰ç»“æ„ä½“
 void ParseStruct(StructSymbol *pOuter)
 {
     ReadToken(TOKEN_TYPE_IDENT);
 
-    // ¿½±´½á¹¹Ãû
+    // æ‹·è´ç»“æ„å
     char pstrTypeName[MAX_LEXEME_SIZE];
     CopyCurrLexeme(pstrTypeName);
 
@@ -589,7 +589,7 @@ void ParseStruct(StructSymbol *pOuter)
         //if (AddField(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
         //	ExitOnCodeError("Field name redefinition");
 
-        // ÉùÃ÷Ê±³õÊ¼»¯±êÁ¿
+        // å£°æ˜æ—¶åˆå§‹åŒ–æ ‡é‡
         if (!iIsArray)
         {
             // ---- Parse the assignment operator
@@ -677,7 +677,7 @@ void ParseVar()
     if (AddSymbol(pstrIdent, iSize, g_iCurrScope, SYMBOL_TYPE_VAR) == -1)
         ExitOnCodeError("Identifier redefinition");
 
-    // ÉùÃ÷Ê±³õÊ¼»¯±êÁ¿
+    // å£°æ˜æ—¶åˆå§‹åŒ–æ ‡é‡
     if (!iIsArray)
     {
         // ---- Parse the assignment operator
@@ -863,11 +863,11 @@ void ParseFunc()
 
     ParseBlock();
 
-    // Ìí¼Ó·µ»ØÖ¸Áî
+    // æ·»åŠ è¿”å›æŒ‡ä»¤
     if (!g_iGotReturnStmt)
     {
-        // Ö÷º¯ÊıÈ±Ê¡·µ»Ø0
-        if (IsMainFunc()) 
+        // ä¸»å‡½æ•°ç¼ºçœè¿”å›0
+        if (IsMainFunc())
         {
             int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_MOV);
             AddRegICodeOp (g_iCurrScope, iInstrIndex, REG_CODE_RETVAL);
@@ -876,7 +876,7 @@ void ParseFunc()
         AddICodeInstr(g_iCurrScope, INSTR_RET);
     }
 
-    // ÖØÖÃ±êÖ¾
+    // é‡ç½®æ ‡å¿—
     g_iGotReturnStmt = FALSE;
 
     // Return to the global scope
@@ -921,8 +921,8 @@ void ParseLogical()
 
         iOpType = GetCurrOp();
 
-        // ¶ÔÂß¼­Óë£¨&&£©ºÍÂß¼­»ò£¨||£©ÔËËã·ûÓ¦ÓÃ¶ÌÂ·ÇóÖµ¹æÔò
-        // ¼´ÔÚ¶Ô²Ù×÷·ûÓÒ±ßµÄ±í´ïÊ½ÇóÖµÖ®Ç°·¢ÉäÌø×ªÖ¸Áî
+        // å¯¹é€»è¾‘ä¸ï¼ˆ&&ï¼‰å’Œé€»è¾‘æˆ–ï¼ˆ||ï¼‰è¿ç®—ç¬¦åº”ç”¨çŸ­è·¯æ±‚å€¼è§„åˆ™
+        // å³åœ¨å¯¹æ“ä½œç¬¦å³è¾¹çš„è¡¨è¾¾å¼æ±‚å€¼ä¹‹å‰å‘å°„è·³è½¬æŒ‡ä»¤
         switch (iOpType)
         {
         case OP_TYPE_LOGICAL_AND:
@@ -942,7 +942,7 @@ void ParseLogical()
                 // JE _T1, 0, True
                 AddICodeInstr(g_iCurrScope, INSTR_BRFALSE, iFalseJumpTargetIndex);
 
-                // Push 1	·µ»ØµÄÊÇ²¼¶ûÖµ1
+                // Push 1	è¿”å›çš„æ˜¯å¸ƒå°”å€¼1
 
                 AddICodeInstr(g_iCurrScope, INSTR_ICONST1);
 
@@ -954,7 +954,7 @@ void ParseLogical()
 
                 MarkLabel(g_iCurrScope, iFalseJumpTargetIndex);
 
-                // Push 0	 ·µ»ØµÄÊÇ²¼¶ûÖµ0
+                // Push 0	 è¿”å›çš„æ˜¯å¸ƒå°”å€¼0
 
                 AddICodeInstr(g_iCurrScope, INSTR_ICONST0);
 
@@ -1289,7 +1289,7 @@ void ParseTerm()
 
     int iOpType;
 
-    // Ò»ÔªÔËËã·û
+    // ä¸€å…ƒè¿ç®—ç¬¦
 
     ParseUnary();
 
@@ -1381,12 +1381,12 @@ void ParseTerm()
 
 void ParseUnary()
 {
-    // ´¦ÀíÒ»ÔªÔËËã·û
+    // å¤„ç†ä¸€å…ƒè¿ç®—ç¬¦
     if (GetNextToken() == TOKEN_TYPE_OP && IsOpPrefix(GetCurrOp()))
     {
         int iOpType = GetCurrOp();
 
-        // µ¥¶À´¦Àí×Ô¸³Öµ
+        // å•ç‹¬å¤„ç†è‡ªèµ‹å€¼
         if (iOpType == OP_TYPE_INC || iOpType == OP_TYPE_DEC)
         {
             if (GetNextToken() != TOKEN_TYPE_IDENT)
@@ -1433,7 +1433,7 @@ void ParseUnary()
             // Push Dest
             if (iIsArray)
             {
-                // ¸´ÖÆÊı×éË÷Òıµ½ T1
+                // å¤åˆ¶æ•°ç»„ç´¢å¼•åˆ° T1
                 int iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
                 AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar1);
 
@@ -1471,7 +1471,7 @@ void ParseUnary()
                 AddArrayIndexVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex, g_iTempVar1);
             }
             else
-            {	
+            {
                 AddVarICodeOp(g_iCurrScope, iInstrIndex, pSymbol->iIndex);
             }
 
@@ -1561,7 +1561,7 @@ void ParseFactor()
         break;
 
         // It's an integer literal, so push it onto the stack
-        // TODO ¶Ô³£Êı0,1×öÓÅ»¯
+        // TODO å¯¹å¸¸æ•°0,1åšä¼˜åŒ–
     case TOKEN_TYPE_INT:
         iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_PUSH);
         AddIntICodeOp(g_iCurrScope, iInstrIndex, atoi(GetCurrLexeme()));
@@ -1737,7 +1737,7 @@ void ParseIf()
 
     if (GetNextToken() == TOKEN_TYPE_RSRVD_ELSE)
     {
-        // Then ·ÖÖ§Ö´ĞĞºóÌø×ªµ½µÄÄ¿±êÎ»ÖÃ
+        // Then åˆ†æ”¯æ‰§è¡Œåè·³è½¬åˆ°çš„ç›®æ ‡ä½ç½®
         Label endIf = DefineLabel();
         AddICodeInstr(g_iCurrScope, INSTR_JMP, endIf);
 
@@ -2029,7 +2029,7 @@ void ParseAssign()
 
         ParseExpr();
 
-        // ±£´æÊı×éË÷Òı
+        // ä¿å­˜æ•°ç»„ç´¢å¼•
         iInstrIndex = AddICodeInstr(g_iCurrScope, INSTR_POP);
         AddVarICodeOp(g_iCurrScope, iInstrIndex, g_iTempVar0);
 
@@ -2044,13 +2044,13 @@ void ParseAssign()
     else
     {
         // Make sure the variable isn't an array
-        // ±ÜÃâ³öÏÖ MyArray[] = 123;
+        // é¿å…å‡ºç° MyArray[] = 123;
         if (pSymbol->iSize > 1)
             ExitOnCodeError("Arrays must be indexed");
     }
 
     // ---- Parse the assignment operator
-    // FIXME ¿ÉÄÜÊÇÆäËûÔËËã·û£¬µ«Ã»ÓĞ¸±×÷ÓÃ²úÉú
+    // FIXME å¯èƒ½æ˜¯å…¶ä»–è¿ç®—ç¬¦ï¼Œä½†æ²¡æœ‰å‰¯ä½œç”¨äº§ç”Ÿ
     if (GetNextToken() != TOKEN_TYPE_OP || !IsOpAssign(GetCurrOp()))
         ExitOnCodeError("Illegal assignment operator");
 
@@ -2060,7 +2060,7 @@ void ParseAssign()
 
     ParseExpr();
 
-    // ¼òµ¥¸³Öµ a = b
+    // ç®€å•èµ‹å€¼ a = b
     if (iAssignOp == OP_TYPE_ASSIGN)
     {
         if (iIsArray)
@@ -2178,7 +2178,7 @@ void ParseFuncCall()
 
     FuncNode * pFunc = GetFuncByName(GetCurrLexeme());
 
-    // ¼ÙÉèµ÷ÓÃµÄÊÇÒ»¸öËŞÖ÷º¯Êı
+    // å‡è®¾è°ƒç”¨çš„æ˜¯ä¸€ä¸ªå®¿ä¸»å‡½æ•°
     if (!pFunc)
     {
         if (AddFunc(GetCurrLexeme(), TRUE) == -1)
